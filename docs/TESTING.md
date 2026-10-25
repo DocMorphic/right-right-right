@@ -22,3 +22,12 @@ Manual checks still required:
 - Assess difficulty, props close to the road, sharp hairpins and scenery at speed.
 
 Build artifacts and original game data are excluded from Git. `tools/prepare_build.py` fails closed for unknown source hashes before creating or changing the destination.
+
+## Observed results, 2026-10-25
+
+- Release build: zero warnings and zero errors.
+- All six additional stages passed navigator extraction, 609 combined road collision probes, and the local suspension/motion check. Route lengths total approximately 12.5 km. Per-stage counts are in `verification-results.json`.
+- Windows visual check: the renamed title fits; the nine-stage tablet list scrolls; selecting stage 09 through its actual menu button loads its rendered road and original cockpit/characters/scenery.
+- Fresh-destination setup completed successfully, including a new portable runtime, IL2CPP interop generation, bootstrap shutdown, compilation, and mod installation.
+- Original Steam `GameAssembly.dll` and `globalgamemanagers` hashes remain unchanged.
+- Full timed races and two-account co-op have not been tested.

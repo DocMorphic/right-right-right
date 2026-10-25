@@ -1,11 +1,12 @@
 param(
     [string]$GamePath = 'C:\Program Files (x86)\Steam\steamapps\common\Left! Left! LEFT! Playtest',
-    [string]$PythonPath = 'python'
+    [string]$PythonPath = 'python',
+    [string]$DestinationPath = ''
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = $PSScriptRoot
 $toolsPath = Join-Path $repoRoot 'local\tools'
-$playerPath = Join-Path $repoRoot 'local\playable'
+$playerPath = if ($DestinationPath) { [IO.Path]::GetFullPath($DestinationPath) } else { Join-Path $repoRoot 'local\playable' }
 New-Item -ItemType Directory -Path $toolsPath -Force | Out-Null
 
 function Check-Exit([string]$Step) {
@@ -36,16 +37,33 @@ if (!(Test-Path -LiteralPath $installer)) {
 & $installer -Version 8.0.426 -InstallDir (Join-Path $toolsPath 'dotnet') -NoPath
 & $installer -Runtime dotnet -Version 6.0.36 -InstallDir (Join-Path $playerPath 'dotnet') -NoPath
 
-Write-Host 'Generating game interop assemblies. The first run can take several minutes.'
-$bootstrap = Start-Process -FilePath (Join-Path $playerPath 'LeftLeftLEFT.exe') -WorkingDirectory $playerPath -WindowStyle Hidden -ArgumentList @(
-    '-batchmode', '-nographics', '-quit', '--melonloader.hideconsole', '-logFile', ('"' + (Join-Path $repoRoot 'local\bootstrap.log') + '"')
-) -PassThru
-$bootstrap.WaitForExit()
-if (!(Test-Path -LiteralPath (Join-Path $playerPath 'MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll'))) {
-    throw 'Interop generation failed. Inspect local\playable\MelonLoader\Latest.log.'
+$interopFile = Join-Path $playerPath 'MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll'
+if (!(Test-Path -LiteralPath $interopFile)) {
+    Write-Host 'Generating game interop assemblies. The first run can take several minutes.'
+    $bootstrap = Start-Process -FilePath (Join-Path $playerPath 'LeftLeftLEFT.exe') -WorkingDirectory $playerPath -WindowStyle Hidden -ArgumentList @(
+        '-batchmode', '-nographics', '--melonloader.hideconsole', '-logFile', ('"' + (Join-Path $repoRoot 'local\bootstrap.log') + '"')
+    ) -PassThru
+    try {
+        $deadline = [DateTime]::UtcNow.AddMinutes(10)
+        $generated = $false
+        $loaderLog = Join-Path $playerPath 'MelonLoader\Latest.log'
+        while (!$bootstrap.HasExited -and [DateTime]::UtcNow -lt $deadline) {
+            if ((Test-Path -LiteralPath $interopFile) -and (Test-Path -LiteralPath $loaderLog)) {
+                $generated = (Get-Content -LiteralPath $loaderLog -Raw) -match 'Assembly Generation Successful!'
+                if ($generated) { break }
+            }
+            Start-Sleep -Seconds 2
+            $bootstrap.Refresh()
+        }
+        if (!$generated) { throw 'Interop generation failed. Inspect local\playable\MelonLoader\Latest.log.' }
+    }
+    finally {
+        if (!$bootstrap.HasExited) { Stop-Process -Id $bootstrap.Id }
+    }
 }
-& (Join-Path $toolsPath 'dotnet\dotnet.exe') build (Join-Path $repoRoot 'src\RightRightRight.csproj') -c Release --nologo
+& (Join-Path $toolsPath 'dotnet\dotnet.exe') build (Join-Path $repoRoot 'src\RightRightRight.csproj') -c Release --nologo ("-p:GameDir=" + $playerPath)
 Check-Exit 'Mod build'
 New-Item -ItemType Directory -Path (Join-Path $playerPath 'Mods') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $repoRoot 'src\bin\Release\net6.0\RightRightRight.dll') -Destination (Join-Path $playerPath 'Mods\RightRightRight.dll')
-Write-Host 'Ready. Run Play.ps1 to start Right, Right, Right.'
+Write-Host ('Ready: ' + $playerPath)
+if (!$DestinationPath) { Write-Host 'Run Play.ps1 or double-click Play.cmd to start Right, Right, Right.' }
