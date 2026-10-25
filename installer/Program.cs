@@ -16,8 +16,8 @@ byte[] Resource(string name)
 string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 try
 {
-    Console.WriteLine("Right, Right, Right 0.2.0 - install / update / play");
-    string target = Path.GetFullPath(Arg("--destination") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RightRightRight", "player"));
+    Console.WriteLine("Right, Right, Right 0.3.0-alpha.1 - FOUR PLAYER RACE PROTOTYPE");
+    string target = Path.GetFullPath(Arg("--destination") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RightRightRight-RacePrototype", "player"));
     string marker = Path.Combine(target, "rrr-install.json");
     byte[] mod = Resource("mod.dll"), stages = Resource("stages.json");
     string packId = Hash(mod.Concat(stages).ToArray());
@@ -64,12 +64,12 @@ try
         "5b2b2f3d1cd42b59ec886c5bdc2663edae87a0097a4f4a8f58c0965a99dda416", target, false);
     await DownloadExtract(client, "https://builds.dotnet.microsoft.com/dotnet/Runtime/6.0.36/dotnet-runtime-6.0.36-win-x64.zip", Path.Combine(cache, "dotnet-6.0.36.zip"),
         "935db5c6cee19f2c016e67168bfae7b491044735de76c673abb3b125dd325fd5e779d7efe12ba80178d46689ae70a25e558a3fa846417d44c5f4ca256e7f4bf2", Path.Combine(target, "dotnet"), true);
-    File.WriteAllText(marker, JsonSerializer.Serialize(new { Version = "0.2.0", PackId = packId, InstalledAt = DateTimeOffset.UtcNow }));
+    File.WriteAllText(marker, JsonSerializer.Serialize(new { Version = "0.3.0-alpha.1", PackId = packId, InstalledAt = DateTimeOffset.UtcNow }));
     var self = Environment.ProcessPath!; var launcher = Path.Combine(target, "RightRightRight.exe");
     if (!self.Equals(launcher, StringComparison.OrdinalIgnoreCase)) File.Copy(self, launcher, true);
     File.WriteAllText(Path.Combine(target, "Play.cmd"), "@echo off\r\ncd /d \"%~dp0\"\r\nstart \"\" \"LeftLeftLEFT.exe\" --melonloader.hideconsole\r\n");
     if (!args.Contains("--no-shortcut")) CreateShortcut(launcher, target);
-    Console.WriteLine("INSTALL_PASS: Ready. Keep Steam running; both friends need this version.");
+    Console.WriteLine("INSTALL_PASS: Ready. Keep Steam running; all four players need this version.");
     Console.WriteLine("First launch generates game bindings automatically and may take a few minutes.");
     if (!unattended) Launch(target);
     return 0;
@@ -125,7 +125,7 @@ static void CreateShortcut(string launcher, string target)
     {
         var shellType = Type.GetTypeFromProgID("WScript.Shell"); if (shellType == null) return;
         dynamic shell = Activator.CreateInstance(shellType)!;
-        dynamic shortcut = shell.CreateShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Right Right Right.lnk"));
+        dynamic shortcut = shell.CreateShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Right Right Right Race Prototype.lnk"));
         shortcut.TargetPath = launcher; shortcut.WorkingDirectory = target; shortcut.Save();
     }
     catch { Console.WriteLine("Desktop shortcut could not be created; launch " + launcher); }

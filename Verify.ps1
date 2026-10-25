@@ -6,7 +6,7 @@ $summary = @()
 foreach ($stage in $stages) {
     $logPath = Join-Path $PSScriptRoot ('local\verify-' + $stage.Scene + '.log')
     $run = Start-Process -FilePath (Join-Path $playerPath 'LeftLeftLEFT.exe') -WorkingDirectory $playerPath -WindowStyle Hidden -PassThru -ArgumentList @(
-        '-batchmode','-nographics','--melonloader.hideconsole',('--rrr-stage=' + $stage.Scene),'--rrr-seed=12345','--rrr-verify','-logFile',('"' + $logPath + '"')
+        '-batchmode','-nographics','--melonloader.hideconsole','--rrr-legacy-coop',('--rrr-stage=' + $stage.Scene),'--rrr-seed=12345','--rrr-verify','-logFile',('"' + $logPath + '"')
     )
     if (!$run.WaitForExit($TimeoutSeconds * 1000)) {
         Stop-Process -Id $run.Id

@@ -1,81 +1,51 @@
-# Right, Right, Right
+# Right, Right, Right — four-player race prototype
 
-Six difficult randomized stage profiles for the Windows **Left! Left! LEFT! Playtest**, built from the installed player using reverse engineering. Three original stages plus six additional profiles, selected from the game's tablet menu.
+This branch contains **0.3.0-alpha.1**: two cars, two people per car, racing the same generated forest road. Cars remain visible and survive collisions with each other. Tree impacts at the original hard-hit threshold cause crew DNF.
 
-Version **0.2.0** adds genuine 180-degree hairpins, tight hard corners, chicanes, working windshield mud/wiping, door events on either turn direction, dense original tree boundaries and closed route ends. The host shares a fresh course seed when selecting a new stage; retrying keeps the same course. Every generated profile has at least six hairpins and ten hard corners. Both players must use the same pack version.
+**[Download the race prototype installer](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.1/RightRightRight-RacePrototype-Setup.exe)** · [Full guide](docs/FOUR-PLAYER-PROTOTYPE.md)
 
-This is a **runtime extension**, not a standalone source recreation. It runs the original compiled gameplay code and reuses its vehicle, characters, cabin, audio, materials, tree/bush/rock prefabs, navigator, stage timing, and Steam co-op systems. New roads and ground are generated from the route definitions in [`levels/stages.json`](levels/stages.json).
+For the stable two-player game, use [release 0.2.0](https://github.com/DocMorphic/right-right-right/releases/tag/v0.2.0) and the [main branch](https://github.com/DocMorphic/right-right-right/tree/main). The prototype has a separate installation folder and desktop shortcut.
 
-The repository contains the extension source and build tools. Setup copies your installed player into `local/playable`; original game files and recovered project exports stay local. The Steam installation is never patched.
+## Play with four players
 
-## Easy install for friends
+1. All four players install the original **Left! Left! LEFT! Playtest** through Steam, supported build **26172243**.
+2. Each player downloads and runs **RightRightRight-RacePrototype-Setup.exe**. No Python, Git, SDK or PowerShell commands are needed.
+3. Launch the **Right Right Right Race Prototype** desktop shortcut and keep Steam running. Everyone opens the prototype before accepting the host's Steam invite.
+4. Join order assigns seats: host = A driver; first joiner = A navigator; second = B driver; third = B navigator.
+5. Wait for **4/4**, then the host selects one of profiles **04–09**. A shared countdown begins after all four scenes are ready.
 
-1. Install the original **Left! Left! LEFT! Playtest** through Steam. This release supports build **26172243**.
-2. Download **[RightRightRight-Setup.exe](https://github.com/DocMorphic/right-right-right/releases/latest/download/RightRightRight-Setup.exe)** and double-click it. Setup finds the Steam game, creates a separate local copy, installs the prebuilt extension and handles runtime dependencies automatically.
-3. Keep Steam running and launch the **Right Right Right** desktop shortcut. Both friends open this version before accepting the original game's Steam invite. Wait for **CREW 2/2**, then let the driver choose a stage.
+The first launch generates bindings and can take a few minutes. The installer creates `%LOCALAPPDATA%\RightRightRight-RacePrototype\player` using each player's own installed assets. Original game binaries and assets are not distributed in the repository or installer, and the Steam installation is not patched.
 
-The setup executable is self-contained: players do not need Python, Git, a C++ compiler, the .NET SDK, or PowerShell commands. The first game launch automatically generates bindings and can take a few minutes. Internet is needed for runtime/loader downloads and Steam. To update, close the game and run the newer setup executable. The installed copy lives in `%LOCALAPPDATA%\RightRightRight\player`.
+## Prototype features
 
-The installer copies each player's own installed assets; no original game binaries or assets are distributed in this repository or setup executable. A tiny hash-verified scene-table delta is applied locally. Unknown game builds are rejected before installation.
+- Two host-simulated rigidbody cars, four assigned seats, a shared start clock, separate crew finish times and a winner.
+- Real car-to-car contacts and cockpit jolts without fatal wrecks from other cars, rocks or the ground.
+- Native car, character, cabin, tablet and forest assets. No railings or unrelated scenery.
+- 9.5 m roads, with the existing randomized route stretched horizontally to preserve room between nearby sections. Original trees still close side/reverse exits.
+- Original windshield mud appearance, with deposits applying independently to both cars and remote wiping.
+- Doors opening on hard turns in either direction. Loose tablets can be ejected through an open door.
+- Tablet grab/drop and theft: aim and press **E** within three metres. A held tablet is protected. A tablet still in the rival cabin requires its door to be open; tablets already on the road can be collected. A stolen tablet follows its new car's position on the minimap.
 
-## Play from the source checkout
+Drive with WASD/Space. Use **E** for tablets, **G** to close your door, hold **C** to wipe, **Escape** to unlock/relock the cursor, and **F8** for a host retry. The host can return everyone to the lobby through the HUD.
 
-Double-click `Play.cmd`, or launch the prepared local build with:
+## Alpha limits
 
-```powershell
-.\Play.ps1
-```
+The second driver's controls travel to the host; there is no client prediction yet. Internet latency will affect steering. Four local game processes and four distinct Steam accounts over the internet are separate tests; the internet playtest is still needed.
 
-Keep Steam running on an account with access to the playtest. Select **START** to open the nine-stage menu. Invite your navigator using the original lobby controls. Both players need the same extension and route definitions. The user reported successful two-account co-op on 0.1.0; the new 0.2.0 seed/acknowledgment protocol still needs a two-account playtest. The host waits for the navigator to confirm the same course pack instead of silently loading different roads.
+There is no seat picker, host migration or mid-race joining. Reconnect through the lobby after a disconnect. A lost tablet stays in the world until recovered or the host restarts. The race HUD reports tree DNF instead of opening the original global wreck/end screen, which would stop the other crew's race.
 
-## Build from a fresh clone
+## Build and verify
 
-Requires Windows x64, Steam playtest **build 26172243**, Python 3.12, and an internet connection for dependencies. The checked player is Unity **6000.3.16f1**, Steam AppID **5425110**. Setup checks source hashes before writing anything to the destination.
+Developer setup requires the supported Steam player, Windows x64 and Python 3.12. Run `Setup.cmd` to prepare a local player and generated IL2CPP bindings, then run `Build-Release.ps1` to build the mod and self-contained installer under `local/race-installer/`.
 
-For the ZIP download: install [Python 3.12 (64-bit)](https://www.python.org/downloads/release/python-31210/), extract the repository ZIP, then double-click **Setup.cmd**. After it finishes, double-click **Play.cmd**. Setup.cmd permits scripts only in its own PowerShell process; it does not change your permanent execution policy.
+- `Verify-Race.ps1`: four isolated game processes using the native Unity transport over loopback; exercises actual remote controls, two-car physics, cabin interactions, fatal trees and finish results.
+- `Verify-RaceGeometry.ps1`: all six widened courses, road collider probes, tree-gap sweeps and the four-member Steam lobby/native lobby assignment.
+- `tests/RaceProtocol`: sender-to-seat mapping, sequence/replay checks, finite control/aim limits, packet framing and size limits.
+- `tests/CourseGeometry`: 128 seeds for repeatability, adjacent-seed variation, hard corners, continuous geometry and separate road corridors.
+- `Verify.ps1`: legacy two-player route/hazard checks using the explicit `--rrr-legacy-coop` flag.
 
-Setup automatically selects Python 3.12 even if `python` normally starts Python 3.15. Other Python versions can remain installed. It uses a separate `local/.venv-py312` environment, so a previous failed attempt does not need to be deleted. The pinned UnityPy dependencies do not support this setup on Python 3.15; installing C++ build tools is unnecessary.
+Test fixtures use separate player copies under `local/race-test/`; they never patch the Steam installation. `--rrr-race-verify` enables scripted inputs and setup teleports only for verification. Normal play does not use them.
 
-```powershell
-git clone https://github.com/DocMorphic/right-right-right.git
-cd right-right-right
-.\Setup.cmd
-.\Play.ps1
-```
+See [the prototype guide](docs/FOUR-PLAYER-PROTOTYPE.md), [reverse engineering notes](docs/REVERSE_ENGINEERING.md), and [feature roadmap](docs/ROADMAP.md). This remains a runtime extension of the installed compiled game, rather than a recovered standalone source implementation.
 
-Setup detects Steam libraries on other drives using Steam's library configuration and the playtest's app manifest. If it cannot find the game, it asks you to paste the installation folder: in Steam, right-click **Left! Left! LEFT! Playtest > Manage > Browse local files**, then copy the folder's address. It must contain `LeftLeftLEFT.exe`, `GameAssembly.dll`, and `LeftLeftLEFT_Data`. Install the original playtest first if it is missing.
-
-You can also supply the folder directly: `.\Setup.cmd -GamePath "D:\SteamLibrary\steamapps\common\Left! Left! LEFT! Playtest"`. Setup downloads pinned MelonLoader 0.7.3, a local .NET 8 SDK, and a portable .NET 6 runtime used by the loader. It generates interop assemblies from your own player and compiles the extension. Allow several minutes on the first run and roughly 2 GB of free space for the player and build dependencies.
-
-## New stages
-
-| Stage | Route | Character |
-|---|---|---|
-| 04 | Pine Needle | Random technical forest opener; 5.2 m road |
-| 05 | Switchback | Tight alternating hairpins; 4.8 m road |
-| 06 | Ridgeline | Narrow hard turns; 4.6 m road |
-| 07 | Serpent | Random chicanes, hard corners and U-turns |
-| 08 | Long Way Home | Long seeded endurance gauntlet |
-| 09 | Right Right Right | Maximum technical mix; 4.7 m road |
-
-The original three stages retain their scene data. New profiles start from isolated copies of scene 1, replace its road and terrain, relocate its gates, regenerate original scenery and mud triggers, and close escape gaps with additional original trees and solid trunk collision. They use the same daytime forest setting. Native mud synchronization, wipers, door physics, and door network RPCs are retained. Door events have a cooldown and occur only during a timed race while the driver commits to a turn.
-
-## Verify
-
-```powershell
-.\Verify.ps1
-```
-
-This launches each profile in the Unity player and checks navigator extraction, full-route road probes and tree-gap sweeps, native suspension, a mud-trigger crossing, native wiping, native door opening, reverse impacts against the trees behind the start, and sideways impacts against roadside tree trunks. Reports are written under `local/`. The pure geometry test checks 128 seeds for repeatability, variation, technical-corner counts and separated road corridors. These checks do not prove full timed runs or two-account compatibility. See [`docs/TESTING.md`](docs/TESTING.md).
-
-To build the friend installer from this checkout after developer setup: run `Build-Release.ps1`. The resulting self-contained executable is written to `local/friend-installer/`.
-
-Further features and research: [`docs/ROADMAP.md`](docs/ROADMAP.md).
-
-After editing `levels/stages.json`, copy it to `local/playable/UserData/RightRightRight/stages.json`. Changes to C# require rebuilding and copying `src/bin/Release/net6.0/RightRightRight.dll` to `local/playable/Mods/` while the game is closed.
-
-## Recovery notes
-
-[`docs/REVERSE_ENGINEERING.md`](docs/REVERSE_ENGINEERING.md) describes the installed files, recovered interfaces, and why this uses the original runtime. A recovered Unity project with stub scripts is not a functional recreation. An independent source implementation of the original game remains outside this extension.
-
-Code authored here is MIT licensed. Original game content remains attributable to Stellux Interactive. No license to original game assets or third-party dependencies is granted by this repository.
+Code authored here is MIT licensed. Original game content remains attributable to Stellux Interactive; third-party dependencies retain their own licenses.

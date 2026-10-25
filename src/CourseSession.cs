@@ -12,7 +12,7 @@ namespace RightRightRight;
 
 internal static class CourseSession
 {
-    internal const string Version = "0.2.0";
+    internal const string Version = "0.3.0-alpha.1";
     internal static string ContentId = "";
     private static string lastAcknowledged = "";
     private static bool selecting;
@@ -23,10 +23,11 @@ internal static class CourseSession
     {
         using var document = System.Text.Json.JsonDocument.Parse(json);
         var canonical = System.Text.Json.JsonSerializer.Serialize(document.RootElement);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Version + "\n" + canonical)))[..16];
+        var mode=RaceNetwork.Enabled?"race4-width9.5-scale1.7":"legacy-coop";
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Version + "\n" + mode + "\n" + canonical)))[..16];
     }
 
-    private static Lobby GetLobby(SteamLobby owner)
+    internal static Lobby GetLobby(SteamLobby owner)
     {
         // IL2CPP boxes a populated Nullable<Lobby> as Lobby, although the generated
         // accessor wraps it as Nullable. Unbox the actual type, rather than reading
@@ -39,6 +40,7 @@ internal static class CourseSession
 
     internal static void Update()
     {
+        if(RaceNetwork.Lan) return;
         if (Time.realtimeSinceStartup < nextPoll) return;
         nextPoll = Time.realtimeSinceStartup + .2f;
         var lobby = SteamLobby.Instance;
@@ -55,6 +57,7 @@ internal static class CourseSession
 
     internal static void Select(StageDefinition stage, Action<string> load)
     {
+        if(RaceNetwork.Enabled && (!RaceNetwork.Host || RaceNetwork.Count!=4)) { SetStatus("The host selects the course after all four players join.");return; }
         if (selecting) return;
         if (NetSession.Instance != null && !NetSession.Instance.IsDriver) { SetStatus("The driver chooses the course."); return; }
         int seed = RandomNumberGenerator.GetInt32(1, int.MaxValue);
@@ -101,6 +104,7 @@ internal static class CourseSession
 
     internal static int ResolveSeed(StageDefinition stage)
     {
+        if(RaceNetwork.Lan) return CurrentSeed=12345;
         var testSeed = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith("--rrr-seed="));
         if (testSeed != null && int.TryParse(testSeed.Split('=')[1], out int explicitSeed)) return CurrentSeed = explicitSeed;
         var lobby = SteamLobby.Instance;

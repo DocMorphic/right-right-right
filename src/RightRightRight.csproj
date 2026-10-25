@@ -3,6 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>RightRightRight</AssemblyName>
     <GameDir Condition="'$(GameDir)' == ''">$(MSBuildThisFileDirectory)..\local\playable</GameDir>
   </PropertyGroup>

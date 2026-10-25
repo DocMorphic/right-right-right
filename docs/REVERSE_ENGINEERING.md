@@ -48,6 +48,16 @@ The SteamLobby nullable field needs special care: IL2CPP boxes a populated Nulla
 
 The friend installer embeds the extension, definitions, expected hashes and a tiny delta (269 inserted bytes) for the pinned original scene table. It reconstructs and verifies the patched table locally. The installer does not contain original assets and does not require Python or the SDK. Its .NET 8 runtime is self-contained; the game loader's portable .NET 6 archive and MelonLoader are downloaded from official sources and checked against pinned hashes.
 
+## Four-player prototype architecture
+
+Version 0.3.0-alpha.1 clones the original bound car, occupants and tablet into a second crew after scene initialization. The original binder's clone-time global occupant search is suppressed. Network identities on the clone are removed; the original Netcode connection and Steam Facepunch transport carry custom named messages for both cars. The host simulates both native vehicle controllers, validates each sender's assigned seat and replicates poses, controls, doors, mud, impacts, tablets and results. Clients interpolate replicas. There is no client prediction.
+
+The original two-player connection callback and join flow are replaced for the four-seat mode. Steam lobby capacity is four, and lobby mode/version plus pack/seed acknowledgments gate the start. The installed IL2CPP bindings cannot marshal the non-blittable connection approval request delegate, so the prototype caps connected clients in the connection callback and waits for four matching ready messages. Native lobby assignment validates the Nullable field layout and readback before proceeding.
+
+Tablet authority, ejection, theft and per-crew clocks are implemented independently of the original one-car bridge. Native tablet geometry, map rendering, hand IK and materials remain. Native body proxies are excluded from tablet contacts so a loose tablet can actually exit an open door. Creating the second map rig clears its layer from existing cameras, so each map camera explicitly restores its own layer mask. Camera privacy and head visibility are set for each of the four seats.
+
+Car contacts retain actual rigidbody response and trigger replicated cockpit jolts. Only tree contacts above the original hard-hit threshold cause crew DNF. One crew's DNF does not invoke the original global end screen, allowing the other crew to finish. Developer-only fixtures and render captures require explicit command-line flags.
+
 ## Limits
 
 - This is a version-specific extension dependent on the original player and Steam access.

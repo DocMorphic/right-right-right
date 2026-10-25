@@ -72,6 +72,7 @@ internal static class Verification
         Directory.CreateDirectory(folder);
         File.WriteAllText(Path.Combine(folder, stage.Scene + ".json"), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
         Mod.Log.Msg($"VERIFY_GEOMETRY_PASS {stage.Scene}: {hits} collider probes.");
+        if(RaceNetwork.Enabled) {Application.Quit(0);return;}
         MelonCoroutines.Start(AfterPhysics(stage, controller));
     }
 

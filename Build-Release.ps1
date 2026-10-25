@@ -7,6 +7,6 @@ $GamePath = & (Join-Path $PSScriptRoot 'tools\find_game.ps1') -GamePath $GamePat
 if ($LASTEXITCODE -ne 0) { throw 'Scene delta build failed.' }
 & $DotnetPath build (Join-Path $PSScriptRoot 'src\RightRightRight.csproj') -c Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Mod build failed.' }
-& $DotnetPath publish (Join-Path $PSScriptRoot 'installer\RightRightRight.Setup.csproj') -c Release -o (Join-Path $PSScriptRoot 'local\friend-installer') --nologo
+& $DotnetPath publish (Join-Path $PSScriptRoot 'installer\RightRightRight.Setup.csproj') -c Release -o (Join-Path $PSScriptRoot 'local\race-installer') --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Friend installer publish failed.' }
-Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'local\friend-installer\RightRightRight-Setup.exe') -Algorithm SHA256
+Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'local\race-installer\RightRightRight-RacePrototype-Setup.exe') -Algorithm SHA256

@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.2.0", "DocMorphic")]
+[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.1", "DocMorphic")]
 [assembly: MelonGame("Stellux Interactive", "LeftLeftLEFT")]
 
 namespace RightRightRight;
@@ -22,6 +22,7 @@ public sealed class Mod : MelonMod
     public override void OnInitializeMelon()
     {
         Log = LoggerInstance;
+        Application.runInBackground=true;
         Stages = StageDefinition.Read(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json"));
         CourseSession.ContentId = CourseSession.Fingerprint(File.ReadAllText(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json")));
         Log.Msg($"Loaded {Stages.Length} additional stage definitions.");
@@ -83,12 +84,17 @@ public sealed class Mod : MelonMod
 
     public override void OnUpdate()
     {
+        RaceNetwork.Update();
         CourseSession.Update();
-        StageHazards.Active?.Tick();
+        if(RaceNetwork.Enabled) RaceRuntime.Active?.Update(); else StageHazards.Active?.Tick();
     }
+
+    public override void OnLateUpdate() => RaceRuntime.Active?.LateUpdate();
 
     public override void OnGUI()
     {
+        RaceRuntime.Active?.Gui();
+        RaceNetwork.Gui();
         if (!string.IsNullOrEmpty(CourseSession.Status) && SceneManager.GetActiveScene().name == "Menu")
             GUI.Box(new Rect(20, 20, Math.Min(Screen.width - 40, 650), 55), CourseSession.Status);
     }
@@ -112,6 +118,7 @@ public sealed class Mod : MelonMod
 
     public override void OnSceneWasInitialized(int buildIndex, string sceneName)
     {
+        RaceNetwork.Scene(sceneName);
         var args = Environment.GetCommandLineArgs();
         if (sceneName == "Menu") StageHazards.Active = null;
         var target = args.FirstOrDefault(a => a.StartsWith("--rrr-stage="))?.Split('=')[1];

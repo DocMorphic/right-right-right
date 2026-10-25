@@ -14,6 +14,8 @@ Keep the original forest appearance. Proposed features below are plans, not perm
 
 ## Priorities after this playtest
 
+The authorized four-player race now has a separate [0.3.0-alpha.1 prototype](FOUR-PLAYER-PROTOTYPE.md). Its next acceptance session is four distinct Steam accounts: invitations, join order, course/seed acknowledgment, second-driver latency, both navigator screens, collisions, tablet theft, retry and return to lobby. Prediction and a seat picker are follow-up work after that session; new scenery still requires approval.
+
 1. **Course codes and daily challenge.** Expose the current seed as a shareable course code, add a seed entry field, and derive an optional daily seed from the date and pack version. Keep times separated by seed, width and rules. Success: two crews can independently load identical roads and compare valid runs.
 2. **Sector times and a personal-best ghost.** Add sector splits and a local ghost, visible to the navigator or in replay so the driver retains the original information restriction. Success: a recorded run replays without controlling physics and shows where time was lost. WRC's official Racenet design demonstrates the usefulness of ghost playback and comparing stage telemetry. [EA Racenet](https://www.ea.com/games/ea-sports-wrc/wrc-24/news/racenet)
 3. **Crew challenges and championships.** A short sequence of seeded stages with a shared scorecard, time penalties, and an optional single-attempt rule. Start with locally shareable results; a hosted leaderboard would need separate backend work. EA's rally Clubs use events and shared standings as a model for friends who cannot all play at once. [EA Racenet Clubs](https://www.ea.com/games/ea-sports-wrc/wrc-24/news/racenet)

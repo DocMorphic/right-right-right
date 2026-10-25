@@ -55,3 +55,14 @@ Build artifacts and original game data are excluded from Git. `tools/prepare_bui
 - Setup now resolves the game location before installing dependencies and asks for the folder when automatic discovery fails. A missing folder is reported separately from an unsupported build hash.
 
 The final forest visual inspection was stopped by the user with Escape. No completed visual approval is claimed for 0.2.0.
+
+## Version 0.3.0-alpha.1 four-player prototype
+
+- Release build and protocol/128-seed geometry tests pass.
+- Four real player processes connect through the native Unity transport on loopback, load the same course and pass a four-seat readiness barrier. Both drivers move their own native cars. Actual car contacts produce jolts without DNF; actual tree contact eliminates only the affected crew.
+- Remote inputs reject a closed-door theft, steal an unheld tablet through an open door, drop/eject it onto the road and wipe mud. Both cars receive mud from the same deposit independently. An early finish is rejected, and all three clients receive the same valid finish time, impact, theft and tree DNF.
+- Both navigator and driver seat privacy, map cameras and road ribbons are checked on all four processes. Separate Unity offscreen renders were inspected for a clear driver view, a working navigator map, and two visible original cars/occupants in the original forest. These are engine-render captures, not a four-person playtest.
+- All six widened profiles pass 1,815 road probes and 12,240 tree-boundary sphere sweeps. Actual Steam lobby capacity reads back as four; writing the native lobby field and reading it through the original API also passes.
+- The complete sanitized reports are in [race-verification-results.json](race-verification-results.json). Fixtures run only with explicit verification flags and isolated local player copies.
+- The self-contained alpha installer passes source/delta checks and installation into a fresh folder. Its embedded mod matches the built extension. First launch generates fresh bindings successfully, then passes native course geometry and four-member Steam lobby checks. The original Steam source hashes remain unchanged.
+- Four distinct Steam accounts over the internet remain untested. The second driver's host round trip has no prediction; latency, full-course balance, repeated Steam invites, retry and return-to-lobby need the four-person acceptance session.

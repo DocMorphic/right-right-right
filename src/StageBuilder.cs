@@ -10,8 +10,10 @@ internal static class StageBuilder
 {
     internal static void Build(StageDefinition stage, StageController controller)
     {
+        if(RaceNetwork.Enabled) stage=new StageDefinition { Scene=stage.Scene,Name=stage.Name,Seed=stage.Seed,Blocks=stage.Blocks,Procedural=stage.Procedural,Points=stage.Points,Width=RaceNetwork.Width };
         int seed = CourseSession.ResolveSeed(stage);
         var path = stage.Sample(seed);
+        if(RaceNetwork.Enabled) for(int i=0;i<path.Count;i++) path[i]=new Vector3(path[i].x*1.7f,path[i].y,path[i].z*1.7f);
         var originalRoad = GameObject.Find("road_0001").GetComponent<MeshFilter>();
         var material = originalRoad.GetComponent<Renderer>().sharedMaterial;
         var decorator = originalRoad.GetComponent<RoadsideDecorator>();
