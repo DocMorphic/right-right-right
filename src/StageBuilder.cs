@@ -10,7 +10,8 @@ internal static class StageBuilder
 {
     internal static void Build(StageDefinition stage, StageController controller)
     {
-        var path = stage.Sample();
+        int seed = CourseSession.ResolveSeed(stage);
+        var path = stage.Sample(seed);
         var originalRoad = GameObject.Find("road_0001").GetComponent<MeshFilter>();
         var material = originalRoad.GetComponent<Renderer>().sharedMaterial;
         var decorator = originalRoad.GetComponent<RoadsideDecorator>();
@@ -61,22 +62,30 @@ internal static class StageBuilder
         car.transform.SetPositionAndRotation(pose.position, pose.rotation);
         Physics.SyncTransforms();
 
-        // Reuse the game's native tree/bush/rock generator and its breakable-tree behaviour.
+        // Reuse the original forest assets; dense front trees close gaps without new scenery.
         decorator.enabled = false;
         decorator.roadMesh = road;
-        decorator.seed = stage.Seed;
+        decorator.seed = seed;
         decorator.rootName = "RRR_Roadside_Props";
         decorator._root = null;
         decorator.trees.snapToTerrain = false;
         decorator.bushes.snapToTerrain = false;
         decorator.rocks.snapToTerrain = false;
         decorator.forestBackfill.snapToTerrain = false;
+        decorator.trees.spacing = 2.5f;
+        decorator.trees.chance = 1;
+        decorator.trees.edgeOffset = 1.8f;
+        decorator.trees.alongJitter = .5f;
+        decorator.trees.lateralJitter = .35f;
+        decorator.trees.keepColliders = true;
         decorator.Generate();
+        var treeColliders = TreeBoundary.Build(stage, decorator, path, root.transform, seed);
+        var hazards = new StageHazards(stage, controller, path, root.transform, seed, treeColliders);
         Physics.SyncTransforms();
 
         float length = 0;
         for (int i = 1; i < path.Count; i++) length += Vector3.Distance(path[i - 1], path[i]);
-        Mod.Log.Msg($"STAGE_READY {stage.Scene}: {stage.Name}; {length:F0} m; {nativeSamples.Count} navigator samples; car={pose.position}");
+        Mod.Log.Msg($"STAGE_READY {stage.Scene}: {stage.Name}; seed={seed}; {length:F0} m; {nativeSamples.Count} navigator samples; car={pose.position}");
         Verification.Record(stage, controller, road, path, length);
     }
 

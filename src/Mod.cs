@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.1.0", "DocMorphic")]
+[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.2.0", "DocMorphic")]
 [assembly: MelonGame("Stellux Interactive", "LeftLeftLEFT")]
 
 namespace RightRightRight;
@@ -23,6 +23,7 @@ public sealed class Mod : MelonMod
     {
         Log = LoggerInstance;
         Stages = StageDefinition.Read(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json"));
+        CourseSession.ContentId = CourseSession.Fingerprint(File.ReadAllText(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json")));
         Log.Msg($"Loaded {Stages.Length} additional stage definitions.");
     }
 
@@ -43,7 +44,7 @@ public sealed class Mod : MelonMod
                     button.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>((Action)(() =>
                     {
                         Log.Msg($"Menu selected {stage.Scene}.");
-                        __instance.LoadMap(stage.Scene);
+                        CourseSession.Select(stage, __instance.LoadMap);
                     })));
                     __instance.maps.Add(new MainMenu.MapEntry { displayName = stage.Name, sceneName = stage.Scene, button = button });
                 }
@@ -80,6 +81,18 @@ public sealed class Mod : MelonMod
         }
     }
 
+    public override void OnUpdate()
+    {
+        CourseSession.Update();
+        StageHazards.Active?.Tick();
+    }
+
+    public override void OnGUI()
+    {
+        if (!string.IsNullOrEmpty(CourseSession.Status) && SceneManager.GetActiveScene().name == "Menu")
+            GUI.Box(new Rect(20, 20, Math.Min(Screen.width - 40, 650), 55), CourseSession.Status);
+    }
+
     [HarmonyPatch(typeof(StageController), "Awake")]
     private static class StagePatch
     {
@@ -100,6 +113,7 @@ public sealed class Mod : MelonMod
     public override void OnSceneWasInitialized(int buildIndex, string sceneName)
     {
         var args = Environment.GetCommandLineArgs();
+        if (sceneName == "Menu") StageHazards.Active = null;
         var target = args.FirstOrDefault(a => a.StartsWith("--rrr-stage="))?.Split('=')[1];
         if (sceneName == "Menu" && target != null)
         {
@@ -111,6 +125,7 @@ public sealed class Mod : MelonMod
     private static System.Collections.IEnumerator LaunchTest(string target)
     {
         yield return new WaitForSeconds(3);
-        NetSession.Ensure().LoadMap(target);
+        if (Environment.GetCommandLineArgs().Any(a => a.StartsWith("--rrr-seed="))) NetSession.Ensure().LoadMap(target);
+        else CourseSession.Select(Stages.First(s => s.Scene == target), name => NetSession.Ensure().LoadMap(name));
     }
 }

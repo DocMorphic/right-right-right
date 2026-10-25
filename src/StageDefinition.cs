@@ -10,6 +10,8 @@ public sealed class StageDefinition
     public string Description { get; set; } = "";
     public float Width { get; set; } = 6;
     public int Seed { get; set; }
+    public int Blocks { get; set; } = 7;
+    public bool Procedural { get; set; } = true;
     public float[][] Points { get; set; } = Array.Empty<float[]>();
 
     public static StageDefinition[] Read(string file)
@@ -18,7 +20,7 @@ public sealed class StageDefinition
             ?? throw new InvalidDataException("Stage definitions are empty.");
         foreach (var stage in stages)
         {
-            if (!stage.Scene.StartsWith("RRR_") || stage.Points.Length < 4 || stage.Width < 4)
+            if (!stage.Scene.StartsWith("RRR_") || (!stage.Procedural && stage.Points.Length < 4) || stage.Width < 4 || stage.Width > 8 || stage.Blocks < 4 || stage.Blocks > 12)
                 throw new InvalidDataException($"Invalid stage {stage.Scene}.");
             if (stage.Points.Any(p => p.Length != 3 || p.Any(v => !float.IsFinite(v))))
                 throw new InvalidDataException($"Invalid points in {stage.Scene}.");
@@ -26,8 +28,10 @@ public sealed class StageDefinition
         return stages;
     }
 
-    public List<Vector3> Sample()
+    public List<Vector3> Sample(int? courseSeed = null)
     {
+        if (Procedural)
+            return CourseGeometry.Generate(courseSeed ?? Seed, Seed, Blocks).Points.Select(p => new Vector3(p.X, p.Y, p.Z)).ToList();
         var result = new List<Vector3>();
         Vector3 Point(int i) { var p = Points[Math.Clamp(i, 0, Points.Length - 1)]; return new(p[0], p[1], p[2]); }
         for (int i = 0; i < Points.Length - 1; i++)

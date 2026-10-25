@@ -1,32 +1,68 @@
 [
   {
     "Scene": "RRR_04",
-    "Meters": 1505.0,
-    "CollisionChecks": 73
+    "Seed": 12345,
+    "Meters": 2787.9,
+    "CollisionChecks": 245,
+    "Hairpins": 8,
+    "HardCorners": 18,
+    "MudDeposits": 16,
+    "TreeColliders": 6982,
+    "TreeGapChecks": 1654
   },
   {
     "Scene": "RRR_05",
-    "Meters": 1788.0,
-    "CollisionChecks": 86
+    "Seed": 12345,
+    "Meters": 3299.6,
+    "CollisionChecks": 290,
+    "Hairpins": 10,
+    "HardCorners": 19,
+    "MudDeposits": 19,
+    "TreeColliders": 8248,
+    "TreeGapChecks": 1958
   },
   {
     "Scene": "RRR_06",
-    "Meters": 1715.0,
-    "CollisionChecks": 84
+    "Seed": 12345,
+    "Meters": 3134.3,
+    "CollisionChecks": 274,
+    "Hairpins": 10,
+    "HardCorners": 19,
+    "MudDeposits": 18,
+    "TreeColliders": 7900,
+    "TreeGapChecks": 1852
   },
   {
     "Scene": "RRR_07",
-    "Meters": 1839.0,
-    "CollisionChecks": 89
+    "Seed": 12345,
+    "Meters": 3447.9,
+    "CollisionChecks": 303,
+    "Hairpins": 10,
+    "HardCorners": 24,
+    "MudDeposits": 20,
+    "TreeColliders": 8666,
+    "TreeGapChecks": 2046
   },
   {
     "Scene": "RRR_08",
-    "Meters": 3393.0,
-    "CollisionChecks": 166
+    "Seed": 12345,
+    "Meters": 3997.9,
+    "CollisionChecks": 351,
+    "Hairpins": 10,
+    "HardCorners": 28,
+    "MudDeposits": 23,
+    "TreeColliders": 9994,
+    "TreeGapChecks": 2362
   },
   {
     "Scene": "RRR_09",
-    "Meters": 2277.0,
-    "CollisionChecks": 111
+    "Seed": 12345,
+    "Meters": 3986.8,
+    "CollisionChecks": 352,
+    "Hairpins": 12,
+    "HardCorners": 26,
+    "MudDeposits": 23,
+    "TreeColliders": 9985,
+    "TreeGapChecks": 2368
   }
 ]

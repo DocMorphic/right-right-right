@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 src/bin/
 src/obj/
+**/bin/
+**/obj/

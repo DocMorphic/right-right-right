@@ -1,12 +1,24 @@
 # Right, Right, Right
 
-Six new rally stages for the Windows **Left! Left! LEFT! Playtest**, built from the installed player using reverse engineering. Three original stages plus six additional routes, selected from the game's tablet menu.
+Six difficult randomized stage profiles for the Windows **Left! Left! LEFT! Playtest**, built from the installed player using reverse engineering. Three original stages plus six additional profiles, selected from the game's tablet menu.
+
+Version **0.2.0** adds genuine 180-degree hairpins, tight hard corners, chicanes, working windshield mud/wiping, door events on either turn direction, dense original tree boundaries and closed route ends. The host shares a fresh course seed when selecting a new stage; retrying keeps the same course. Every generated profile has at least six hairpins and ten hard corners. Both players must use the same pack version.
 
 This is a **runtime extension**, not a standalone source recreation. It runs the original compiled gameplay code and reuses its vehicle, characters, cabin, audio, materials, tree/bush/rock prefabs, navigator, stage timing, and Steam co-op systems. New roads and ground are generated from the route definitions in [`levels/stages.json`](levels/stages.json).
 
 The repository contains the extension source and build tools. Setup copies your installed player into `local/playable`; original game files and recovered project exports stay local. The Steam installation is never patched.
 
-## Play
+## Easy install for friends
+
+1. Install the original **Left! Left! LEFT! Playtest** through Steam. This release supports build **26172243**.
+2. Download **[RightRightRight-Setup.exe](https://github.com/DocMorphic/right-right-right/releases/latest/download/RightRightRight-Setup.exe)** and double-click it. Setup finds the Steam game, creates a separate local copy, installs the prebuilt extension and handles runtime dependencies automatically.
+3. Keep Steam running and launch the **Right Right Right** desktop shortcut. Both friends open this version before accepting the original game's Steam invite. Wait for **CREW 2/2**, then let the driver choose a stage.
+
+The setup executable is self-contained: players do not need Python, Git, a C++ compiler, the .NET SDK, or PowerShell commands. The first game launch automatically generates bindings and can take a few minutes. Internet is needed for runtime/loader downloads and Steam. To update, close the game and run the newer setup executable. The installed copy lives in `%LOCALAPPDATA%\RightRightRight\player`.
+
+The installer copies each player's own installed assets; no original game binaries or assets are distributed in this repository or setup executable. A tiny hash-verified scene-table delta is applied locally. Unknown game builds are rejected before installation.
+
+## Play from the source checkout
 
 Double-click `Play.cmd`, or launch the prepared local build with:
 
@@ -14,7 +26,7 @@ Double-click `Play.cmd`, or launch the prepared local build with:
 .\Play.ps1
 ```
 
-Keep Steam running on an account with access to the playtest. Select **START** to open the nine-stage menu. Invite your navigator using the original lobby controls. Both players need the same extension and route definitions for new stages. Online co-op compatibility has not yet been verified with two accounts.
+Keep Steam running on an account with access to the playtest. Select **START** to open the nine-stage menu. Invite your navigator using the original lobby controls. Both players need the same extension and route definitions. The user reported successful two-account co-op on 0.1.0; the new 0.2.0 seed/acknowledgment protocol still needs a two-account playtest. The host waits for the navigator to confirm the same course pack instead of silently loading different roads.
 
 ## Build from a fresh clone
 
@@ -39,14 +51,14 @@ You can also supply the folder directly: `.\Setup.cmd -GamePath "D:\SteamLibrary
 
 | Stage | Route | Character |
 |---|---|---|
-| 04 | Pine Needle | Fast forest bends with a tightening finish |
-| 05 | Switchback | Alternating climbing hairpins |
-| 06 | Ridgeline | Narrow crests and a downhill finish |
-| 07 | Serpent | Continuous S bends and double rights |
-| 08 | Long Way Home | Endurance route with a technical return leg |
-| 09 | Right Right Right | Three right-hand loops into a final gauntlet |
+| 04 | Pine Needle | Random technical forest opener; 5.2 m road |
+| 05 | Switchback | Tight alternating hairpins; 4.8 m road |
+| 06 | Ridgeline | Narrow hard turns; 4.6 m road |
+| 07 | Serpent | Random chicanes, hard corners and U-turns |
+| 08 | Long Way Home | Long seeded endurance gauntlet |
+| 09 | Right Right Right | Maximum technical mix; 4.7 m road |
 
-The original three stages retain their scene data. The six new stages start from isolated copies of scene 1, replace its road and terrain, relocate its start/finish gates, and regenerate scenery using the game's own prefabs. The six new routes currently use the same daytime forest setting. Mud deposits from the original route are disabled in the additional stages because their original positions do not match the new roads.
+The original three stages retain their scene data. New profiles start from isolated copies of scene 1, replace its road and terrain, relocate its gates, regenerate original scenery and mud triggers, and close escape gaps with additional original trees and solid trunk collision. They use the same daytime forest setting. Native mud synchronization, wipers, door physics, and door network RPCs are retained. Door events have a cooldown and occur only during a timed race while the driver commits to a turn.
 
 ## Verify
 
@@ -54,7 +66,11 @@ The original three stages retain their scene data. The six new stages start from
 .\Verify.ps1
 ```
 
-This launches each new stage in the actual Unity player, checks native navigator extraction, probes road collision, and releases the original car to verify suspension contact and motion. Reports are written under `local/`. This smoke test does not prove full-route completion or two-account multiplayer compatibility. See [`docs/TESTING.md`](docs/TESTING.md).
+This launches each profile in the Unity player and checks navigator extraction, full-route road probes and tree-gap sweeps, native suspension, a mud-trigger crossing, native wiping, native door opening, reverse impacts against the trees behind the start, and sideways impacts against roadside tree trunks. Reports are written under `local/`. The pure geometry test checks 128 seeds for repeatability, variation, technical-corner counts and separated road corridors. These checks do not prove full timed runs or two-account compatibility. See [`docs/TESTING.md`](docs/TESTING.md).
+
+To build the friend installer from this checkout after developer setup: run `Build-Release.ps1`. The resulting self-contained executable is written to `local/friend-installer/`.
+
+Further features and research: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 After editing `levels/stages.json`, copy it to `local/playable/UserData/RightRightRight/stages.json`. Changes to C# require rebuilding and copying `src/bin/Release/net6.0/RightRightRight.dll` to `local/playable/Mods/` while the game is closed.
 
