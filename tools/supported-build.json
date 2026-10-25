@@ -1,0 +1,10 @@
+{
+  "SteamAppId": "5425110",
+  "SteamBuildId": "26172243",
+  "Unity": "6000.3.16f1",
+  "Files": {
+    "GameAssembly.dll": "b81c064eabebbc0b30af66f9684df3ffbae5e8a515e76a813c95a5ca95158f2e",
+    "LeftLeftLEFT_Data/globalgamemanagers": "c2b52e3a0d48359fc2df95efc0927f19dc809f6b2486873462097013eb4dba35",
+    "LeftLeftLEFT_Data/level1": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4"
+  }
+}

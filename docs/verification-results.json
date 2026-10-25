@@ -1,0 +1,32 @@
+[
+  {
+    "Scene": "RRR_04",
+    "Meters": 1505.0,
+    "CollisionChecks": 73
+  },
+  {
+    "Scene": "RRR_05",
+    "Meters": 1788.0,
+    "CollisionChecks": 86
+  },
+  {
+    "Scene": "RRR_06",
+    "Meters": 1715.0,
+    "CollisionChecks": 84
+  },
+  {
+    "Scene": "RRR_07",
+    "Meters": 1839.0,
+    "CollisionChecks": 89
+  },
+  {
+    "Scene": "RRR_08",
+    "Meters": 3393.0,
+    "CollisionChecks": 166
+  },
+  {
+    "Scene": "RRR_09",
+    "Meters": 2277.0,
+    "CollisionChecks": 111
+  }
+]
