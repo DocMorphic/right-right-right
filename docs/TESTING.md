@@ -31,3 +31,10 @@ Build artifacts and original game data are excluded from Git. `tools/prepare_bui
 - Fresh-destination setup completed successfully, including a new portable runtime, IL2CPP interop generation, bootstrap shutdown, compilation, and mod installation.
 - Original Steam `GameAssembly.dll` and `globalgamemanagers` hashes remain unchanged.
 - Full timed races and two-account co-op have not been tested.
+
+## Python setup compatibility fix
+
+- Tested interpreter selection under Windows PowerShell 5.1: an explicit Python 3.12 x64 path works, automatic PATH detection finds 3.12, and an unsupported 3.14 interpreter is rejected before dependency installation. The same version guard rejects 3.15.
+- Rebuilt the setup environment in a new version-specific folder; UnityPy and lz4 installed from Windows x64 wheels without a C++ compiler.
+- The complete setup and Release build finished successfully under Windows PowerShell 5.1, with zero compiler warnings/errors.
+- Added `Setup.cmd` for the ZIP download workflow; its execution-policy setting applies to the launched PowerShell process only.

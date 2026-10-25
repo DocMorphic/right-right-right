@@ -20,10 +20,14 @@ Keep Steam running on an account with access to the playtest. Select **START** t
 
 Requires Windows x64, Steam playtest **build 26172243**, Python 3.12, and an internet connection for dependencies. The checked player is Unity **6000.3.16f1**, Steam AppID **5425110**. Setup checks source hashes before writing anything to the destination.
 
+For the ZIP download: install [Python 3.12 (64-bit)](https://www.python.org/downloads/release/python-31210/), extract the repository ZIP, then double-click **Setup.cmd**. After it finishes, double-click **Play.cmd**. Setup.cmd permits scripts only in its own PowerShell process; it does not change your permanent execution policy.
+
+Setup automatically selects Python 3.12 even if `python` normally starts Python 3.15. Other Python versions can remain installed. It uses a separate `local/.venv-py312` environment, so a previous failed attempt does not need to be deleted. The pinned UnityPy dependencies do not support this setup on Python 3.15; installing C++ build tools is unnecessary.
+
 ```powershell
 git clone https://github.com/DocMorphic/right-right-right.git
 cd right-right-right
-.\Setup.ps1 -PythonPath 'C:\path\to\python.exe'
+.\Setup.cmd
 .\Play.ps1
 ```
 

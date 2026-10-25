@@ -1,6 +1,6 @@
 param(
     [string]$GamePath = 'C:\Program Files (x86)\Steam\steamapps\common\Left! Left! LEFT! Playtest',
-    [string]$PythonPath = 'python',
+    [string]$PythonPath = '',
     [string]$DestinationPath = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -13,10 +13,13 @@ function Check-Exit([string]$Step) {
     if ($LASTEXITCODE -ne 0) { throw "$Step failed with exit code $LASTEXITCODE" }
 }
 
-& $PythonPath -m venv (Join-Path $repoRoot 'local\.venv')
+$pythonInfo = & (Join-Path $repoRoot 'tools\find_python.ps1') -PythonPath $PythonPath
+Write-Host ('Using Python ' + ($pythonInfo.version -join '.') + ' (64-bit): ' + $pythonInfo.executable)
+# A version-specific environment avoids reusing a failed Python 3.15 environment.
+& $pythonInfo.executable -m venv (Join-Path $repoRoot 'local\.venv-py312')
 Check-Exit 'Python environment creation'
-$venvPython = Join-Path $repoRoot 'local\.venv\Scripts\python.exe'
-& $venvPython -m pip install -r (Join-Path $repoRoot 'requirements.txt')
+$venvPython = Join-Path $repoRoot 'local\.venv-py312\Scripts\python.exe'
+& $venvPython -m pip install '--only-binary=UnityPy,lz4' -r (Join-Path $repoRoot 'requirements.txt')
 Check-Exit 'Python dependencies'
 & $venvPython (Join-Path $repoRoot 'tools\prepare_build.py') --source $GamePath --destination $playerPath
 Check-Exit 'Player preparation'
