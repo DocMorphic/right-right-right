@@ -31,7 +31,9 @@ cd right-right-right
 .\Play.ps1
 ```
 
-For a different Steam library, also pass `-GamePath 'D:\SteamLibrary\steamapps\common\Left! Left! LEFT! Playtest'`. Setup downloads pinned MelonLoader 0.7.3, a local .NET 8 SDK, and a portable .NET 6 runtime used by the loader. It generates interop assemblies from your own player and compiles the extension. Allow several minutes on the first run and roughly 2 GB of free space for the player and build dependencies.
+Setup detects Steam libraries on other drives using Steam's library configuration and the playtest's app manifest. If it cannot find the game, it asks you to paste the installation folder: in Steam, right-click **Left! Left! LEFT! Playtest > Manage > Browse local files**, then copy the folder's address. It must contain `LeftLeftLEFT.exe`, `GameAssembly.dll`, and `LeftLeftLEFT_Data`. Install the original playtest first if it is missing.
+
+You can also supply the folder directly: `.\Setup.cmd -GamePath "D:\SteamLibrary\steamapps\common\Left! Left! LEFT! Playtest"`. Setup downloads pinned MelonLoader 0.7.3, a local .NET 8 SDK, and a portable .NET 6 runtime used by the loader. It generates interop assemblies from your own player and compiles the extension. Allow several minutes on the first run and roughly 2 GB of free space for the player and build dependencies.
 
 ## New stages
 

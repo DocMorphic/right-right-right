@@ -13,8 +13,11 @@ def prepare(source: Path, destination: Path):
     if source == destination or source in destination.parents or destination in source.parents:
         raise ValueError('Source and destination must be separate directories.')
     data = source / 'LeftLeftLEFT_Data'
-    if not (source / 'GameAssembly.dll').is_file() or not (data / 'level3').is_file():
-        raise ValueError('This is not the supported Left! Left! LEFT! player.')
+    missing = [name for name in ('LeftLeftLEFT.exe', 'GameAssembly.dll', 'LeftLeftLEFT_Data/level3')
+               if not (source / name).is_file()]
+    if missing:
+        raise ValueError(f'Game files were not found in {source}. Missing: {", ".join(missing)}. '
+                         'Use the folder opened by Steam > Manage > Browse local files, and pass it with -GamePath.')
     supported = json.loads((ROOT / 'tools/supported-build.json').read_text())
     for name, expected_hash in supported['Files'].items():
         if hashlib.sha256((source / name).read_bytes()).hexdigest() != expected_hash:

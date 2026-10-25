@@ -1,5 +1,5 @@
 param(
-    [string]$GamePath = 'C:\Program Files (x86)\Steam\steamapps\common\Left! Left! LEFT! Playtest',
+    [string]$GamePath = '',
     [string]$PythonPath = '',
     [string]$DestinationPath = ''
 )
@@ -12,6 +12,21 @@ New-Item -ItemType Directory -Path $toolsPath -Force | Out-Null
 function Check-Exit([string]$Step) {
     if ($LASTEXITCODE -ne 0) { throw "$Step failed with exit code $LASTEXITCODE" }
 }
+
+if ($GamePath) {
+    $GamePath = & (Join-Path $repoRoot 'tools\find_game.ps1') -GamePath $GamePath
+}
+else {
+    try { $GamePath = & (Join-Path $repoRoot 'tools\find_game.ps1') }
+    catch {
+        Write-Host $_.Exception.Message
+        Write-Host 'In Steam: right-click Left! Left! LEFT! Playtest > Manage > Browse local files. Copy the folder address.'
+        $manualPath = Read-Host 'Paste the game folder here (Enter to cancel)'
+        if (!$manualPath) { throw 'Setup cancelled. The original Steam playtest must be installed first.' }
+        $GamePath = & (Join-Path $repoRoot 'tools\find_game.ps1') -GamePath $manualPath
+    }
+}
+Write-Host ('Using game installation: ' + $GamePath)
 
 $pythonInfo = & (Join-Path $repoRoot 'tools\find_python.ps1') -PythonPath $PythonPath
 Write-Host ('Using Python ' + ($pythonInfo.version -join '.') + ' (64-bit): ' + $pythonInfo.executable)

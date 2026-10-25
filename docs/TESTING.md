@@ -38,3 +38,9 @@ Build artifacts and original game data are excluded from Git. `tools/prepare_bui
 - Rebuilt the setup environment in a new version-specific folder; UnityPy and lz4 installed from Windows x64 wheels without a C++ compiler.
 - The complete setup and Release build finished successfully under Windows PowerShell 5.1, with zero compiler warnings/errors.
 - Added `Setup.cmd` for the ZIP download workflow; its execution-policy setting applies to the launched PowerShell process only.
+
+## Steam installation discovery
+
+- Tested actual Steam-registry discovery and explicit installation-folder selection under Windows PowerShell 5.1.
+- `tests/Test-FindGame.ps1` checks a configured secondary library, paths with spaces, escaped VDF paths, a manifest with a different install-folder name, quoted manual paths, missing files, and an absent installation.
+- Setup now resolves the game location before installing dependencies and asks for the folder when automatic discovery fails. A missing folder is reported separately from an unsupported build hash.
