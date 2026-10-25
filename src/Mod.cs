@@ -3,9 +3,11 @@ using MelonLoader;
 using MelonLoader.Utils;
 using Il2Cpp;
 using Il2CppTMPro;
+using Il2CppInterop.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 [assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.1.0", "DocMorphic")]
@@ -38,6 +40,11 @@ public sealed class Mod : MelonMod
                     go.name = stage.Scene;
                     var button = go.GetComponent<Button>();
                     button.onClick.RemoveAllListeners();
+                    button.onClick.AddListener(DelegateSupport.ConvertDelegate<UnityAction>((Action)(() =>
+                    {
+                        Log.Msg($"Menu selected {stage.Scene}.");
+                        __instance.LoadMap(stage.Scene);
+                    })));
                     __instance.maps.Add(new MainMenu.MapEntry { displayName = stage.Name, sceneName = stage.Scene, button = button });
                 }
                 for (int i = 0; i < __instance.maps.Count; i++)
@@ -64,7 +71,7 @@ public sealed class Mod : MelonMod
                     if (label.text.Contains("Left! Left! LEFT!"))
                     {
                         label.text = label.text.Replace("Left! Left! LEFT!", "Right! Right! RIGHT!");
-                        label.fontSize *= .72f;
+                        label.fontSize *= .65f;
                     }
                     else if (label.text == "PICK A STAGE") label.text = "PICK A STAGE / SCROLL";
                 Log.Msg($"Stage menu contains {__instance.maps.Count} stages.");
