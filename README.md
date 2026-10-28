@@ -2,6 +2,8 @@
 
 This branch contains **0.3.0-alpha.1**: two cars, two people per car, racing the same generated forest road. Cars remain visible and survive collisions with each other. Tree impacts at the original hard-hit threshold cause crew DNF.
 
+The `standalone/portable-steam` branch also contains [portable distribution work](docs/STANDALONE.md): a complete bundled candidate and configurable separate Steam identity. This work is pending an assigned Steam App ID and tester access. It does not change the requirements of the existing public installer linked below.
+
 **[Download the race prototype installer](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.1/RightRightRight-RacePrototype-Setup.exe)** · [Full guide](docs/FOUR-PLAYER-PROTOTYPE.md)
 
 For the stable two-player game, use [release 0.2.0](https://github.com/DocMorphic/right-right-right/releases/tag/v0.2.0) and the [main branch](https://github.com/DocMorphic/right-right-right/tree/main). The prototype has a separate installation folder and desktop shortcut.

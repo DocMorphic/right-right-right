@@ -1,6 +1,8 @@
-param([int]$TimeoutSeconds=150)
+param([int]$TimeoutSeconds=150,[string]$BasePlayer='',[switch]$Portable)
 $ErrorActionPreference='Stop'
-$testRoot=Join-Path $PSScriptRoot 'local\race-test'
+$testRoot=Join-Path $PSScriptRoot $(if($Portable){'local\portable-test'}else{'local\race-test'})
+if(!$BasePlayer){$BasePlayer=Join-Path $PSScriptRoot 'local\playable'}
+if($Portable -and !(Test-Path -LiteralPath (Join-Path $BasePlayer 'rrr-distribution.json'))){throw 'Portable verification requires a bundled portable base player.'}
 $manifest=Join-Path $testRoot 'processes.json'
 if(Test-Path -LiteralPath $manifest) {
     foreach($record in (Get-Content -LiteralPath $manifest -Raw | ConvertFrom-Json)) {
@@ -13,7 +15,7 @@ foreach($name in @('host','client1','client2','client3')) {
     $folder=Join-Path $testRoot $name
     if(!(Test-Path -LiteralPath (Join-Path $folder 'LeftLeftLEFT.exe'))) {
         New-Item -ItemType Directory -Path $folder -Force|Out-Null
-        robocopy (Join-Path $PSScriptRoot 'local\playable') $folder /E /R:0 /W:0 /XF Latest.log /NFL /NDL /NJH /NJS /NP|Out-Null
+        robocopy $BasePlayer $folder /E /R:0 /W:0 /XF Latest.log /NFL /NDL /NJH /NJS /NP|Out-Null
         if($LASTEXITCODE-ge 8){throw ('Could not prepare isolated player: '+$name)}
     }
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'src\bin\Release\net6.0\RightRightRight.dll') -Destination (Join-Path $folder 'Mods\RightRightRight.dll')
@@ -32,6 +34,7 @@ try {
         if($run.Process.ExitCode -ne 0){throw ('Failed: '+$run.Name+' exit '+$run.Process.ExitCode+'; inspect its MelonLoader/Latest.log')}
         $loader=Get-Content -LiteralPath (Join-Path $run.Folder 'MelonLoader\Latest.log') -Raw
         if($loader-notmatch 'RACE_VERIFY_PASS client='){throw ('No completed verification in current log: '+$run.Name)}
+        if($Portable -and ($loader-notmatch 'PORTABLE_IDENTITY state=pending-steam' -or $loader-match 'RACE_STEAM_CAPACITY_PASS')){throw ('Portable test did not use the independent local-transport candidate: '+$run.Name)}
     }
     $reports=@($runs|ForEach-Object {Get-Content -LiteralPath (Join-Path $_.Folder 'UserData\RightRightRight\race-verification.json') -Raw|ConvertFrom-Json})
     if($reports.Count-ne 4 -or ($reports|Where-Object {!$_.Pass}).Count-gt 0){throw 'Not all four processes passed.'}

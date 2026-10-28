@@ -22,6 +22,7 @@ public sealed class Mod : MelonMod
     public override void OnInitializeMelon()
     {
         Log = LoggerInstance;
+        SteamDistribution.Initialize();
         Application.runInBackground=true;
         Stages = StageDefinition.Read(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json"));
         CourseSession.ContentId = CourseSession.Fingerprint(File.ReadAllText(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json")));

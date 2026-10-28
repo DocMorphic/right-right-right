@@ -1,0 +1,98 @@
+{
+  "State": "candidate-pending-separate-steam-app",
+  "PortableFiles": 637,
+  "ModSha256": "49c14e8ac2250ba856c2299f8ec739c233aed570d9a9d0bb6550bf34b15271ff",
+  "ArchiveSha256": "79faa6521337a881db4a46371071768fe1a96a5b8813149c16ec3fb18a9dc0c6",
+  "ArchiveBytes": 194007532,
+  "Transport": "Four native player processes over loopback, bundled runtime/assets, Steam not initialized",
+  "DefaultStartup": "No portable manifest: Steam hooks not installed; native course geometry passed. Live Steam service access is not established in this session.",
+  "SteamInvites": "Not tested; requires separately assigned application and tester access",
+  "Race": [
+    {
+      "Client": 0,
+      "Slot": 0,
+      "Host": true,
+      "Pass": true,
+      "InputPackets": 37556,
+      "SnapshotPackets": 0,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.297598,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "independent_driving": true,
+        "cockpit_jolt": true,
+        "car_collision": true,
+        "both_mud": true,
+        "closed_door_guard": true,
+        "steal": true,
+        "navigator_drop": true,
+        "fall_out": true,
+        "tree_fatal": true,
+        "early_finish_guard": true,
+        "remote_wipe": true,
+        "finish_time": true
+      }
+    },
+    {
+      "Client": 3,
+      "Slot": 3,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 797,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.297598,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 2,
+      "Slot": 2,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 797,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.297598,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 1,
+      "Slot": 1,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 797,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.297598,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    }
+  ]
+}
