@@ -1,53 +1,51 @@
-# Right, Right, Right — four-player race prototype
+# Right Right Right — standalone four-player race
 
-This branch contains **0.3.0-alpha.1**: two cars, two people per car, racing the same generated forest road. Cars remain visible and survive collisions with each other. Tree impacts at the original hard-hit threshold cause crew DNF.
+**0.3.0-alpha.2** bundles the game and runtime. Friends no longer need the original playtest downloaded or a Steamworks App ID.
 
-The `standalone/portable-steam` branch also contains [portable distribution work](docs/STANDALONE.md): a complete bundled candidate and configurable separate Steam identity. This work is pending an assigned Steam App ID and tester access. It does not change the requirements of the existing public installer linked below.
+[**Download the standalone ZIP**](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.2/RightRightRight-Standalone-0.3.0-alpha.2.zip) · [Setup guide](docs/DIRECT-MULTIPLAYER.md)
 
-**[Download the race prototype installer](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.1/RightRightRight-RacePrototype-Setup.exe)** · [Full guide](docs/FOUR-PLAYER-PROTOTYPE.md)
+## Play with friends
 
-For the stable two-player game, use [release 0.2.0](https://github.com/DocMorphic/right-right-right/releases/tag/v0.2.0) and the [main branch](https://github.com/DocMorphic/right-right-right/tree/main). The prototype has a separate installation folder and desktop shortcut.
+1. All four players extract the ZIP and open **player/RightRightRight.exe**.
+2. For internet play, all four install the free [Porthole — Local Port Sharing](https://store.steampowered.com/app/4963920/) app in Steam.
+3. Host clicks **HOST** in the game, creates a Porthole lobby and shares **UDP 7787**.
+4. Friends join that Porthole lobby through Steam or its share code and approve the offered port. In the game, click **JOIN** with **127.0.0.1**, port **7787**.
+5. Wait for **4/4**, then the host chooses a course. Keep Porthole open during the race.
 
-## Play with four players
+Porthole supplies the Steam invitations and network tunnel; the game uses direct Host/Join. It runs separately and is not bundled or installed automatically. On a LAN or VPN, join the host's reachable IPv4 address directly instead. Porthole's [official explanation](https://porthole.sestudio.org/) describes its Steam friends/code lobbies and UDP forwarding.
 
-1. All four players install the original **Left! Left! LEFT! Playtest** through Steam, supported build **26172243**.
-2. Each player downloads and runs **RightRightRight-RacePrototype-Setup.exe**. No Python, Git, SDK or PowerShell commands are needed.
-3. Launch the **Right Right Right Race Prototype** desktop shortcut and keep Steam running. Everyone opens the prototype before accepting the host's Steam invite.
-4. Join order assigns seats: host = A driver; first joiner = A navigator; second = B driver; third = B navigator.
-5. Wait for **4/4**, then the host selects one of profiles **04–09**. A shared countdown begins after all four scenes are ready.
+No Python, SDK, PowerShell setup or first-launch dependency downloads are required. The game itself does not initialize Steam. The full setup and troubleshooting guide is [here](docs/DIRECT-MULTIPLAYER.md).
 
-The first launch generates bindings and can take a few minutes. The installer creates `%LOCALAPPDATA%\RightRightRight-RacePrototype\player` using each player's own installed assets. Original game binaries and assets are not distributed in the repository or installer, and the Steam installation is not patched.
+## The race
 
-## Prototype features
+- Two visible cars, driver/navigator in each. Join order: host = A driver, then A navigator, B driver, B navigator.
+- Host-simulated car collisions with cockpit jolts, surviving contact with each other. Hard tree hits cause crew DNF.
+- Original car, cabin, character, tablet and forest assets. Matching original trees close roadside/end gaps; no railings or unrelated scenery.
+- Six randomized technical courses with hairpins, hard corners and 9.5 m roads.
+- Mud/wiping and doors opening on hard turns in either direction.
+- Loose tablets can fall through open doors. Aim and press E within three metres to take an unheld tablet; one still inside a rival cabin requires its door to be open. Held tablets are protected.
+- Four-player version/course/seed handshake, shared countdown, separate crew times and a winner. Host retry keeps the seed; choosing a new course randomizes it.
 
-- Two host-simulated rigidbody cars, four assigned seats, a shared start clock, separate crew finish times and a winner.
-- Real car-to-car contacts and cockpit jolts without fatal wrecks from other cars, rocks or the ground.
-- Native car, character, cabin, tablet and forest assets. No railings or unrelated scenery.
-- 9.5 m roads, with the existing randomized route stretched horizontally to preserve room between nearby sections. Original trees still close side/reverse exits.
-- Original windshield mud appearance, with deposits applying independently to both cars and remote wiping.
-- Doors opening on hard turns in either direction. Loose tablets can be ejected through an open door.
-- Tablet grab/drop and theft: aim and press **E** within three metres. A held tablet is protected. A tablet still in the rival cabin requires its door to be open; tablets already on the road can be collected. A stolen tablet follows its new car's position on the minimap.
+WASD/Space drives. **E** grabs/drops tablets, **G** closes the door, hold **C** to wipe, **Escape** toggles cursor lock, and host **F8** retries. The host can return everyone to the lobby through the race HUD.
 
-Drive with WASD/Space. Use **E** for tablets, **G** to close your door, hold **C** to wipe, **Escape** to unlock/relock the cursor, and **F8** for a host retry. The host can return everyone to the lobby through the HUD.
+## Alpha scope
 
-## Alpha limits
+Four native player processes pass the direct lobby handshake, complete gameplay checks through three bidirectional UDP proxies, and pass restart/return-to-lobby checks. Distribution/protocol tests, manifest hashes and ZIP extraction checks also pass. A real four-account internet/Porthole playtest remains needed; local forwarding tests do not establish Porthole service availability or latency.
 
-The second driver's controls travel to the host; there is no client prediction yet. Internet latency will affect steering. Four local game processes and four distinct Steam accounts over the internet are separate tests; the internet playtest is still needed.
+Both cars are simulated on the host. The second driver's controls have round-trip latency with no client prediction yet. There is no host migration or in-race joining. Lost tablets remain in the world until retrieved or the host retries. Tree DNF uses the race HUD so the other crew can continue.
 
-There is no seat picker, host migration or mid-race joining. Reconnect through the lobby after a disconnect. A lost tablet stays in the world until recovered or the host restarts. The race HUD reports tree DNF instead of opening the original global wreck/end screen, which would stop the other crew's race.
+This remains a licensed distribution of the original compiled runtime and assets with our extension; it does not recover editable original gameplay source. The original Steam install is untouched. Original content is attributable to Stellux Interactive under the developer permission stated by the project owner, and is not covered by our source-code MIT license.
 
-## Build and verify
+## Developer build
 
-Developer setup requires the supported Steam player, Windows x64 and Python 3.12. Run `Setup.cmd` to prepare a local player and generated IL2CPP bindings, then run `Build-Release.ps1` to build the mod and self-contained installer under `local/race-installer/`.
+On Windows x64, a prepared pinned player and the local Python 3.12/.NET toolchain build the portable release:
 
-- `Verify-Race.ps1`: four isolated game processes using the native Unity transport over loopback; exercises actual remote controls, two-car physics, cabin interactions, fatal trees and finish results.
-- `Verify-RaceGeometry.ps1`: all six widened courses, road collider probes, tree-gap sweeps and the four-member Steam lobby/native lobby assignment.
-- `tests/RaceProtocol`: sender-to-seat mapping, sequence/replay checks, finite control/aim limits, packet framing and size limits.
-- `tests/CourseGeometry`: 128 seeds for repeatability, adjacent-seed variation, hard corners, continuous geometry and separate road corridors.
-- `Verify.ps1`: legacy two-player route/hazard checks using the explicit `--rrr-legacy-coop` flag.
+```powershell
+.\Build-Portable.ps1 -Direct -PlayerPath C:\path\to\prepared\player
+.\Verify-Race.ps1 -Direct -Proxy -BasePlayer C:\path\to\portable\player
+.\Verify-Race.ps1 -Direct -Flow -BasePlayer C:\path\to\portable\player
+```
 
-Test fixtures use separate player copies under `local/race-test/`; they never patch the Steam installation. `--rrr-race-verify` enables scripted inputs and setup teleports only for verification. Normal play does not use them.
+The publisher's prepared player supplies licensed original files, cached bindings and loader dependencies. Recipients do not need that source installation. Outputs and full game content stay in ignored `local/`; authored source and sanitized reports are in Git. All scripted driving/lifecycle fixtures require explicit developer flags.
 
-See [the prototype guide](docs/FOUR-PLAYER-PROTOTYPE.md), [reverse engineering notes](docs/REVERSE_ENGINEERING.md), and [feature roadmap](docs/ROADMAP.md). This remains a runtime extension of the installed compiled game, rather than a recovered standalone source implementation.
-
-Code authored here is MIT licensed. Original game content remains attributable to Stellux Interactive; third-party dependencies retain their own licenses.
+The older [alpha.1 Steam-invite mod](https://github.com/DocMorphic/right-right-right/releases/tag/v0.3.0-alpha.1) and [stable two-player 0.2.0](https://github.com/DocMorphic/right-right-right/releases/tag/v0.2.0) remain available; those installers still require the playtest. See [distribution design](docs/STANDALONE.md), [reverse engineering](docs/REVERSE_ENGINEERING.md) and [test scope](docs/TESTING.md).

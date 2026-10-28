@@ -6,7 +6,7 @@ internal static class RaceProtocol
     internal const int Magic = 0x33525252;
     internal const byte Version = 1;
     internal const int MaxPacket = 8192;
-    internal enum Kind : byte { Ready = 1, Input = 2, Snapshot = 3 }
+    internal enum Kind : byte { Ready = 1, Input = 2, Snapshot = 3, DirectHello=4, DirectLobby=5 }
     [Flags] internal enum Buttons : byte { None=0, Handbrake=1, Grab=2, Door=4, Wipe=8 }
     internal static int Slot(ulong[] seats, ulong sender) => Array.IndexOf(seats, sender);
     internal static bool ValidInput(float throttle, float steer, float pitch, float yaw) =>

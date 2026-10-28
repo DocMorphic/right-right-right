@@ -20,7 +20,7 @@ internal static class SteamDistribution
         string path=Path.Combine(root,DistributionConfig.FileName);
         if(!File.Exists(path))return;
         Config=DistributionConfig.Read(path);
-        if(!RaceNetwork.Lan) Config.RequireAppId();
+        if(!RaceNetwork.Lan&&!Config.Direct) Config.RequireAppId();
         Mod.Log.Msg($"PORTABLE_IDENTITY state={Config.State}; app={Config.SteamAppId}; no Steam installation lookup");
     }
 
@@ -48,13 +48,13 @@ internal static class SteamDistribution
         static bool Prepare()=>HasManifest();
         static bool Prefix(ref string error,ref bool __result)
         {
-            if(Config==null||!RaceNetwork.Lan)return true;
+            if(Config==null||!RaceNetwork.LocalTransport)return true;
             error="Portable local-transport verification: Steam is not initialized.";
             __result=false;return false;
         }
         static void Postfix(ref string error,ref bool __result)
         {
-            if(Config==null||RaceNetwork.Lan||SteamClient.IsValid)return;
+            if(Config==null||RaceNetwork.LocalTransport||SteamClient.IsValid)return;
             __result=false;
             error="Steam could not initialize Right Right Right. Keep Steam running and ensure this account has access to the configured application.";
         }

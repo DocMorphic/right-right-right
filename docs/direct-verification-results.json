@@ -1,0 +1,142 @@
+{
+  "Version": "0.3.0-alpha.2",
+  "Mode": "standalone-direct",
+  "ModSha256": "3dcdad28bdb252e65cfa74b14e172502d32358ecedc446466fae5c17fd4fa614",
+  "ArchiveSha256": "5a86fa157e807cbd8171100a77614eaa7b724264bb341d70214b9996776d13ab",
+  "ArchiveBytes": 194012463,
+  "NativeClients": 4,
+  "GameplayPath": "Player Host/Join and version/course/seed handshake, then real gameplay through three bidirectional UDP forwarding proxies",
+  "InternetPortholeSession": "Not tested with four separate remote accounts",
+  "ProxyTraffic": {
+    "7788": {
+      "Up": 1315,
+      "Down": 2922
+    },
+    "7789": {
+      "Up": 1308,
+      "Down": 2575
+    },
+    "7790": {
+      "Up": 1312,
+      "Down": 2983
+    }
+  },
+  "Gameplay": [
+    {
+      "Client": 0,
+      "Slot": 0,
+      "Host": true,
+      "Pass": true,
+      "InputPackets": 38648,
+      "SnapshotPackets": 0,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.288023,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "independent_driving": true,
+        "cockpit_jolt": true,
+        "car_collision": true,
+        "both_mud": true,
+        "closed_door_guard": true,
+        "steal": true,
+        "navigator_drop": true,
+        "fall_out": true,
+        "tree_fatal": true,
+        "early_finish_guard": true,
+        "remote_wipe": true,
+        "finish_time": true
+      }
+    },
+    {
+      "Client": 2,
+      "Slot": 2,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 796,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.288023,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 3,
+      "Slot": 3,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 796,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.288023,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 1,
+      "Slot": 1,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 795,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.288023,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    }
+  ],
+  "Lifecycle": [
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Error": ""
+    }
+  ]
+}

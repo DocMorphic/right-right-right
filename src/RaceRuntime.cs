@@ -186,7 +186,9 @@ internal sealed class RaceRuntime
             NextSend=Time.realtimeSinceStartup+1f/25;
             if(RaceNetwork.Host) SendSnapshot(); else SendInput();
         }
-        if(RaceNetwork.Host && Keyboard.current!=null && Keyboard.current.f8Key.wasPressedThisFrame) NetSession.Instance.RestartMap();
+        if(RaceNetwork.Host && Keyboard.current!=null && Keyboard.current.f8Key.wasPressedThisFrame) {
+            if(DirectSession.Enabled)DirectSession.Restart();else NetSession.Instance.RestartMap();
+        }
         RaceVerification.Tick(this);
     }
 
@@ -475,7 +477,9 @@ internal sealed class RaceRuntime
         var status=Disconnected?"PLAYER DISCONNECTED / RETURN TO LOBBY":!Started?(Countdown<0?$"WAITING FOR FOUR SEATS ({Ready.Count}/4)":$"START IN {Math.Ceiling(Countdown)}"):Ended?(winner.c==null?"BOTH CREWS DNF":$"WINNER: CREW {(winner.i==0?"A":"B")}"):$"RACE {Elapsed:F1}s";
         string CrewLine(int i) => $"CREW {(i==0?"A":"B")}: "+(Cars[i].Dead?"DNF / TREE":Cars[i].Finish>=0?$"FINISHED {Cars[i].Finish:F2}s":$"{Math.Min(100,Cars[i].Progress*100/Path.Count)}%");
         GUI.Box(new Rect(16,16,520,122),$"{status}\n{CrewLine(0)}     {CrewLine(1)}\nYOU: crew {(slot/2==0?"A":"B")} {(slot%2==0?"DRIVER":"NAVIGATOR")}\nE grab/drop tablet | G close door | hold C wipe | F8 host retry");
-        if(RaceNetwork.Host&&GUI.Button(new Rect(16,145,170,28),"RETURN TO LOBBY"))NetSession.Instance.BackToMenu();
+        if(RaceNetwork.Host&&GUI.Button(new Rect(16,145,170,28),"RETURN TO LOBBY")) {
+            if(DirectSession.Enabled)DirectSession.ReturnToLobby();else NetSession.Instance.BackToMenu();
+        }
     }
 
     [HarmonyPatch(typeof(GoofyCarController),"ReadInput")]

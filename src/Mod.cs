@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.1", "DocMorphic")]
+[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.2", "DocMorphic")]
 [assembly: MelonGame("Stellux Interactive", "LeftLeftLEFT")]
 
 namespace RightRightRight;

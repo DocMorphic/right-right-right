@@ -17,8 +17,10 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def package(source: Path, launcher: Path, output: Path, app_id=None, archive=True):
+def package(source: Path, launcher: Path, output: Path, app_id=None, archive=True, direct=False):
     source, launcher, output = source.resolve(), launcher.resolve(), output.resolve()
+    if direct and app_id is not None:
+        raise ValueError('Direct multiplayer does not use a Steam App ID.')
     if app_id is not None and (app_id in BLOCKED_IDS or not 0 < app_id <= 0xFFFFFFFF):
         raise ValueError('Use the separately assigned Right Right Right Steam App ID.')
     if output.exists():
@@ -74,8 +76,8 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     settings_dir = player / 'UserData/RightRightRight'
     settings_dir.mkdir(parents=True)
     shutil.copy2(ROOT / 'levels/stages.json', settings_dir / 'stages.json')
-    config = {'Format': 1, 'State': 'configured' if app_id else 'pending-steam',
-              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.1'}
+    config = {'Format': 1, 'State': 'direct' if direct else 'configured' if app_id else 'pending-steam',
+              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.2'}
     (player / 'rrr-distribution.json').write_text(json.dumps(config, indent=2))
     licenses = output / 'Licenses'
     licenses.mkdir()
@@ -90,10 +92,16 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
         'Extract the entire download. Open player/RightRightRight.exe.\n'
         'All game files and the loader runtime are bundled. No original playtest installation, Python, '
         '.NET SDK, setup commands or first-launch downloads are required.\n'
-        'Steam invites require this game\'s own configured Steam App ID, Steam running, and access '
-        'to this game on each account.\n'
-        + ('STEAM CONFIGURATION PENDING: this is an engineering candidate, not a player release.\n'
-           if not app_id else 'A configured App ID is not a substitute for assigning Steam account access.\n')
+        + ('DIRECT MULTIPLAYER: no playtest or Steam App ID required.\n'
+           'For internet play, install Porthole (free) in Steam on all four PCs.\n'
+           'Host: click HOST in the game, create a Porthole lobby, share UDP 7787.\n'
+           'Friends: join the Porthole lobby through Steam or its share code, approve UDP 7787, '
+           'then click JOIN in the game using 127.0.0.1 and port 7787.\n'
+           'Keep Porthole open. LAN/VPN players can instead join the host\'s reachable IPv4 address.\n'
+           'All four join before the host chooses a course. Seats follow connection order.\n'
+           'Porthole: https://store.steampowered.com/app/4963920/\n'
+           if direct else 'Steam invites require this game\'s own configured App ID and account access.\n'
+           + ('STEAM CONFIGURATION PENDING: engineering candidate only.\n' if not app_id else ''))
         + 'Diagnostics: player/Logs/launcher.log and player/MelonLoader/Latest.log.\n')
     files = {p.relative_to(player).as_posix(): digest(p) for p in sorted(player.rglob('*')) if p.is_file()}
     manifest = {'Format': 1, 'SteamState': config['State'], 'Files': files}
@@ -118,5 +126,6 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--app-id', type=int)
     parser.add_argument('--no-archive', action='store_true')
+    parser.add_argument('--direct', action='store_true')
     args = parser.parse_args()
-    package(args.source, args.launcher, args.output, args.app_id, not args.no_archive)
+    package(args.source, args.launcher, args.output, args.app_id, not args.no_archive, args.direct)

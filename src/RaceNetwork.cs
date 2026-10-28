@@ -17,11 +17,12 @@ namespace RightRightRight;
 
 internal static class RaceNetwork
 {
-    internal const string Build = "0.3.0-alpha.1";
+    internal const string Build = "0.3.0-alpha.2";
     internal const float Width=9.5f;
     internal static bool Enabled => !Args.Contains("--rrr-legacy-coop");
     internal static readonly string[] Args=Environment.GetCommandLineArgs();
     internal static bool Lan => Args.Any(a=>a.StartsWith("--rrr-lan="));
+    internal static bool LocalTransport => Lan||DirectSession.Enabled;
     internal static bool IsLanHost => Args.Contains("--rrr-lan=host");
     internal static bool Verify => Args.Contains("--rrr-race-verify");
     internal static NetworkManager Manager => NetworkManager.Singleton;
@@ -30,7 +31,7 @@ internal static class RaceNetwork
         get {
             if(Manager==null||!Manager.IsListening)return 0;
             if(Manager.IsServer)return Manager.ConnectionManager.ConnectedClientIds.Count;
-            if(!Lan&&SteamLobby.Instance!=null&&SteamLobby.Instance.InLobby)return CourseSession.GetLobby(SteamLobby.Instance).MemberCount;
+            if(!LocalTransport&&SteamLobby.Instance!=null&&SteamLobby.Instance.InLobby)return CourseSession.GetLobby(SteamLobby.Instance).MemberCount;
             return Seats.Length;
         }
     }
@@ -64,9 +65,10 @@ internal static class RaceNetwork
             Mod.Log.Msg("RACE_NETWORK_READY host="+Host+" client="+manager.LocalClientId);
         }
         if (Lan && !lanStarting && SceneManager.GetActiveScene().name=="Menu") { lanStarting=true; MelonCoroutines.Start(StartLan()); }
+        DirectSession.Update();
         if (Time.realtimeSinceStartup < nextLobby) return;
         nextLobby=Time.realtimeSinceStartup+.25f;
-        if (!Lan && SteamLobby.Instance != null && SteamLobby.Instance.InLobby && SteamLobby.Instance.IsLobbyOwner)
+        if (!LocalTransport && SteamLobby.Instance != null && SteamLobby.Instance.InLobby && SteamLobby.Instance.IsLobbyOwner)
         {
             var lobby=CourseSession.GetLobby(SteamLobby.Instance); lobby.MaxMembers=4;
             lobby.SetData("rrr_mode", "race4-"+Build);
@@ -135,7 +137,7 @@ internal static class RaceNetwork
         int length=reader.Length-reader.Position;
         if (length<6 || length>RaceProtocol.MaxPacket) return;
         var bytes=new byte[length]; Marshal.Copy((IntPtr)reader.GetUnsafePtrAtCurrentPosition(),bytes,0,length);
-        try { RaceRuntime.Active?.Receive(sender,bytes); }
+        try { if(!DirectSession.Receive(sender,bytes))RaceRuntime.Active?.Receive(sender,bytes); }
         catch (Exception ex) when (ex is IOException || ex is ArgumentException || ex is FormatException) { Mod.Log.Warning("Rejected malformed race message: "+ex.Message); }
     }
 
@@ -143,6 +145,7 @@ internal static class RaceNetwork
     {
         if (!Enabled) return;
         RaceRuntime.Active=null;
+        DirectSession.Scene(name);
         if (name=="Menu") return;
         if (Mod.Stages.Any(s=>s.Scene==name)) MelonCoroutines.Start(RaceRuntime.Create());
     }
@@ -152,13 +155,13 @@ internal static class RaceNetwork
     [HarmonyPatch(typeof(NetworkManager),nameof(NetworkManager.StartClient))]
     private static class ClientPatch { static void Prefix(NetworkManager __instance)=>Configure(__instance); }
     [HarmonyPatch(typeof(SteamLobby),"HostOwnLobby")]
-    private static class IdlePatch { static bool Prefix()=>!Lan&&!joining; }
+    private static class IdlePatch { static bool Prefix()=>!LocalTransport&&!joining; }
     [HarmonyPatch(typeof(SteamLobby),"ApplyTransport")]
-    private static class TransportPatch { static bool Prefix()=>!Lan; }
+    private static class TransportPatch { static bool Prefix()=>!LocalTransport; }
     [HarmonyPatch(typeof(NetSession),"OnClientConnected")]
-    private static class ConnectedPatch { static bool Prefix(ulong clientId) { if(!Enabled)return true;if(Host&&Count>4)Manager.DisconnectClient(clientId,"This race has four seats.");return false;} }
+    private static class ConnectedPatch { static bool Prefix(ulong clientId) { if(!Enabled)return true;if(Host&&(Count>4||(DirectSession.Enabled&&RaceRuntime.Active!=null&&!Seats.Contains(clientId))))Manager.DisconnectClient(clientId,"Join from the lobby before the four-seat race starts.");return false;} }
     [HarmonyPatch(typeof(NetSession),"EnterMenu")]
-    private static class IdleHostPatch { static bool Prefix()=>!Lan; }
+    private static class IdleHostPatch { static bool Prefix()=>!LocalTransport; }
 
     [HarmonyPatch(typeof(SteamMatchmaking),nameof(SteamMatchmaking.CreateLobbyAsync))]
     private static class CapacityPatch { static void Prefix(ref int maxMembers) { if(Enabled)maxMembers=4; } }
@@ -230,6 +233,7 @@ internal static class RaceNetwork
 
     internal static void Gui()
     {
+        if(DirectSession.Enabled){DirectSession.Gui();return;}
         if(!Enabled||SceneManager.GetActiveScene().name!="Menu")return;
         GUI.Box(new Rect(16,16,510,105),$"FOUR PLAYER RACE / PROTOTYPE\n{Count}/4 connected — seats follow join order\n1: A driver | 2: A navigator | 3: B driver | 4: B navigator\nEveryone launches this prototype before accepting Steam invites.");
     }

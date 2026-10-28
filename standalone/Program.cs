@@ -29,18 +29,19 @@ try {
         Report($"PACKAGE_PASS: {done} bundled files; Steam state={config.State}.");
         return 0;
     }
-    uint appId=config.RequireAppId();
-    if(args.Contains("--check-config")) {Report("CONFIG_PASS: separate Steam App ID configured; account access is not tested by this check.");return 0;}
+    uint? appId=config.Direct?null:config.RequireAppId();
+    if(args.Contains("--check-config")) {Report(config.Direct?"CONFIG_PASS: direct multiplayer; no Steam App ID or playtest required.":"CONFIG_PASS: separate Steam App ID configured; account access is not tested by this check.");return 0;}
     string game=Path.Combine(root,"LeftLeftLEFT.exe");
     foreach(string file in new[]{"LeftLeftLEFT.exe","GameAssembly.dll","UnityPlayer.dll","version.dll","Mods/RightRightRight.dll","UserData/RightRightRight/stages.json"})
         if(!File.Exists(Path.Combine(root,file)))throw new FileNotFoundException("Incomplete portable download: "+file);
     var start=new ProcessStartInfo(game) {WorkingDirectory=root,UseShellExecute=false};
-    start.Environment["SteamAppId"]=appId.ToString();start.Environment["SteamGameId"]=appId.ToString();
+    if(appId.HasValue){start.Environment["SteamAppId"]=appId.ToString();start.Environment["SteamGameId"]=appId.ToString();}
+    else {start.Environment.Remove("SteamAppId");start.Environment.Remove("SteamGameId");}
     start.ArgumentList.Add("--melonloader.hideconsole");
     // Steam supplies +connect_lobby on cold-start invites. Forward arguments as
     // separate values; never concatenate a shell command or lose invite data.
     foreach(var arg in args)start.ArgumentList.Add(arg);
-    Report("Starting game. Steam must be running under an account with access to this app.");
+    Report(config.Direct?"Starting direct multiplayer. Use Porthole for Steam friend connections, or join a reachable LAN/VPN address.":"Starting game. Steam must be running under an account with access to this app.");
     using var process=Process.Start(start)??throw new IOException("Could not start the bundled player.");
     Report("Game process started. Diagnostics: player/MelonLoader/Latest.log and Logs/launcher.log.");
     return 0;

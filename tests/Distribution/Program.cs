@@ -8,6 +8,9 @@ Reject(()=>new DistributionConfig{State="configured"}.RequireAppId());
 Reject(()=>new DistributionConfig{Format=2}.Validate());
 Reject(()=>new DistributionConfig{State="pending-steam",SteamAppId=1}.Validate());
 Reject(()=>new DistributionConfig{ContentVersion="wrong"}.Validate());
+new DistributionConfig{State="direct"}.Validate();
+Reject(()=>new DistributionConfig{State="direct",SteamAppId=123456}.Validate());
+Reject(()=>new DistributionConfig{State="direct"}.RequireAppId());
 // This is configuration parsing only. It never initializes Steam or claims
 // ownership/access to the numeric fixture application.
 Check(new DistributionConfig{State="configured",SteamAppId=123456}.RequireAppId()==123456,"Configured identity was lost.");

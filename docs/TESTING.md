@@ -69,4 +69,6 @@ The final forest visual inspection was stopped by the user with Escape. No compl
 
 ## Portable distribution candidate
 
+For the later direct multiplayer release, see [the alpha.2 guide](DIRECT-MULTIPLAYER.md) and [direct-verification-results.json](direct-verification-results.json). Its four-process tests use the player Host/Join/version/seed flow, three UDP forwarding proxies, and same-seed restart/return to lobby. The game does not initialize Steam. Porthole with four remote accounts remains untested.
+
 The work in `standalone/portable-steam` bundles the runtime, assets, loader, portable .NET and cached bindings. All 637 manifest files pass stream hashing before and after fresh ZIP extraction; archive CRC checks pass. The original build authentication field is removed. Four native processes pass the race verification from isolated portable copies with `SteamClient.IsValid == false` on all four. Configuration tests reject the original/sample IDs and incomplete Steam setup. The pending candidate refuses normal launch with an actionable message. See [the distribution report](portable-verification-results.json) and [setup requirements](STANDALONE.md). A separately configured Steam application, tester licenses, online initialization and invitations remain required and untested.

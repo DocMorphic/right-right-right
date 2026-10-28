@@ -12,7 +12,7 @@ namespace RightRightRight;
 
 internal static class CourseSession
 {
-    internal const string Version = "0.3.0-alpha.1";
+    internal const string Version = "0.3.0-alpha.2";
     internal static string ContentId = "";
     private static string lastAcknowledged = "";
     private static bool selecting;
@@ -40,7 +40,7 @@ internal static class CourseSession
 
     internal static void Update()
     {
-        if(RaceNetwork.Lan) return;
+        if(RaceNetwork.LocalTransport) return;
         if (Time.realtimeSinceStartup < nextPoll) return;
         nextPoll = Time.realtimeSinceStartup + .2f;
         var lobby = SteamLobby.Instance;
@@ -57,6 +57,7 @@ internal static class CourseSession
 
     internal static void Select(StageDefinition stage, Action<string> load)
     {
+        if(DirectSession.Enabled){DirectSession.Select(stage);return;}
         if(RaceNetwork.Enabled && (!RaceNetwork.Host || RaceNetwork.Count!=4)) { SetStatus("The host selects the course after all four players join.");return; }
         if (selecting) return;
         if (NetSession.Instance != null && !NetSession.Instance.IsDriver) { SetStatus("The driver chooses the course."); return; }
@@ -105,6 +106,7 @@ internal static class CourseSession
     internal static int ResolveSeed(StageDefinition stage)
     {
         if(RaceNetwork.Lan) return CurrentSeed=12345;
+        if(DirectSession.Enabled&&CurrentSeed>0)return CurrentSeed;
         var testSeed = Environment.GetCommandLineArgs().FirstOrDefault(a => a.StartsWith("--rrr-seed="));
         if (testSeed != null && int.TryParse(testSeed.Split('=')[1], out int explicitSeed)) return CurrentSeed = explicitSeed;
         var lobby = SteamLobby.Instance;
