@@ -40,6 +40,8 @@ internal static class RaceVerification
             if(!r.Started) { if(Time.realtimeSinceStartup-begun>45)throw new Exception("Four-player ready barrier timed out.");return; }
             if(SteamDistribution.Config!=null)
                 Once(r,2,"steam_not_initialized",()=>Check("steam_not_initialized",!Il2CppSteamworks.SteamClient.IsValid));
+            if(RelaySession.Active)
+                Once(r,2,"relay_transport",()=>Check("relay_transport",DirectSession.RelayStatus()==Unity.Networking.Transport.Relay.RelayConnectionStatus.Established&&RelaySession.RoomCode.Length>=6));
             Once(r,2,"tablet_maps",()=> {
                 foreach(var p in r.Tablets)Mod.Log.Msg($"RACE_TABLET_DETAIL privacy={p.Map._driverPrivacy} timer={p.Map._timerText?.text} digit={r.Controller._countdownDigit} racingDigit={StageController.RacingDigit}");
                 Check("tablet_maps",r.Tablets.All(p=>p.Map._mapCam!=null&&p.Map._rt!=null&&p.Map._roadRibbon.vertexCount>100&&p.Map._driverPrivacy==!RaceNetwork.Navigator&&p.Map._mapCam.cullingMask==(1<<p.Map._minimapLayer)));

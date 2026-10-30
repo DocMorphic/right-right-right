@@ -1,0 +1,234 @@
+{
+  "Version": "0.3.0-alpha.3",
+  "Date": "2026-10-30",
+  "Status": "Awaiting owner Unity project; no alpha.3 public release",
+  "NativeTestModSha256": "d8d976e6f6c0c006d2e5610c3980f1727826f6d16221d449adcf63557e16873c",
+  "ReleaseCompilation": {
+    "Pass": true,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "ManagedTests": {
+    "Relay": true,
+    "Distribution": true,
+    "RaceProtocol": true,
+    "ResponseBodyDeadline": true
+  },
+  "Package": {
+    "Pass": true,
+    "ManifestFiles": 638,
+    "PublicSettingsBundled": true,
+    "ProjectWasLoopbackFixtureOnly": true,
+    "PublicRelease": false
+  },
+  "Gameplay": [
+    {
+      "Client": 0,
+      "Slot": 0,
+      "Host": true,
+      "Pass": true,
+      "InputPackets": 34012,
+      "SnapshotPackets": 0,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.301971,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "independent_driving": true,
+        "cockpit_jolt": true,
+        "car_collision": true,
+        "both_mud": true,
+        "closed_door_guard": true,
+        "steal": true,
+        "navigator_drop": true,
+        "fall_out": true,
+        "tree_fatal": true,
+        "early_finish_guard": true,
+        "remote_wipe": true,
+        "finish_time": true
+      }
+    },
+    {
+      "Client": 3,
+      "Slot": 3,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 796,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.301971,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 2,
+      "Slot": 2,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 797,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.301971,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 1,
+      "Slot": 1,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 798,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.301971,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    }
+  ],
+  "GameplayRelayFixture": {
+    "Auth": 4,
+    "Allocate": 1,
+    "JoinCode": 1,
+    "Join": 3,
+    "Binds": 8,
+    "ValidHmac": 8,
+    "Rejected": 0,
+    "Forwarded": 12195,
+    "Pings": 23,
+    "Connections": 3,
+    "Closed": 0,
+    "FixtureOnly": true,
+    "DtlsTested": false,
+    "Allocations": 4,
+    "Bound": 4
+  },
+  "Lifecycle": [
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": true,
+      "RoomCodePresent": true,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": true,
+      "RoomCodePresent": true,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": true,
+      "RoomCodePresent": true,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": true,
+      "RoomCodePresent": true,
+      "Error": ""
+    }
+  ],
+  "LifecycleRelayFixture": {
+    "Auth": 4,
+    "Allocate": 1,
+    "JoinCode": 1,
+    "Join": 3,
+    "Binds": 12,
+    "ValidHmac": 12,
+    "Rejected": 0,
+    "Forwarded": 8710,
+    "Pings": 33,
+    "Connections": 3,
+    "Closed": 0,
+    "FixtureOnly": true,
+    "DtlsTested": false,
+    "Allocations": 4,
+    "Bound": 4
+  },
+  "DirectFallbackLifecycle": [
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": false,
+      "RoomCodePresent": false,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": false,
+      "RoomCodePresent": false,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": false,
+      "RoomCodePresent": false,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "SteamInitialized": false,
+      "Relay": false,
+      "RoomCodePresent": false,
+      "Error": ""
+    }
+  ],
+  "Untested": [
+    "Owner Unity project activation",
+    "Live Unity allocation/join API",
+    "Native DTLS binding to Unity Relay",
+    "Four separate PCs across real internet connections",
+    "Interactive menu and clipboard validation"
+  ],
+  "Scope": "Native tests use loopback REST/UDP fixtures and real Unity transport/gameplay. They do not test the hosted Unity service, DTLS, NAT traversal, internet latency, quota or billing."
+}

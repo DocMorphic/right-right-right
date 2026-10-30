@@ -9,7 +9,7 @@ public sealed class DistributionConfig
     public int Format { get; set; } = 1;
     public string State { get; set; } = "pending-steam";
     public uint? SteamAppId { get; set; }
-    public string ContentVersion { get; set; } = "0.3.0-alpha.2";
+    public string ContentVersion { get; set; } = "0.3.0-alpha.3";
     public bool Configured => State == "configured";
     public bool Direct => State == "direct";
 
@@ -23,7 +23,7 @@ public sealed class DistributionConfig
 
     public void Validate()
     {
-        if (Format != 1 || ContentVersion != "0.3.0-alpha.2")
+        if (Format != 1 || ContentVersion != "0.3.0-alpha.3")
             throw new InvalidDataException("Unsupported portable game configuration.");
         if ((State == "pending-steam" || State == "direct") && SteamAppId == null) return;
         if (State != "configured" || SteamAppId == null || SteamAppId == 0 ||

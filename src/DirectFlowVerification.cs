@@ -24,6 +24,7 @@ internal static class DirectFlowVerification
             if(race!=null&&race!=last){last=race;rounds++;action=false;Mod.Log.Msg("DIRECT_FLOW_ROUND "+rounds);}
             if(race!=null&&race.Started&&race.Elapsed>1&&!action) {
                 if(RaceNetwork.Seats.Length!=4||SteamClient.IsValid||race.Ready.Count!=4)throw new Exception("Invalid direct race readiness/Steam state.");
+                if(RelaySession.Active&&DirectSession.RelayStatus()!=Unity.Networking.Transport.Relay.RelayConnectionStatus.Established)throw new Exception("Relay binding was lost between rounds.");
                 action=true;
                 if(RaceNetwork.Host){if(rounds==1)DirectSession.Restart();else if(rounds==2)DirectSession.ReturnToLobby();}
             }
@@ -35,7 +36,7 @@ internal static class DirectFlowVerification
     private static void Finish(bool passed,string error)
     {
         done=true;var folder=Path.Combine(MelonEnvironment.UserDataDirectory,"RightRightRight");Directory.CreateDirectory(folder);
-        File.WriteAllText(Path.Combine(folder,"direct-flow.json"),JsonSerializer.Serialize(new {Pass=passed,Rounds=rounds,ReturnedToLobby=returned>0,SteamInitialized=SteamClient.IsValid,Error=error}));
+        File.WriteAllText(Path.Combine(folder,"direct-flow.json"),JsonSerializer.Serialize(new {Pass=passed,Rounds=rounds,ReturnedToLobby=returned>0,SteamInitialized=SteamClient.IsValid,Relay=RelaySession.Active,RoomCodePresent=RelaySession.RoomCode.Length>=6,Error=error}));
         Mod.Log.Msg("DIRECT_FLOW_"+(passed?"PASS":"FAIL")+" "+error);Application.Quit(passed?0:23);
     }
 }

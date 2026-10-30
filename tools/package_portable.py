@@ -17,10 +17,26 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def package(source: Path, launcher: Path, output: Path, app_id=None, archive=True, direct=False):
+def package(source: Path, launcher: Path, output: Path, app_id=None, archive=True, direct=False, relay_config=None):
     source, launcher, output = source.resolve(), launcher.resolve(), output.resolve()
     if direct and app_id is not None:
         raise ValueError('Direct multiplayer does not use a Steam App ID.')
+    relay = None
+    if relay_config:
+        import re
+        import uuid
+        if not direct:
+            raise ValueError('Relay requires the standalone direct transport, not a Steam identity.')
+        relay = json.loads(relay_config.read_text())
+        relay.setdefault('EnvironmentName', 'production')
+        relay.setdefault('Region', '')
+        if (relay.get('Format') != 1 or not uuid.UUID(relay.get('ProjectId', '')).int or
+            not re.fullmatch(r'[a-zA-Z0-9_-]{1,64}', relay.get('EnvironmentName', '')) or
+            not re.fullmatch(r'[a-zA-Z0-9-]{0,64}', relay.get('Region', ''))):
+            raise ValueError('Invalid public Unity Relay settings.')
+        relay['ProjectId'] = str(uuid.UUID(relay['ProjectId']))
+        # Ship only this allowlist. Never copy service keys, URLs or user tokens.
+        relay = {key: relay[key] for key in ('Format', 'ProjectId', 'EnvironmentName', 'Region')}
     if app_id is not None and (app_id in BLOCKED_IDS or not 0 < app_id <= 0xFFFFFFFF):
         raise ValueError('Use the separately assigned Right Right Right Steam App ID.')
     if output.exists():
@@ -77,8 +93,10 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     settings_dir.mkdir(parents=True)
     shutil.copy2(ROOT / 'levels/stages.json', settings_dir / 'stages.json')
     config = {'Format': 1, 'State': 'direct' if direct else 'configured' if app_id else 'pending-steam',
-              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.2'}
+              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.3'}
     (player / 'rrr-distribution.json').write_text(json.dumps(config, indent=2))
+    if relay:
+        (player / 'rrr-relay.json').write_text(json.dumps(relay, indent=2))
     licenses = output / 'Licenses'
     licenses.mkdir()
     shutil.copy2(ROOT / 'LICENSE', licenses / 'RightRightRight-code-MIT.txt')
@@ -92,7 +110,11 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
         'Extract the entire download. Open player/RightRightRight.exe.\n'
         'All game files and the loader runtime are bundled. No original playtest installation, Python, '
         '.NET SDK, setup commands or first-launch downloads are required.\n'
-        + ('DIRECT MULTIPLAYER: no playtest or Steam App ID required.\n'
+        + ('ONLINE ROOMS: host clicks HOST GAME, copies its room code, and shares it with three friends.\n'
+           'Friends enter that code and click JOIN CODE. Wait for 4/4, then the host chooses a course.\n'
+           'No extra apps, player accounts, Steam App ID or router setup are needed.\n'
+           if relay else 'DIRECT MULTIPLAYER: no playtest or Steam App ID required.\n'
+           'Online room codes require publisher configuration. LAN / ADVANCED is available.\n'
            'For internet play, install Porthole (free) in Steam on all four PCs.\n'
            'Host: click HOST in the game, create a Porthole lobby, share UDP 7787.\n'
            'Friends: join the Porthole lobby through Steam or its share code, approve UDP 7787, '
@@ -127,5 +149,6 @@ if __name__ == '__main__':
     parser.add_argument('--app-id', type=int)
     parser.add_argument('--no-archive', action='store_true')
     parser.add_argument('--direct', action='store_true')
+    parser.add_argument('--relay-config', type=Path)
     args = parser.parse_args()
-    package(args.source, args.launcher, args.output, args.app_id, not args.no_archive, args.direct)
+    package(args.source, args.launcher, args.output, args.app_id, not args.no_archive, args.direct, args.relay_config)

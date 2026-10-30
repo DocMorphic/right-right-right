@@ -1,5 +1,11 @@
 # Verification
 
+## Room-code development (alpha.3)
+
+The managed Relay tests cover anonymous sign-in reuse, project/environment headers, host allocation for three guests, join-code generation/join, DTLS endpoint selection, bounded response/credential parsing, cancellation, and useful HTTP errors without leaking response bodies. Four native players pass the complete race fixture through a loopback REST/UDP Relay test double, including authenticated BIND packets and native Relay data forwarding. They also pass two-round retry/return-to-lobby checks with the allocation intact. See [Relay setup and scope](RELAY-MULTIPLAYER.md) and the sanitized [Relay report](relay-verification-results.json).
+
+A live Unity project has not been supplied. Unity-hosted allocations, native DTLS binding, and a real four-PC internet session remain untested. The existing public alpha.2 download retains its Porthole setup; no live-ready alpha.3 release is claimed.
+
 The C# extension is compiled against interop assemblies generated from the installed supported build. `Verify.ps1` launches the original Unity player for each additional scene.
 
 Per-stage automated checks:

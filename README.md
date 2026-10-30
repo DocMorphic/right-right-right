@@ -1,5 +1,7 @@
 # Right Right Right — standalone four-player race
 
+**In development: alpha.3 in-game room codes.** Host Game / Join Code integration is being validated; a separate Unity Gaming Services project is required before live internet rooms can be tested and released. See [one-time setup and current scope](docs/RELAY-MULTIPLAYER.md). The downloadable alpha.2 below still uses Porthole.
+
 **0.3.0-alpha.2** bundles the game and runtime. Friends no longer need the original playtest downloaded or a Steamworks App ID.
 
 [**Download the standalone ZIP**](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.2/RightRightRight-Standalone-0.3.0-alpha.2.zip) · [Setup guide](docs/DIRECT-MULTIPLAYER.md)

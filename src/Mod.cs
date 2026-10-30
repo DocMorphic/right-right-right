@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.2", "DocMorphic")]
+[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.3", "DocMorphic")]
 [assembly: MelonGame("Stellux Interactive", "LeftLeftLEFT")]
 
 namespace RightRightRight;
@@ -23,6 +23,7 @@ public sealed class Mod : MelonMod
     {
         Log = LoggerInstance;
         SteamDistribution.Initialize();
+        RelaySession.Initialize();
         Application.runInBackground=true;
         Stages = StageDefinition.Read(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json"));
         CourseSession.ContentId = CourseSession.Fingerprint(File.ReadAllText(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json")));

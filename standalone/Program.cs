@@ -30,6 +30,8 @@ try {
         return 0;
     }
     uint? appId=config.Direct?null:config.RequireAppId();
+    bool relay=File.Exists(Path.Combine(root,RelayConfig.FileName));
+    if(relay)RelayConfig.Read(Path.Combine(root,RelayConfig.FileName));
     if(args.Contains("--check-config")) {Report(config.Direct?"CONFIG_PASS: direct multiplayer; no Steam App ID or playtest required.":"CONFIG_PASS: separate Steam App ID configured; account access is not tested by this check.");return 0;}
     string game=Path.Combine(root,"LeftLeftLEFT.exe");
     foreach(string file in new[]{"LeftLeftLEFT.exe","GameAssembly.dll","UnityPlayer.dll","version.dll","Mods/RightRightRight.dll","UserData/RightRightRight/stages.json"})
@@ -41,7 +43,7 @@ try {
     // Steam supplies +connect_lobby on cold-start invites. Forward arguments as
     // separate values; never concatenate a shell command or lose invite data.
     foreach(var arg in args)start.ArgumentList.Add(arg);
-    Report(config.Direct?"Starting direct multiplayer. Use Porthole for Steam friend connections, or join a reachable LAN/VPN address.":"Starting game. Steam must be running under an account with access to this app.");
+    Report(config.Direct?(relay?"Starting game. Host an online room or join your friend's code.":"Starting game. Online rooms need publisher configuration; LAN / Advanced is available."):"Starting game. Steam must be running under an account with access to this app.");
     using var process=Process.Start(start)??throw new IOException("Could not start the bundled player.");
     Report("Game process started. Diagnostics: player/MelonLoader/Latest.log and Logs/launcher.log.");
     return 0;
