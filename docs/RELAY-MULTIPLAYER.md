@@ -1,6 +1,8 @@
-# In-game room codes (alpha.3 development)
+# In-game room codes (alpha.3)
 
-This update adds **HOST GAME → copy room code → JOIN CODE** to the standalone player. The previous public alpha.2 download still uses Porthole. Do not call alpha.3 internet-ready until the project owner supplies a separate Unity Gaming Services project and a live four-player DTLS test passes.
+This update adds **HOST GAME → copy room code → JOIN CODE** to the standalone player. [Download alpha.3](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.3/RightRightRight-Standalone-0.3.0-alpha.3.zip), extract the entire ZIP and open **player/RightRightRight.exe**. Online settings are already bundled. The previous alpha.2 download uses Porthole instead.
+
+The owner supplied a separate Unity project. Four native game processes have passed live Unity Authentication, Relay allocation/join and DTLS binding, with race verification and retry/lobby return. This tests the actual hosted service from one PC; it does not replace a four-PC home-network playtest. [Verification report](relay-verification-results.json).
 
 ## One-time publisher setup
 
@@ -17,10 +19,12 @@ Unity's [published pricing](https://unity.com/products/gaming-services/pricing) 
 
 ## Publisher configuration and build
 
-Copy [the example](../standalone/rrr-relay.example.json) to ignored `local/relay-settings.json`, replace ProjectId, and retain production. Region may be blank (Unity's default allocation region) or a supported Relay region from the service. This prototype does not perform QoS region selection yet.
+The release uses [public production settings](../standalone/rrr-relay.production.json): the owner's project, production environment and **europe-west4** (Netherlands). This region was confirmed in the live service's supported-regions response. This prototype does not perform automatic QoS region selection.
+
+For a different publisher's project, copy [the example](../standalone/rrr-relay.example.json) to ignored `local/relay-settings.json`, replace ProjectId and environment, and use a supported region or leave it blank for Unity's default allocation region.
 
 ```powershell
-.\Build-Portable.ps1 -Direct -RelayConfig .\local\relay-settings.json
+.\Build-Portable.ps1 -Direct -RelayConfig .\standalone\rrr-relay.production.json
 ```
 
 Packaging copies only Format, ProjectId, EnvironmentName and Region to `player/rrr-relay.json`, includes it in the package hash manifest, and keeps personal credentials out of the ZIP. Recipients get these settings bundled; they never edit JSON or run setup commands. A standalone build without this file keeps LAN / Advanced available and explains that online rooms are not enabled.
@@ -43,7 +47,7 @@ No Porthole, Steam, port forwarding, host IP entry, player login or separate app
 - HTTP stays on managed tasks. Unity transport and UI run on the game thread. Disconnect cancels pending operations, prevents late task completion from restarting a session, clears the visible code and shuts down transport. Errors distinguish expired codes, forbidden service configuration, rate limits, service failure and timeouts. Response bodies and credentials are never logged.
 - HTTP timeout is 15 seconds per request; native binding/connection waits are bounded. Successful responses and credential blobs have length limits. Room codes are validated before contacting Authentication.
 - [REST client tests](../tests/Relay/Program.cs) exercise the service boundary with an injected HTTP handler. This does not establish Unity service availability.
-- [Verify-Relay.ps1](../Verify-Relay.ps1) can drive four native processes using the exact room-code and gameplay/lifecycle flows. Its `-Fixture` uses a loopback-only REST/UDP test double with HMAC validation and real native Relay packets. The explicit test flags are required to allow plain UDP to loopback; release connections require DTLS. The test double is not a hosted service and cannot establish DTLS/NAT/internet behavior.
+- [Verify-Relay.ps1](../Verify-Relay.ps1) drives four native processes using the room-code and gameplay/lifecycle flows. Live production-project tests pass with DTLS. Its separate `-Fixture` mode uses a loopback-only REST/UDP test double with HMAC validation and real native Relay packets. The explicit fixture flags are required to allow plain UDP to loopback; release connections require DTLS. A fixture test is not evidence of hosted service or DTLS availability.
 
 ```powershell
 # No cloud traffic: loopback REST + native UDP Relay + four-player physics.
@@ -51,7 +55,7 @@ No Porthole, Steam, port forwarding, host IP entry, player login or separate app
 .\Verify-Relay.ps1 -Fixture -Flow -BasePlayer C:\path\to\portable\player
 
 # Live Unity project: anonymous sign-in, room code, DTLS and four native players.
-.\Verify-Relay.ps1 -RelayConfig .\local\relay-settings.json -BasePlayer C:\path\to\portable\player
+.\Verify-Relay.ps1 -RelayConfig .\standalone\rrr-relay.production.json -BasePlayer C:\path\to\portable\player
 ```
 
 Technical sources: [Unity Authentication API](https://docs.unity.com/en-us/oas-player-auth-client/1.0.0), [Relay Allocations API](https://docs.unity.com/en-us/oas-relay-allocations/1.0.0), [Relay message protocol](https://docs.unity.com/en-us/mps-sdk/advanced-config/relay-message-protocol).

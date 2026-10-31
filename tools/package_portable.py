@@ -129,7 +129,9 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     manifest = {'Format': 1, 'SteamState': config['State'], 'Files': files}
     (player / 'package-manifest.json').write_text(json.dumps(manifest, indent=2))
     if archive:
-        archive_path = output.with_suffix('.zip')
+        # A dotted version in the directory name is part of the release name,
+        # not an extension (with_suffix would drop the final .3 from alpha.3).
+        archive_path = output.parent / (output.name + '.zip')
         if archive_path.exists():
             raise ValueError('Archive already exists; choose a new output name.')
         print('Compressing complete portable build...', flush=True)

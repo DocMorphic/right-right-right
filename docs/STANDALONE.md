@@ -1,6 +1,6 @@
 # Portable build and independent Steam identity
 
-**Current update:** [0.3.0-alpha.2 direct multiplayer](DIRECT-MULTIPLAYER.md) is now playable without our own Steam App ID. Porthole can supply Steam friends/share-code connections as a separate app. The earlier candidate and native Steam-identity work described below remain a separate route for a future registered Steam release.
+**Current update:** [0.3.0-alpha.3 online rooms](RELAY-MULTIPLAYER.md) bundles the game and uses Unity Relay room codes without Steam, Porthole or the original playtest. Public production settings are included. The older [alpha.2 direct/Porthole version](DIRECT-MULTIPLAYER.md) remains available. The earlier candidate and native Steam-identity work described below are historical and remain a separate route for a future registered Steam release.
 
 The standalone distribution work is on `standalone/portable-steam`. The existing public alpha installer remains unchanged and still needs an installed playtest. The new portable build is an engineering candidate pending a separate Steamworks application; it is not a released Steam-enabled standalone game.
 

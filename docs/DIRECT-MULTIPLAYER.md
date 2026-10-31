@@ -1,5 +1,7 @@
 # Standalone direct multiplayer — 0.3.0-alpha.2
 
+This guide describes the older alpha.2 download. The current [alpha.3 room-code release](RELAY-MULTIPLAYER.md) works online without Porthole; use that guide for the simplest setup.
+
 This download includes the licensed game runtime/assets, the four-player race extension, loader, portable .NET and generated bindings. There is no original playtest installation requirement and no Steamworks App ID to obtain. Extract the entire ZIP; run `player/RightRightRight.exe`.
 
 ## Friends over the internet with Porthole
