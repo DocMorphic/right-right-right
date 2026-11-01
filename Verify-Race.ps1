@@ -33,7 +33,7 @@ foreach($name in @('host','client1','client2','client3')) {
     $role=if($name -eq 'host'){'host'}else{'client'}
     $log=Join-Path $PSScriptRoot ('local\race-'+$name+'.log')
     $arguments=@('-batchmode','-nographics','--melonloader.hideconsole','-logFile',('"'+$log+'"'))
-    if($Direct){$arguments+='--rrr-direct-verify';if($name-eq 'host'){$arguments+='--rrr-direct-host'};if($Flow){$arguments+='--rrr-direct-flow'}else{$arguments+='--rrr-race-verify'}}else{$arguments+=@('--rrr-lan='+$role,'--rrr-race-verify')}
+    if($Direct){$arguments+='--rrr-direct-verify';if($name-eq 'host'){$arguments+=@('--rrr-direct-host','--rrr-players=4')};if($Flow){$arguments+='--rrr-direct-flow'}else{$arguments+='--rrr-race-verify'}}else{$arguments+=@('--rrr-lan='+$role,'--rrr-race-verify')}
     if($Proxy-and $name-ne 'host'){$arguments+=('--rrr-port='+(7787+[int]$name.Substring(6)))}
     $process=Start-Process -FilePath (Join-Path $folder 'LeftLeftLEFT.exe') -WorkingDirectory $folder -WindowStyle Hidden -PassThru -ArgumentList $arguments
     $runs+=@{Name=$name;Id=$process.Id;Path=(Join-Path $folder 'LeftLeftLEFT.exe');Process=$process;Folder=$folder}

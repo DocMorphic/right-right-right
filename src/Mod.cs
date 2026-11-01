@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.3", "DocMorphic")]
+[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.4", "DocMorphic")]
 [assembly: MelonGame("Stellux Interactive", "LeftLeftLEFT")]
 
 namespace RightRightRight;
@@ -23,6 +23,9 @@ public sealed class Mod : MelonMod
     {
         Log = LoggerInstance;
         SteamDistribution.Initialize();
+        SessionMode.TrySelect(DirectSession.Enabled?2:4,0);
+        if((RaceNetwork.Args.Contains("--rrr-relay-verify")||RaceNetwork.Args.Contains("--rrr-direct-verify"))&&
+            int.TryParse(RaceNetwork.Arg("--rrr-players="),out int players))SessionMode.TrySelect(players,0);
         RelaySession.Initialize();
         Application.runInBackground=true;
         Stages = StageDefinition.Read(Path.Combine(MelonEnvironment.UserDataDirectory, "RightRightRight", "stages.json"));

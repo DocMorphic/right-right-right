@@ -17,7 +17,7 @@ namespace RightRightRight;
 
 internal static class RaceNetwork
 {
-    internal const string Build = "0.3.0-alpha.3";
+    internal const string Build = "0.3.0-alpha.4";
     internal const float Width=9.5f;
     internal static bool Enabled => !Args.Contains("--rrr-legacy-coop");
     internal static readonly string[] Args=Environment.GetCommandLineArgs();
@@ -81,7 +81,7 @@ internal static class RaceNetwork
         if (Host && RaceRuntime.Active == null) Seats=ConnectedIds();
         foreach (var menu in Object.FindObjectsOfType<MainMenu>(true))
         {
-            if (menu.crewCounter != null) menu.crewCounter.text=$"CREW {Count}/4";
+            if (menu.crewCounter != null) menu.crewCounter.text=$"CREW {Count}/{SessionMode.Players}";
             if (menu.noteLabel != null && string.IsNullOrEmpty(CourseSession.Status))
                 menu.noteLabel.text="4 PLAYER RACE PROTOTYPE / join order: A driver, A navigator, B driver, B navigator";
         }
@@ -159,7 +159,7 @@ internal static class RaceNetwork
     [HarmonyPatch(typeof(SteamLobby),"ApplyTransport")]
     private static class TransportPatch { static bool Prefix()=>!LocalTransport; }
     [HarmonyPatch(typeof(NetSession),"OnClientConnected")]
-    private static class ConnectedPatch { static bool Prefix(ulong clientId) { if(!Enabled)return true;if(Host&&(Count>4||(DirectSession.Enabled&&RaceRuntime.Active!=null&&!Seats.Contains(clientId))))Manager.DisconnectClient(clientId,"Join from the lobby before the four-seat race starts.");return false;} }
+    private static class ConnectedPatch { static bool Prefix(ulong clientId) { if(!Enabled)return true;if(Host&&(Count>SessionMode.Players||(DirectSession.Enabled&&RaceRuntime.Active!=null&&!Seats.Contains(clientId))))Manager.DisconnectClient(clientId,$"This mode has {SessionMode.Players} seats. Join from the lobby before the run starts.");return false;} }
     [HarmonyPatch(typeof(NetSession),"EnterMenu")]
     private static class IdleHostPatch { static bool Prefix()=>!LocalTransport; }
 

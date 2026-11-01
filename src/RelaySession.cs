@@ -110,7 +110,7 @@ internal static class RelaySession
             while (!codeRequest.IsCompleted) yield return null;
             token.ThrowIfCancellationRequested();
             RoomCode = codeRequest.GetAwaiter().GetResult();
-            DirectSession.Note = "Room open. Share the code with three friends.";
+            DirectSession.Note = $"Room open. Share the code with {SessionMode.Players-1} friend(s).";
             Mod.Log.Msg("RELAY_ROOM_READY");
             if (RaceNetwork.Args.Contains("--rrr-relay-verify")) {
                 string output = RaceNetwork.Arg("--rrr-relay-code-file=");
@@ -131,7 +131,7 @@ internal static class RelaySession
 
     internal static void Gui(float left, float top, bool disconnected)
     {
-        GUI.Label(new Rect(left+20,top+35,660,30), "Host a room, share its code, and race with your friends.");
+        GUI.Label(new Rect(left+20,top+35,660,30), "Host a room, choose a mode, and share its code with your friends.");
         GUI.enabled = Available && disconnected && !Busy && !DirectSession.Busy;
         if (GUI.Button(new Rect(left+20,top+75,180,36), "HOST GAME")) Connect(true);
         entryCode = GUI.TextField(new Rect(left+225,top+79,180,30), entryCode, 12);

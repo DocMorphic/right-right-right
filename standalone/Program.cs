@@ -12,7 +12,7 @@ void Report(string message) {
     File.AppendAllText(logFile,$"{DateTimeOffset.Now:O} {message}{Environment.NewLine}");
 }
 try {
-    Report("Right Right Right / portable four-player build");
+    Report("Right Right Right / portable multiplayer build");
     var config=DistributionConfig.Read(Path.Combine(root,DistributionConfig.FileName));
     if(args.Contains("--verify-package")) {
         using var manifest=JsonDocument.Parse(File.ReadAllText(Path.Combine(root,"package-manifest.json")));

@@ -1,0 +1,191 @@
+{
+  "Version": "0.3.0-alpha.4",
+  "Date": "2026-11-01",
+  "DefaultMode": "2 player co-op",
+  "SupportedPlayers": [
+    2,
+    4
+  ],
+  "NativeModSha256": "763184a0aef4b49659ea97cc4a13689e8c501f664211fd6f6df3946a00d4e48b",
+  "Build": {
+    "Pass": true,
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "ProtocolAndModeRulesPass": true,
+  "DistributionTestsPass": true,
+  "CoopGameplay": [
+    {
+      "Pass": true,
+      "Client": 0,
+      "Slot": 0,
+      "Players": 2,
+      "Cars": 1,
+      "Tablets": 1,
+      "Rounds": 2,
+      "FinishTime": 26.2867,
+      "TreeDeaths": 1,
+      "Checks": {
+        "one_car_two_seats": true,
+        "navigator_map": true,
+        "driving": true,
+        "mud": true,
+        "remote_drop": true,
+        "tablet_falls": true,
+        "remote_door": true,
+        "remote_wipe": true,
+        "shared_finish": true,
+        "tree_ends_coop": true
+      },
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Client": 1,
+      "Slot": 1,
+      "Players": 2,
+      "Cars": 1,
+      "Tablets": 1,
+      "Rounds": 2,
+      "FinishTime": 26.2867,
+      "TreeDeaths": 1,
+      "Checks": {
+        "one_car_two_seats": true,
+        "navigator_map": true,
+        "replicated_tree_failure": true
+      },
+      "Error": ""
+    }
+  ],
+  "CoopLifecycleAndModeSwitch": [
+    {
+      "Pass": true,
+      "Players": 2,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "ModeSwitchObserved": true,
+      "FinalMode": 2,
+      "SteamInitialized": false,
+      "Relay": true,
+      "RoomCodePresent": true,
+      "Error": ""
+    },
+    {
+      "Pass": true,
+      "Players": 2,
+      "Rounds": 2,
+      "ReturnedToLobby": true,
+      "ModeSwitchObserved": true,
+      "FinalMode": 2,
+      "SteamInitialized": false,
+      "Relay": true,
+      "RoomCodePresent": true,
+      "Error": ""
+    }
+  ],
+  "FourPlayerRegression": [
+    {
+      "Client": 0,
+      "Slot": 0,
+      "Host": true,
+      "Pass": true,
+      "InputPackets": 36768,
+      "SnapshotPackets": 0,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.28137,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "independent_driving": true,
+        "cockpit_jolt": true,
+        "car_collision": true,
+        "both_mud": true,
+        "closed_door_guard": true,
+        "steal": true,
+        "navigator_drop": true,
+        "fall_out": true,
+        "tree_fatal": true,
+        "early_finish_guard": true,
+        "remote_wipe": true,
+        "finish_time": true
+      }
+    },
+    {
+      "Client": 1,
+      "Slot": 1,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 794,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.28137,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 3,
+      "Slot": 3,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 795,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.28137,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    },
+    {
+      "Client": 2,
+      "Slot": 2,
+      "Host": false,
+      "Pass": true,
+      "InputPackets": 0,
+      "SnapshotPackets": 794,
+      "Impacts": 2,
+      "Steals": 1,
+      "TreeDeaths": 1,
+      "FinishA": 26.28137,
+      "FinishB": -1,
+      "Checks": {
+        "steam_not_initialized": true,
+        "relay_transport": true,
+        "tablet_maps": true,
+        "cockpit_jolt": true,
+        "remote_state": true
+      }
+    }
+  ],
+  "LiveUnityRelay": true,
+  "DtlsAllProcesses": true,
+  "FourPlayerJoiningClientsStartedInDefaultTwoPlayerMode": true,
+  "Package": {
+    "ManifestFiles": 638,
+    "FreshExtractionPass": true,
+    "ManifestPass": true,
+    "ConfigPass": true,
+    "Archive": "RightRightRight-Standalone-0.3.0-alpha.4.zip",
+    "ArchiveBytes": 194030895,
+    "ArchiveSha256": "fe5fee14254e6aacb8591ae8ebc64f6471f6360ccead6e51ed24c8c380c227d0"
+  },
+  "Scope": "Native processes on one Windows PC use real Unity Relay/DTLS. Co-op finishes, retries and fails on trees; two players synchronize 2-to-4-to-2 lobby mode changes; four-player racing regresses successfully. Separate-PC manual gameplay and menu/clipboard interaction remain playtests."
+}

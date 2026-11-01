@@ -50,7 +50,7 @@ internal static class RaceCapture
         yield return new WaitForSecondsRealtime(1);
         var layers=race.Cars.SelectMany(c=>c.Car.GetComponentsInChildren<Renderer>(true)).Select(r=>(Object:r.gameObject,Layer:r.gameObject.layer)).ToArray();
         foreach(var layer in layers)layer.Object.layer=0;
-        var position=(race.Cars[0].Body.position+race.Cars[1].Body.position)*.5f;
+        var position=race.Cars.Aggregate(Vector3.zero,(total,c)=>total+c.Body.position)/race.Cars.Length;
         var forward=race.Cars[0].Car.transform.forward;
         camera.transform.SetParent(null,true);
         camera.transform.SetPositionAndRotation(position+forward*10+Vector3.up*4.5f,Quaternion.LookRotation(-forward*10-Vector3.up*3.5f));

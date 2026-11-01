@@ -93,7 +93,7 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     settings_dir.mkdir(parents=True)
     shutil.copy2(ROOT / 'levels/stages.json', settings_dir / 'stages.json')
     config = {'Format': 1, 'State': 'direct' if direct else 'configured' if app_id else 'pending-steam',
-              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.3'}
+              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.4'}
     (player / 'rrr-distribution.json').write_text(json.dumps(config, indent=2))
     if relay:
         (player / 'rrr-relay.json').write_text(json.dumps(relay, indent=2))
@@ -110,8 +110,9 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
         'Extract the entire download. Open player/RightRightRight.exe.\n'
         'All game files and the loader runtime are bundled. No original playtest installation, Python, '
         '.NET SDK, setup commands or first-launch downloads are required.\n'
-        + ('ONLINE ROOMS: host clicks HOST GAME, copies its room code, and shares it with three friends.\n'
-           'Friends enter that code and click JOIN CODE. Wait for 4/4, then the host chooses a course.\n'
+        + ('ONLINE ROOMS: host clicks HOST GAME, chooses 2 PLAYER CO-OP or 4 PLAYER RACE, and shares the code.\n'
+           'Friends enter that code and click JOIN CODE. Wait for 2/2 or 4/4, then choose a course.\n'
+           'Two-player co-op is the default: one driver and one navigator in one car.\n'
            'No extra apps, player accounts, Steam App ID or router setup are needed.\n'
            if relay else 'DIRECT MULTIPLAYER: no playtest or Steam App ID required.\n'
            'Online room codes require publisher configuration. LAN / ADVANCED is available.\n'
@@ -120,7 +121,7 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
            'Friends: join the Porthole lobby through Steam or its share code, approve UDP 7787, '
            'then click JOIN in the game using 127.0.0.1 and port 7787.\n'
            'Keep Porthole open. LAN/VPN players can instead join the host\'s reachable IPv4 address.\n'
-           'All four join before the host chooses a course. Seats follow connection order.\n'
+           'Choose 2 PLAYER CO-OP or 4 PLAYER RACE. All required players join before choosing a course.\n'
            'Porthole: https://store.steampowered.com/app/4963920/\n'
            if direct else 'Steam invites require this game\'s own configured App ID and account access.\n'
            + ('STEAM CONFIGURATION PENDING: engineering candidate only.\n' if not app_id else ''))

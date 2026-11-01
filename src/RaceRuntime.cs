@@ -31,9 +31,10 @@ internal sealed class RaceRuntime
         internal Vector3 TargetPosition,Velocity; internal Quaternion TargetRotation;
     }
     internal struct InputState { internal float Throttle,Steer,Pitch,Yaw,Arrived; internal RaceProtocol.Buttons Buttons; internal uint Sequence,ActionSequence; }
-    internal readonly Crew[] Cars=new Crew[2];
-    internal readonly Pad[] Tablets=new Pad[2];
-    internal readonly InputState[] Inputs=new InputState[4];
+    internal readonly int PlayerCount=SessionMode.Players;
+    internal readonly Crew[] Cars=new Crew[SessionMode.Cars];
+    internal readonly Pad[] Tablets=new Pad[SessionMode.Cars];
+    internal readonly InputState[] Inputs=new InputState[SessionMode.Players];
     internal readonly HashSet<ulong> Ready=new();
     private readonly Dictionary<(IntPtr,int),float> mudReady=new();
     private readonly Dictionary<IntPtr,float> nextMapFrame=new();
@@ -60,7 +61,7 @@ internal sealed class RaceRuntime
         {
             var race=new RaceRuntime();
             race.Build(); Active=race;RaceCapture.Start(race);
-            Mod.Log.Msg($"RACE_SCENE_READY cars=2 tablets=2 host={RaceNetwork.Host} width={race.RoadWidth}");
+            Mod.Log.Msg($"RACE_SCENE_READY cars={race.Cars.Length} tablets={race.Tablets.Length} players={race.PlayerCount} host={RaceNetwork.Host} width={race.RoadWidth}");
         }
         catch(Exception ex) { Mod.Log.Error("Race setup failed: "+ex); if(RaceNetwork.Verify) Application.Quit(11); }
     }
@@ -84,14 +85,17 @@ internal sealed class RaceRuntime
         foreach(var camera in Object.FindObjectsOfType<Camera>())
             Mod.Log.Msg($"RACE_CAMERA {camera.name} parent={camera.transform.parent?.name} local={camera.transform.localPosition}");
         original.gameObject.SetActive(false);
-        var duplicate=Object.Instantiate(original.gameObject); duplicate.name="RRR_Car_B";
-        foreach(var network in duplicate.GetComponentsInChildren<NetworkBehaviour>(true))
-            if(network is NetworkCarBridge || network.GetType().FullName!.Contains("NetworkTransform")) Object.DestroyImmediate(network);
-        foreach(var network in duplicate.GetComponentsInChildren<NetworkObject>(true)) Object.DestroyImmediate(network);
+        GameObject? duplicate=null;
+        if(Cars.Length==2) {
+            duplicate=Object.Instantiate(original.gameObject); duplicate.name="RRR_Car_B";
+            foreach(var network in duplicate.GetComponentsInChildren<NetworkBehaviour>(true))
+                if(network is NetworkCarBridge || network.GetType().FullName!.Contains("NetworkTransform")) Object.DestroyImmediate(network);
+            foreach(var network in duplicate.GetComponentsInChildren<NetworkObject>(true)) Object.DestroyImmediate(network);
+        }
         original.gameObject.SetActive(true);
-        duplicate.SetActive(true);
-        Cars[0]=MakeCrew(original,0); Cars[1]=MakeCrew(duplicate.GetComponent<GoofyCarController>(),1);
-        for(int team=0;team<2;team++)
+        Cars[0]=MakeCrew(original,0);
+        if(duplicate!=null){duplicate.SetActive(true);Cars[1]=MakeCrew(duplicate.GetComponent<GoofyCarController>(),1);}
+        for(int team=0;team<Cars.Length;team++)
         {
             var car=Cars[team];
             var tablet=car.Car.GetComponentsInChildren<CabinHoldable>(true).First(); tablet.enabled=false;
@@ -103,7 +107,7 @@ internal sealed class RaceRuntime
             pad.Map.car=car.Car.transform; pad.Map._carBridge=null;
             pad.Body.isKinematic=true;
             var right=Vector3.Cross(Vector3.up,StageBuilder.Direction(Path,8));
-            car.Body.position=Path[8]+right*(team==0?-2.3f:2.3f)+Vector3.up*.75f;
+            car.Body.position=Path[8]+right*(Cars.Length==1?0:team==0?-2.3f:2.3f)+Vector3.up*.75f;
             car.Body.rotation=Quaternion.LookRotation(StageBuilder.Direction(Path,8)); car.Car.transform.SetPositionAndRotation(car.Body.position,car.Body.rotation);
             car.LastPosition=car.TargetPosition=car.Body.position; car.TargetRotation=car.Body.rotation;
             car.Body.isKinematic=!RaceNetwork.Host; car.Car.enabled=RaceNetwork.Host; car.Car.SetGridHold(true);
@@ -119,8 +123,10 @@ internal sealed class RaceRuntime
         foreach(var pad in Tablets) foreach(var collider in pad.Colliders) foreach(var proxy in proxies)
             foreach(var other in proxy.GetComponentsInChildren<Collider>(true)) Physics.IgnoreCollision(collider,other,true);
         Mod.Log.Msg("RACE_CABIN_PROXIES tablet collision exclusions="+proxies.Length);
-        var a=Cars[0].Car.GetComponentsInChildren<Collider>(true); var b=Cars[1].Car.GetComponentsInChildren<Collider>(true);
-        foreach(var first in a) foreach(var second in b) Physics.IgnoreLayerCollision(first.gameObject.layer,second.gameObject.layer,false);
+        if(Cars.Length==2) {
+            var a=Cars[0].Car.GetComponentsInChildren<Collider>(true); var b=Cars[1].Car.GetComponentsInChildren<Collider>(true);
+            foreach(var first in a) foreach(var second in b) Physics.IgnoreLayerCollision(first.gameObject.layer,second.gameObject.layer,false);
+        }
         foreach(var grabber in Object.FindObjectsOfType<CabinGrabber>()) grabber.enabled=false;
         foreach(var finish in Object.FindObjectsOfType<StageFinishLine>()) finish.enabled=false;
         foreach(var start in Object.FindObjectsOfType<StageStartPoint>()) start.enabled=false;
@@ -171,7 +177,7 @@ internal sealed class RaceRuntime
         SampleInput();
         if(RaceNetwork.Host) HostUpdate(); else ClientUpdate();
         foreach(var pad in Tablets) UpdatePad(pad);
-        for(int i=0;i<2;i++)
+        for(int i=0;i<Cars.Length;i++)
         {
             var crew=Cars[i];
             crew.Door.door.localRotation=crew.Door._doorRest*Quaternion.Euler(0,crew.Door.openSign*crew.DoorAngle,0);
@@ -194,18 +200,18 @@ internal sealed class RaceRuntime
 
     private void HostUpdate()
     {
-        if(!Ended && RaceNetwork.Count!=4) {
+        if(!Ended && RaceNetwork.Count!=PlayerCount) {
             Disconnected=true;foreach(var c in Cars)c.Car.SetGridHold(true);return;
         }
         if(Disconnected) {Disconnected=false;foreach(var c in Cars)if(!c.Dead&&c.Finish<0)c.Car.SetGridHold(!Started);}
-        if(!Started && RaceNetwork.Seats.Length==4 && Ready.Count==4)
+        if(!Started && RaceNetwork.Seats.Length==PlayerCount && Ready.Count==PlayerCount)
         {
-            if(Countdown<0) { Countdown=5; Mod.Log.Msg("RACE_FOUR_READY: countdown started."); }
+            if(Countdown<0) { Countdown=5; Mod.Log.Msg($"RACE_PLAYERS_READY players={PlayerCount}: countdown started."); }
             Countdown=Math.Max(0,Countdown-Time.deltaTime);
             if(Countdown==0) { Started=true; foreach(var crew in Cars) crew.Car.SetGridHold(false); Mod.Log.Msg("RACE_GO"); }
         }
         if(Started && !Ended) Elapsed+=Time.deltaTime;
-        for(int i=0;i<2;i++)
+        for(int i=0;i<Cars.Length;i++)
         {
             var c=Cars[i]; if(c.Dead || c.Finish>=0) continue;
             bool wipe=Inputs[i*2].Buttons.HasFlag(RaceProtocol.Buttons.Wipe)||Inputs[i*2+1].Buttons.HasFlag(RaceProtocol.Buttons.Wipe);
@@ -244,7 +250,8 @@ internal sealed class RaceRuntime
         var listener=view.GetComponent<AudioListener>(); if(listener!=null) listener.enabled=true;
         foreach(var childCamera in view.GetComponentsInChildren<Camera>(true)) childCamera.enabled=true;
         ApplySeatVisibility(crew,slot%2==0?CabinSeat.Driver:CabinSeat.Passenger);
-        foreach(var renderer in Cars[1-slot/2].Car.GetComponentsInChildren<Renderer>(true)) renderer.gameObject.layer=0;
+        foreach(var other in Cars.Where((_,i)=>i!=slot/2))
+            foreach(var renderer in other.Car.GetComponentsInChildren<Renderer>(true)) renderer.gameObject.layer=0;
         Cursor.lockState=CursorLockMode.Locked;
         foreach(var pad in Tablets) pad.Map.SetLocalSeat(slot%2==0?CabinSeat.Driver:CabinSeat.Passenger);
         Mod.Log.Msg($"RACE_SEAT slot={slot} crew={slot/2} navigator={slot%2==1}");
@@ -327,9 +334,9 @@ internal sealed class RaceRuntime
     private static Quaternion Q(BinaryReader r)=>new(r.ReadSingle(),r.ReadSingle(),r.ReadSingle(),r.ReadSingle());
     private void SendSnapshot()
     {
-        if(RaceNetwork.Seats.Length!=4) return;
+        if(RaceNetwork.Seats.Length!=PlayerCount) return;
         using var w=RaceProtocol.Writer(RaceProtocol.Kind.Snapshot);
-        w.Write(Epoch);w.Write(++SnapshotSequence);w.Write(CourseSession.CurrentSeed); foreach(var seat in RaceNetwork.Seats) w.Write(seat);
+        w.Write(Epoch);w.Write(++SnapshotSequence);w.Write(CourseSession.CurrentSeed);w.Write((byte)PlayerCount);foreach(var seat in RaceNetwork.Seats) w.Write(seat);
         w.Write(Started);w.Write(Ended);w.Write(Disconnected);w.Write((byte)Ready.Count);w.Write(Elapsed);w.Write(Countdown);w.Write(Impacts);w.Write(Steals);w.Write(DoorEvents);w.Write(TreeDeaths);
         foreach(var input in Inputs) {w.Write(input.Pitch);w.Write(input.Yaw);w.Write(input.Throttle);w.Write(input.Steer);w.Write((byte)input.Buttons);}
         foreach(var c in Cars) { V(w,c.Body.position);Q(w,c.Body.rotation);V(w,c.Body.linearVelocity);w.Write(c.Open);w.Write(c.DoorAngle);w.Write(c.MudAmount);w.Write(c.Dead);w.Write(c.StoppedAt);w.Write(c.Finish);w.Write(c.Progress);w.Write(c.Jolt); Q(w,c.Car.bodyVisual.localRotation);Q(w,c.Car.steeringWheel.localRotation); }
@@ -342,15 +349,16 @@ internal sealed class RaceRuntime
         uint epoch=r.ReadUInt32(),seq=r.ReadUInt32();
         if(epoch==Epoch && !RaceProtocol.Newer(seq,LastSnapshot)) return;
         if(r.ReadInt32()!=CourseSession.CurrentSeed) return;
-        var seats=new ulong[4];for(int i=0;i<4;i++) seats[i]=r.ReadUInt64();
-        if(seats.Distinct().Count()!=4 || seats[0]!=0) return;
+        if(r.ReadByte()!=PlayerCount)return;
+        var seats=new ulong[PlayerCount];for(int i=0;i<seats.Length;i++) seats[i]=r.ReadUInt64();
+        if(seats.Distinct().Count()!=PlayerCount || seats[0]!=0) return;
         RaceNetwork.Seats=seats;Epoch=epoch;LastSnapshot=seq;lastSnapshotTime=Time.realtimeSinceStartup;SnapshotPackets++;
         Started=r.ReadBoolean();Ended=r.ReadBoolean();Disconnected=r.ReadBoolean();int ready=r.ReadByte();Ready.Clear();foreach(var id in seats.Take(ready))Ready.Add(id);
         Elapsed=r.ReadSingle();Countdown=r.ReadSingle();Impacts=r.ReadInt32();Steals=r.ReadInt32();DoorEvents=r.ReadInt32();TreeDeaths=r.ReadInt32();
-        for(int i=0;i<4;i++) {var input=Inputs[i];input.Pitch=r.ReadSingle();input.Yaw=r.ReadSingle();input.Throttle=r.ReadSingle();input.Steer=r.ReadSingle();input.Buttons=(RaceProtocol.Buttons)r.ReadByte();Inputs[i]=input;}
+        for(int i=0;i<Inputs.Length;i++) {var input=Inputs[i];input.Pitch=r.ReadSingle();input.Yaw=r.ReadSingle();input.Throttle=r.ReadSingle();input.Steer=r.ReadSingle();input.Buttons=(RaceProtocol.Buttons)r.ReadByte();Inputs[i]=input;}
         foreach(var c in Cars) { c.TargetPosition=V(r);c.TargetRotation=Q(r);c.Velocity=V(r);c.Open=r.ReadBoolean();c.DoorAngle=r.ReadSingle();c.MudAmount=r.ReadSingle();c.Dead=r.ReadBoolean();c.StoppedAt=r.ReadSingle();c.Finish=r.ReadSingle();c.Progress=r.ReadInt32();c.Jolt=r.ReadSingle();c.Car.bodyVisual.localRotation=Q(r);c.Car.steeringWheel.localRotation=Q(r); }
         foreach(var p in Tablets) { p.Holder=r.ReadInt32();p.Carrier=r.ReadInt32();p.TargetPosition=V(r);p.TargetRotation=Q(r);p.Velocity=V(r); }
-        for(int i=0;i<2;i++) {Cars[i].Car._throttleInput=Inputs[i*2].Throttle;Cars[i].Car._steerInput=Inputs[i*2].Steer;}
+        for(int i=0;i<Cars.Length;i++) {Cars[i].Car._throttleInput=Inputs[i*2].Throttle;Cars[i].Car._steerInput=Inputs[i*2].Steer;}
         if(Impacts>previousImpacts)foreach(var c in Cars)c.Car.GetComponent<CarCrash>().PlayImpact();
     }
 
@@ -419,7 +427,7 @@ internal sealed class RaceRuntime
 
     internal int Team(Component component)
     {
-        for(int i=0;i<2;i++) if(component.transform.IsChildOf(Cars[i].Car.transform)) return i;
+        for(int i=0;i<Cars.Length;i++) if(component.transform.IsChildOf(Cars[i].Car.transform)) return i;
         return -1;
     }
     internal void Collision(int team,Collision collision)
@@ -460,7 +468,7 @@ internal sealed class RaceRuntime
     internal void LateUpdate()
     {
         if(Controller==null||Cars.Any(c=>c.DriverEye==null||c.NavigatorEye==null))return;
-        for(int i=0;i<2;i++) {
+        for(int i=0;i<Cars.Length;i++) {
             var c=Cars[i];NetworkCarBridge.ApplyHeadLook(Head(c.DriverEye),c.DriverRest,Inputs[i*2].Pitch,Inputs[i*2].Yaw);
             NetworkCarBridge.ApplyHeadLook(Head(c.NavigatorEye),c.NavigatorRest,Inputs[i*2+1].Pitch,Inputs[i*2+1].Yaw);
         }
@@ -474,9 +482,10 @@ internal sealed class RaceRuntime
     {
         int slot=RaceNetwork.LocalSlot;
         var winner=Cars.Select((c,i)=>(c,i)).Where(x=>x.c.Finish>=0).OrderBy(x=>x.c.Finish).FirstOrDefault();
-        var status=Disconnected?"PLAYER DISCONNECTED / RETURN TO LOBBY":!Started?(Countdown<0?$"WAITING FOR FOUR SEATS ({Ready.Count}/4)":$"START IN {Math.Ceiling(Countdown)}"):Ended?(winner.c==null?"BOTH CREWS DNF":$"WINNER: CREW {(winner.i==0?"A":"B")}"):$"RACE {Elapsed:F1}s";
+        string result=Cars.Length==1?(Cars[0].Dead?"RUN FAILED / TREE":$"CO-OP FINISHED {Cars[0].Finish:F2}s"):(winner.c==null?"BOTH CREWS DNF":$"WINNER: CREW {(winner.i==0?"A":"B")}");
+        var status=Disconnected?"PLAYER DISCONNECTED / RETURN TO LOBBY":!Started?(Countdown<0?$"WAITING FOR CREW ({Ready.Count}/{PlayerCount})":$"START IN {Math.Ceiling(Countdown)}"):Ended?result:$"{(Cars.Length==1?"CO-OP":"RACE")} {Elapsed:F1}s";
         string CrewLine(int i) => $"CREW {(i==0?"A":"B")}: "+(Cars[i].Dead?"DNF / TREE":Cars[i].Finish>=0?$"FINISHED {Cars[i].Finish:F2}s":$"{Math.Min(100,Cars[i].Progress*100/Path.Count)}%");
-        GUI.Box(new Rect(16,16,520,122),$"{status}\n{CrewLine(0)}     {CrewLine(1)}\nYOU: crew {(slot/2==0?"A":"B")} {(slot%2==0?"DRIVER":"NAVIGATOR")}\nE grab/drop tablet | G close door | hold C wipe | F8 host retry");
+        GUI.Box(new Rect(16,16,520,122),$"{status}\n{string.Join("     ",Enumerable.Range(0,Cars.Length).Select(CrewLine))}\nYOU: crew {(slot/2==0?"A":"B")} {(slot%2==0?"DRIVER":"NAVIGATOR")}\nE grab/drop tablet | G close door | hold C wipe | F8 host retry");
         if(RaceNetwork.Host&&GUI.Button(new Rect(16,145,170,28),"RETURN TO LOBBY")) {
             if(DirectSession.Enabled)DirectSession.ReturnToLobby();else NetSession.Instance.BackToMenu();
         }

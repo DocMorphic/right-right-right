@@ -1,5 +1,11 @@
 # Verification
 
+## Selectable modes (alpha.4)
+
+Two-player co-op is the standalone default. Protocol tests cover supported counts, seat ownership, occupied-lobby shrink rejection, and invalidating readiness acknowledgments when the mode changes. Two native processes pass a live Relay/DTLS test with exactly one active native car and one tablet, driver/nav roles and map privacy, driving, actual mud crossing, remote tablet drop/fall, remote door close and wiping, a shared finish, retry and replicated fatal tree failure. A separate lifecycle test covers ready/countdown, retry, return to lobby and synchronized 2→4→2 mode changes on the same room.
+
+Four native processes also pass the full race regression using the host's four-player selection; joining clients keep the two-player default and obtain the host's mode through the network handshake. All processes run on one PC through Unity's hosted service. See [mode-verification-results.json](mode-verification-results.json). Separate-PC gameplay and manual menu/clipboard interaction remain playtests.
+
 ## Online room codes (alpha.3)
 
 The managed Relay tests cover anonymous sign-in reuse, project/environment headers, host allocation for three guests, join-code generation/join, DTLS endpoint selection, bounded response/credential parsing, cancellation, and useful HTTP errors without leaking response bodies. Four native players pass the complete race fixture through a loopback REST/UDP Relay test double, including authenticated BIND packets and native Relay data forwarding. They also pass two-round retry/return-to-lobby checks with the allocation intact. See [Relay setup and scope](RELAY-MULTIPLAYER.md) and the sanitized [Relay report](relay-verification-results.json).

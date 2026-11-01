@@ -1,6 +1,6 @@
-# In-game room codes (alpha.3)
+# In-game room codes and modes (alpha.4)
 
-This update adds **HOST GAME → copy room code → JOIN CODE** to the standalone player. [Download alpha.3](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.3/RightRightRight-Standalone-0.3.0-alpha.3.zip), extract the entire ZIP and open **player/RightRightRight.exe**. Online settings are already bundled. The previous alpha.2 download uses Porthole instead.
+Choose **2 PLAYER CO-OP** (default) or **4 PLAYER RACE**, then **HOST GAME → copy room code → JOIN CODE**. [Download alpha.4](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.4/RightRightRight-Standalone-0.3.0-alpha.4.zip), extract the entire ZIP and open **player/RightRightRight.exe**. Online settings are bundled. Everyone must update; alpha.3 requires four players and uses an older protocol.
 
 The owner supplied a separate Unity project. Four native game processes have passed live Unity Authentication, Relay allocation/join and DTLS binding, with race verification and retry/lobby return. This tests the actual hosted service from one PC; it does not replace a four-PC home-network playtest. [Verification report](relay-verification-results.json).
 
@@ -32,13 +32,17 @@ Packaging copies only Format, ProjectId, EnvironmentName and Region to `player/r
 ## Playing a configured release
 
 1. Everyone extracts the full same-version ZIP and opens **player/RightRightRight.exe**.
-2. One person clicks **HOST GAME**. A code appears after the native transport has bound to Relay and the service returns the code.
-3. The host copies the code to their friends. Each enters it in the game and clicks **JOIN CODE**.
-4. At **4/4** matching players, the host chooses a course. Join order assigns A driver, A navigator, B driver, B navigator.
+2. The host chooses **2 PLAYER CO-OP** (one car: host drives, friend navigates) or **4 PLAYER RACE** (two cars: A driver, A navigator, B driver, B navigator in join order).
+3. The host clicks **HOST GAME** and shares the code. Friends enter it and click **JOIN CODE**.
+4. At **2/2** or **4/4** matching players, the host chooses a course.
+
+Two-player co-op has one car and one tablet. The crew shares its finish time or tree failure. Doors, mud/wiping, tablet dropping and the existing difficult forest courses remain active.
+
+Mode changes belong to the host and happen in the lobby, including after returning from a run. The same Relay allocation/code reserves space for up to three guests, so switching from two-player to four-player mode lets two more friends join the existing room. To shrink a four-player lobby to co-op, two guests must leave first. Every peer acknowledges the new mode as well as the selected course and seed before loading. Mode changes are unavailable during a run. Three-player and solo modes are not supported.
 
 No Porthole, Steam, port forwarding, host IP entry, player login or separate application is required for this flow. Internet access and Relay availability are required. The host must remain in the game. Disconnecting ends that allocation; a new room has a new code. The same allocation survives course retry and return to the lobby. Host migration and in-race joins are not supported.
 
-**LAN / ADVANCED** retains the previous direct IPv4/UDP flow for LAN, VPN or Porthole. Switching from a Relay room resets native transport mode before a direct connection starts. Rooms are locked to four players and the current version/course/seed handshake.
+**LAN / ADVANCED** retains the previous direct IPv4/UDP flow for LAN, VPN or Porthole. Switching from a Relay room resets native transport mode before a direct connection starts. Rooms enforce the selected two- or four-seat cap and current version/mode/course/seed handshake.
 
 ## Implementation and validation
 

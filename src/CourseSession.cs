@@ -12,7 +12,7 @@ namespace RightRightRight;
 
 internal static class CourseSession
 {
-    internal const string Version = "0.3.0-alpha.3";
+    internal const string Version = "0.3.0-alpha.4";
     internal static string ContentId = "";
     private static string lastAcknowledged = "";
     private static bool selecting;
@@ -58,7 +58,7 @@ internal static class CourseSession
     internal static void Select(StageDefinition stage, Action<string> load)
     {
         if(DirectSession.Enabled){DirectSession.Select(stage);return;}
-        if(RaceNetwork.Enabled && (!RaceNetwork.Host || RaceNetwork.Count!=4)) { SetStatus("The host selects the course after all four players join.");return; }
+        if(RaceNetwork.Enabled && (!RaceNetwork.Host || RaceNetwork.Count!=SessionMode.Players)) { SetStatus($"The host selects the course after all {SessionMode.Players} players join.");return; }
         if (selecting) return;
         if (NetSession.Instance != null && !NetSession.Instance.IsDriver) { SetStatus("The driver chooses the course."); return; }
         int seed = RandomNumberGenerator.GetInt32(1, int.MaxValue);

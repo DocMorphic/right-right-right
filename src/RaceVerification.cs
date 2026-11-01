@@ -18,6 +18,7 @@ internal static class RaceVerification
     internal static void BotInput(RaceRuntime r,int slot,ref RaceRuntime.InputState input)
     {
         if(!RaceNetwork.Verify)return;
+        if(r.PlayerCount==2){CoopVerification.BotInput(r,slot,ref input);return;}
         input.Throttle=r.Started&&r.Elapsed<3.5f&&slot%2==0?.65f:0;
         input.Steer=0;input.Buttons=RaceProtocol.Buttons.None;input.ActionSequence=0;
         if(slot==1)
@@ -34,6 +35,7 @@ internal static class RaceVerification
     internal static void Tick(RaceRuntime r)
     {
         if(!RaceNetwork.Verify||completed)return;
+        if(r.PlayerCount==2){CoopVerification.Tick(r);return;}
         if(instance!=r) {instance=r;checks.Clear();outcomes.Clear();begun=Time.realtimeSinceStartup;endedAt=0;failed=false;starts=r.Cars.Select(c=>c.Body.position).ToArray();}
         try
         {

@@ -1,6 +1,13 @@
 using RightRightRight;
 
 void Require(bool condition,string message){if(!condition)throw new Exception(message);}
+Require(SessionMode.Players==2&&SessionMode.Cars==1,"Standalone defaults to two-person co-op.");
+Require(SessionMode.TrySelect(4,2)&&SessionMode.Cars==2,"Two connected players can expand their lobby.");
+string fourAck=SessionMode.Acknowledgment("stage|seed");
+Require(!SessionMode.TrySelect(2,4)&&SessionMode.Players==4,"Cannot discard occupied seats.");
+Require(SessionMode.TrySelect(2,2)&&SessionMode.Acknowledgment("stage|seed")!=fourAck,"Mode switch must invalidate old ready acknowledgments.");
+foreach(int value in new[]{0,1,3,5,255})Require(!SessionMode.TrySelect(value,0)&&SessionMode.Players==2,"Invalid mode rejected without changing state.");
+Require(RaceProtocol.Slot(new ulong[]{0,9},9)==1&&RaceProtocol.Slot(new ulong[]{0,9},12)==-1,"Co-op role ownership.");
 Require(RaceProtocol.Slot(new ulong[]{0,7,12,21},12)==2,"Remote driver must map to crew B.");
 Require(RaceProtocol.Slot(new ulong[]{0,7,12,21},99)==-1,"Unknown senders must have no seat.");
 Require(RaceProtocol.Newer(5,4)&&!RaceProtocol.Newer(4,5)&&!RaceProtocol.Newer(5,5),"Sequence/replay order.");

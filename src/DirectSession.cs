@@ -26,7 +26,7 @@ internal static class DirectSession
     private static int proposalSeed;
     private static bool Menu=>SceneManager.GetActiveScene().name=="Menu";
     private static bool Verified=>RaceNetwork.Args.Contains("--rrr-direct-verify")||RaceNetwork.Args.Contains("--rrr-relay-verify");
-    private static bool AllAccepted=>RaceNetwork.Count==4&&RaceNetwork.ConnectedIds().All(id=>id==0||accepted.TryGetValue(id,out var token)&&token==proposal);
+    private static bool AllAccepted=>RaceNetwork.Count==SessionMode.Players&&RaceNetwork.ConnectedIds().All(id=>id==0||accepted.TryGetValue(id,out var token)&&token==SessionMode.Acknowledgment(proposal));
 
     internal static void Scene(string name)
     {
@@ -67,18 +67,18 @@ internal static class DirectSession
                 var ids=RaceNetwork.ConnectedIds();
                 foreach(var id in accepted.Keys.Where(id=>!ids.Contains(id)).ToArray())accepted.Remove(id);
                 using var w=RaceProtocol.Writer(RaceProtocol.Kind.DirectLobby);
-                w.Write(CourseSession.ContentId);w.Write((byte)ids.Length);foreach(var id in ids)w.Write(id);
+                w.Write(CourseSession.ContentId);w.Write((byte)SessionMode.Players);w.Write((byte)ids.Length);foreach(var id in ids)w.Write(id);
                 w.Write(proposal);w.Write(scene);w.Write(proposalSeed);RaceNetwork.Send(RaceProtocol.Bytes(w),true);
             }
             else {
-                using var w=RaceProtocol.Writer(RaceProtocol.Kind.DirectHello);w.Write(CourseSession.ContentId);w.Write(proposal);RaceNetwork.Send(RaceProtocol.Bytes(w),true);
+                using var w=RaceProtocol.Writer(RaceProtocol.Kind.DirectHello);w.Write(CourseSession.ContentId);w.Write((byte)SessionMode.Players);w.Write(proposal);RaceNetwork.Send(RaceProtocol.Bytes(w),true);
             }
         }
         if(manager.IsServer&&Verified&&!DirectFlowVerification.FinishedRounds&&AllAccepted&&!loading&&proposal.Length==0)
             Select(Mod.Stages.First(s=>s.Scene=="RRR_05"));
         if(manager.IsServer&&proposal.Length>0&&!loading&&AllAccepted) {
             loading=true;CourseSession.CurrentSeed=proposalSeed;
-            Mod.Log.Msg($"DIRECT_COURSE_CONFIRMED {scene} seed={proposalSeed} peers=4");
+            Mod.Log.Msg($"DIRECT_COURSE_CONFIRMED {scene} seed={proposalSeed} peers={SessionMode.Players}");
             manager.SceneManager.LoadScene(scene,LoadSceneMode.Single);
         }
     }
@@ -104,16 +104,18 @@ internal static class DirectSession
             if(reader.ReadString()!=CourseSession.ContentId) {
                 RaceNetwork.Manager.DisconnectClient(sender,"Different game versions. Download the same standalone release.");return true;
             }
-            accepted[sender]=reader.ReadString();
+            int mode=reader.ReadByte();string acknowledgment=reader.ReadString();
+            if(mode==SessionMode.Players)accepted[sender]=$"{mode}|{acknowledgment}";else accepted.Remove(sender);
             return true;
         }
         if(RaceNetwork.Host||sender!=0)return true;
         if(reader.ReadString()!=CourseSession.ContentId) {Disconnect("Different game versions. Everyone needs the same standalone release.");return true;}
-        int count=reader.ReadByte();if(count<1||count>4)return true;
+        int players=reader.ReadByte(),count=reader.ReadByte();if(!SessionMode.Valid(players)||count<1||count>players)return true;
         var ids=new ulong[count];for(int i=0;i<count;i++)ids[i]=reader.ReadUInt64();
         if(ids[0]!=0||ids.Distinct().Count()!=count)return true;
         string token=reader.ReadString(),target=reader.ReadString();int seed=reader.ReadInt32();
-        if(token.Length>0 && (!Mod.Stages.Any(s=>s.Scene==target)||seed<=0||token!=$"{target}|{seed}"))return true;
+        if(token.Length>0 && (!Mod.Stages.Any(s=>s.Scene==target)||seed<=0||token!=$"{players}|{target}|{seed}"))return true;
+        if(!SessionMode.TrySelect(players,count))return true;
         RaceNetwork.Seats=ids;proposal=token;scene=target;proposalSeed=seed;
         if(token.Length>0)CourseSession.CurrentSeed=seed;
         note=token.Length>0?"Confirming the host's course...":"Connected. Waiting for the host to choose a course.";
@@ -124,8 +126,17 @@ internal static class DirectSession
     {
         if(!Enabled||!RaceNetwork.Host||!AllAccepted||loading)return;
         proposalSeed=Verified?12345:RandomNumberGenerator.GetInt32(1,int.MaxValue);
-        scene=stage.Scene;proposal=$"{scene}|{proposalSeed}";note="Waiting for all four players to confirm the course...";
+        scene=stage.Scene;proposal=$"{SessionMode.Players}|{scene}|{proposalSeed}";note=$"Waiting for all {SessionMode.Players} players to confirm the course...";
         nextPacket=0;
+    }
+
+    internal static bool ChangeMode(int players)
+    {
+        var manager=RaceNetwork.Manager;
+        if(!Menu||busy||RelaySession.Busy||loading||proposal.Length>0||(manager!=null&&manager.IsListening&&!manager.IsServer))return false;
+        if(!SessionMode.TrySelect(players,RaceNetwork.Count))return false;
+        accepted.Clear();nextPacket=0;note=$"{SessionMode.Name} selected. Waiting for {players} matching players.";
+        Mod.Log.Msg("LOBBY_MODE players="+players);return true;
     }
 
     private static void Connect(bool host)
@@ -162,7 +173,7 @@ internal static class DirectSession
         transport.m_ProtocolType=UnityTransport.ProtocolType.UnityTransport;
         manager.NetworkConfig.NetworkTransport=transport;transport.SetConnectionData(ip,port,"0.0.0.0");
         bool success=StartNative(host);busy=false;
-        note=success?(host?$"Hosting UDP {port}. Waiting for three friends.":"Connecting to host..."):"Could not start the connection. Check whether this port is already in use.";
+        note=success?(host?$"Hosting UDP {port}. Waiting for {SessionMode.Players-1} friend(s).":"Connecting to host..."):"Could not start the connection. Check whether this port is already in use.";
         Mod.Log.Msg($"DIRECT_STARTED host={host} success={success} port={port}");
     }
 
@@ -214,7 +225,7 @@ internal static class DirectSession
     {
         if(!Enabled||!Menu)return;
         float left=Math.Max(8,(Screen.width-700)/2f),top=Math.Max(8,(Screen.height-520)/2f);
-        GUI.Box(new Rect(left,top,700,510),"RIGHT RIGHT RIGHT / FOUR PLAYER RACE");
+        GUI.Box(new Rect(left,top,700,510),"RIGHT RIGHT RIGHT / "+SessionMode.Name);
         bool disconnected=RaceNetwork.Manager==null||(!RaceNetwork.Manager.IsListening&&!RaceNetwork.Manager.ShutdownInProgress);
         if(!advanced)RelaySession.Gui(left,top,disconnected);
         else {
@@ -229,14 +240,20 @@ internal static class DirectSession
             if(GUI.Button(new Rect(left+180,top+135,150,28),"GET PORTHOLE"))Application.OpenURL("https://store.steampowered.com/app/4963920/");
         }
         if(GUI.Button(new Rect(left+575,top+135,100,28),"DISCONNECT"))Disconnect("Disconnected. Host or join a race.");
-        GUI.Label(new Rect(left+20,top+185,660,45),$"{RaceNetwork.Count}/4 players — {note}");
-        GUI.Label(new Rect(left+20,top+232,660,35),"Join order: host = A driver / next = A navigator / next = B driver / last = B navigator");
+        GUI.Label(new Rect(left+20,top+185,660,45),$"{RaceNetwork.Count}/{SessionMode.Players} players — {note}");
+        GUI.enabled=(disconnected||RaceNetwork.Host)&&!busy&&!RelaySession.Busy&&!loading&&proposal.Length==0;
+        bool modeButtons=GUI.enabled;GUI.enabled=modeButtons&&RaceNetwork.Count<=2;
+        if(GUI.Button(new Rect(left+20,top+235,215,30),SessionMode.Players==2?"[ 2 PLAYER CO-OP ]":"2 PLAYER CO-OP"))ChangeMode(2);
+        GUI.enabled=modeButtons;
+        if(GUI.Button(new Rect(left+250,top+235,215,30),SessionMode.Players==4?"[ 4 PLAYER RACE ]":"4 PLAYER RACE"))ChangeMode(4);
+        GUI.enabled=true;
+        GUI.Label(new Rect(left+20,top+270,660,28),SessionMode.Players==2?"One car: host drives, friend navigates. Host can change mode in the lobby.":"Two cars. Join order: A driver, A navigator, B driver, B navigator.");
         bool canChoose=RaceNetwork.Host&&AllAccepted&&!loading&&proposal.Length==0;
-        GUI.Label(new Rect(left+20,top+270,660,25),canChoose?"All four connected. Host: choose a course.":"The host can choose a course when all four matching players are connected.");
+        GUI.Label(new Rect(left+20,top+301,660,25),canChoose?"Everyone connected. Host: choose a course.":$"The host can choose a course when all {SessionMode.Players} matching players are connected.");
         GUI.enabled=canChoose;
-        for(int i=0;i<Mod.Stages.Length;i++)if(GUI.Button(new Rect(left+20+(i%2)*335,top+310+(i/2)*46,320,36),Mod.Stages[i].Name))Select(Mod.Stages[i]);
+        for(int i=0;i<Mod.Stages.Length;i++)if(GUI.Button(new Rect(left+20+(i%2)*335,top+332+(i/2)*40,320,34),Mod.Stages[i].Name))Select(Mod.Stages[i]);
         GUI.enabled=true;
         if(GUI.Button(new Rect(left+20,top+460,220,28),advanced?"BACK TO ROOM CODES":"LAN / ADVANCED"))advanced=!advanced;
-        GUI.Label(new Rect(left+260,top+460,415,35),"Everyone needs the same game version. Four players per race.");
+        GUI.Label(new Rect(left+260,top+460,415,35),"Everyone needs the same game version.");
     }
 }
