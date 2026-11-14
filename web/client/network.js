@@ -50,9 +50,12 @@ export class Network extends EventTarget {
     // flush() still permits only one command at a time, and revision filtering
     // prevents the older poll from rolling back the newer input snapshot.
     const run=async()=>{
+      // Choose continuous input when the previous HTTP request has actually
+      // finished, rather than freezing a stale turn behind a slow poll.
+      const payload=typeof extra==='function'?extra():extra;
       for(let attempt=0;;attempt++) {
         const sentAt=performance.now();
-        const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...this.session,epoch:this.epoch,...extra})});
+        const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...this.session,epoch:this.epoch,...payload})});
         const data=await response.json();const elapsed=performance.now()-sentAt;this.roundTripMs=this.roundTripMs===undefined?elapsed:this.roundTripMs*.8+elapsed*.2;
         if(response.status===409&&data.messages?.some(message=>message.code==='busy')&&attempt<4){await new Promise(resolve=>setTimeout(resolve,50*(attempt+1)));continue;}
         if(response.status===401)throw new Error('Your session expired. Rejoin the room.');
@@ -67,7 +70,7 @@ export class Network extends EventTarget {
   }
   async flush() {
     if(this.flushing||!this.pending.length||!this.connected)return;this.flushing=true;
-    try {while(this.pending.length&&this.connected){const message=this.pending.shift(),data=await this.request('/api/message',{message});this.deliver(data.messages||[]);this.lastSend=performance.now();}}
+    try {while(this.pending.length&&this.connected){const data=await this.request('/api/message',()=>({message:this.pending.shift()}));this.deliver(data.messages||[]);this.lastSend=performance.now();}}
     catch(error){this.failed(error);}finally{this.flushing=false;}
   }
   async poll() {

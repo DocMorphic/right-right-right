@@ -20,7 +20,9 @@ try{
   const health=await fetch(new URL('/health',base));assert.equal(health.status,200);assert.equal((await health.json()).ok,true);
   for(let i=0;i<4;i++)players.push(await post('/api/session',{}));
   const created=await send(players[0],{type:'create',mode:'race',name:'Verification A',seed:12345});const code=find(created,'joined').code;
-  await Promise.all(players.slice(1).map((player,i)=>send(player,{type:'join',code,name:`Verification ${i+1}`})));
+  // The ownership checks below use known seat indices. Concurrent joins have no
+  // guaranteed arrival order; concurrency is exercised by the input batch.
+  for(let i=1;i<players.length;i++)await send(players[i],{type:'join',code,name:`Verification ${i}`});
   await Promise.all(players.map(player=>send(player,{type:'ready',ready:true})));
   const started=await send(players[0],{type:'start'}),race=find(started,'race');assert.equal(race.snapshot.cars.length,2);
   const received=await Promise.all(players.map(player=>poll(player)));assert.ok(received.every(reply=>find(reply,'race')?.courseHash===race.courseHash));

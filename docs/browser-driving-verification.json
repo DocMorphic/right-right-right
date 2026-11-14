@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-14",
+  "purpose": "Browser handling, co-op road width, finite impact feedback and navigator latency fixes.",
+  "publication": {
+    "version": 7,
+    "url": "https://right-right-right-play.andustry-0633.chatgpt.site",
+    "status": "succeeded",
+    "liveBundleMatchesValidatedBuild": true,
+    "liveMultiplayerSmoke": "passed: four-player race, concurrent inputs, driver ownership, action acknowledgments, guest bootstrap, retry, switching mode and two-player co-op; 31 requests, zero retries"
+  },
+  "nativeReference": {
+    "source": "Installed Left! Left! LEFT! Playtest, recovered serialized level1/level2/level3 GoofyCarController and road data",
+    "cooperativeRoadWidthMeters": 5,
+    "authoredRoads": "Original meshes and varying strip widths are retained unchanged, including the original start and finish poses.",
+    "wheelbaseMeters": 2.8,
+    "steerLockDegrees": {"below20Kmh": 30, "at80Kmh": 9},
+    "steerSmoothTimeSeconds": {"lowSpeed": 0.07, "highSpeed": 0.24},
+    "yawResponse": 5.4,
+    "maxYawRateRadiansPerSecond": 1.7,
+    "mouseSensitivity": 0.1
+  },
+  "changes": [
+    "Added procedural co-op roads use 5m and their matching boundary trees move inward; procedural four-player race roads retain 9.5m.",
+    "Speed-dependent native steering lock, wheelbase, damped steering and bounded yaw replace excessive high-speed lock.",
+    "Driver and navigator use continuous fixed-step presentation; navigator keys cannot drive, and remote held inputs expire.",
+    "Prediction covers the full frame interval at 20fps rather than losing simulation time to a 40ms cap.",
+    "TREE'D and finished result cameras do not shake; moving car impacts have a bounded local 450ms envelope.",
+    "Queued continuous input is selected after an outstanding poll completes; the latest turn and discrete actions survive.",
+    "Race packets no longer rebuild the hidden lobby or update browser history.",
+    "Auto graphics adapts pixel ratio to sustained frame rate, and only nearby forest chunks cast dynamic shadows.",
+    "Steering and mouse sensitivity are adjustable in Esc > Settings and saved locally."
+  ],
+  "validation": {
+    "command": "npm test",
+    "passed": 48,
+    "failed": 0,
+    "newRegressions": 7,
+    "proceduralFullRoute": {"courseMeters": 4739, "finishSeconds": 409.44, "statePlacements": 0, "mudDeposits": 26},
+    "coarseHttpFullRoute": {"requestCadenceMs": 650, "finishSeconds": 557.68, "statePlacements": 0},
+    "authoredFullRoutes": [
+      {"scene": "1", "finishSeconds": 271.52, "statePlacements": 0},
+      {"scene": "2", "finishSeconds": 923.78, "statePlacements": 0},
+      {"scene": "3", "finishSeconds": 440.22, "statePlacements": 0}
+    ],
+    "additionalChecks": ["Four real HTTP clients and WebSocket clients", "All nine course profiles", "Actual 650ms wall-time delayed responses", "Frozen terminal crash snapshots", "Navigator controls isolated from driver prediction", "20fps versus 60fps prediction", "Held input expiry", "Concurrent request ordering"]
+  },
+  "integration": "Mac audio, original pause UI and original-course commits were merged and preserved. No audio source or audio tests were changed by this work.",
+  "limits": [
+    "This ports serialized handling parameters into the browser bicycle model; it is not the native Unity suspension, tyre solver or a claim of identical feel.",
+    "Automated HTTP routes use the internal fixture clock; the delayed-response check uses wall time.",
+    "No new manual visual playtest, measured GPU frame-rate comparison or two-computer internet test has been completed by these checks.",
+    "Everyone should refresh the browser page and create a new room after deployment so client and server handling match."
+  ]
+}

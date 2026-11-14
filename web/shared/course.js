@@ -77,7 +77,8 @@ export function generateCourse(seed = 84183, mode = 'coop', blocks = 4, profile 
   for(const p of points) { p.x*=1.7;p.z*=1.7; }
   const distances=[0];
   for(let i=1;i<points.length;i++) {length+=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y,points[i].z-points[i-1].z);distances.push(length);}
-  const course={seed:seed|0,mode,profile,blocks,points,width:9.5,length,distances,hairpins,hardCorners,trees:[],mud:[]};
+  // Original single-car road is 5 m. Only the two-car race needs extra width.
+  const course={seed:seed|0,mode,profile,blocks,points,width:mode==='race'?9.5:5,length,distances,hairpins,hardCorners,trees:[],mud:[]};
   const treeRng=new Rng(seed^0x74726565);
   let nextTree=0,nextBack=0;
   for(let i=1;i<points.length;i++) {

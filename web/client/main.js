@@ -1,12 +1,14 @@
 import './style.css';
 import {Network} from './network.js';
 import {isPhoneOrTablet} from './platform.js';
+import {installDrivingSettings} from './driving-settings.js';
 import {CourseSelection,freshCourseSeed} from './course-selection.js';
 import {RallyView,initialLookPitch} from './view.js';
 import {RallyAudio} from './audio.js';
 import {generateCourse, STAGES} from '../shared/course.js';
 const $=id=>document.getElementById(id),show=(id,value=true)=>$(id).classList.toggle('hidden',!value);
 const network=new Network(),audio=new RallyAudio(),keys=new Set(),look={pitch:0,yaw:0};
+const drivingSettings=installDrivingSettings(document.querySelector('[data-pause-page="settings"]'),localStorage);
 let view,room=null,id='',slot=0,mode='coop',epoch=0,snapshot=null,inRace=false,menuOpen=false,busy=false,advanced=false,note="Host a game, or enter your friend's room code.",pendingCourse=null,selectedProfile=0,seq=0,actionId=0,actions=[],lastSend=0,lastFrame=0,lastReady=0,toastTimer=0;
 function sizeUI(){document.documentElement.style.setProperty('--pause-scale',String(Math.sqrt(innerWidth/1920*innerHeight/1080)));document.documentElement.style.setProperty('--ui-scale',String(Math.min((innerWidth-16)/700,(innerHeight-16)/510)));document.documentElement.style.setProperty('--hud-scale',String(Math.min(1,(innerWidth-32)/520)));}sizeUI();window.addEventListener('resize',sizeUI);
 const modeName=()=>mode==='coop'?'2 PLAYER CO-OP':'4 PLAYER RACE',host=()=>room?.hostId===id,required=()=>room?.playersRequired||(mode==='race'?4:2);
@@ -14,7 +16,7 @@ function toast(message){$('toast').textContent=message;show('toast');clearTimeou
 function send(message){if(!network.send(message))toast('Connection lost. Host a new room or rejoin from the menu.');}
 function releaseMouse(){if(document.pointerLockElement)document.exitPointerLock();}
 function lockMouse(){if(inRace&&!menuOpen){$('game').requestPointerLock()?.catch?.(()=>{});}}
-function input(){return{throttle:menuOpen?0:Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown')),steer:menuOpen?0:Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft')),handbrake:!menuOpen&&keys.has('Space'),wipe:!menuOpen&&keys.has('KeyC'),pitch:look.pitch,yaw:look.yaw};}
+function input(){return{throttle:menuOpen?0:Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown')),steer:menuOpen?0:Math.max(-1,Math.min(1,(Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft')))*drivingSettings.steering)),handbrake:!menuOpen&&keys.has('Space'),wipe:!menuOpen&&keys.has('KeyC'),pitch:look.pitch,yaw:look.yaw};}
 function action(kind){if(inRace&&!menuOpen)actions.push({id:++actionId,kind});}
 function acknowledgeLobby(){if(room?.status==='lobby'&&network.connected&&room.seats[slot]&&!room.seats[slot].ready&&performance.now()-lastReady>250){lastReady=performance.now();send({type:'ready',ready:true,catalog:STAGES.length});}}
 setInterval(acknowledgeLobby,300);
@@ -40,6 +42,9 @@ async function connect(message){busy=true;note=message.type==='create'?'Creating
 function disconnect(){if(network.connected)send({type:'leave'});room=null;inRace=false;epoch=0;snapshot=null;pendingCourse=null;keys.clear();view.setActive(false);audio.active=false;releaseMouse();show('menu');show('hud',false);show('browser-menu',false);note='Disconnected. Host or join a race.';const url=new URL(location.href);url.searchParams.delete('room');history.replaceState(null,'',url);renderMenu();}
 function onLobby(message){
   room=message;mode=room.mode;slot=Math.max(0,room.seats.findIndex(s=>s?.id===id));
+  // HTTP snapshots include a lobby envelope. Do not rebuild the hidden menu or
+  // write browser history on every driving packet, especially on the navigator.
+  if(room.status!=='lobby'&&inRace)return;
   if(room.status==='lobby'){
     if(inRace){inRace=false;snapshot=null;audio.active=false;view.setActive(false);releaseMouse();show('hud',false);show('browser-menu',false);show('menu');menuOpen=false;}
     note=pendingCourse?`Waiting for all ${required()} players to confirm the course...`:host()?`Room open. Share the code with ${required()-1} friend(s).`:'Connected. Waiting for the host to choose a course.';
@@ -77,7 +82,7 @@ $('advanced-toggle').onclick=()=>{advanced=!advanced;renderMenu();};$('menu-lobb
 $('pause-settings').onclick=()=>setPausePage('settings');$('pause-volume').onclick=()=>{syncPauseVolumes();setPausePage('volume');};$('pause-settings-back').onclick=()=>setPausePage('home');$('pause-volume-back').onclick=()=>setPausePage('settings');
 for(const bus of ['game','menu','music'])$(`volume-${bus}`).oninput=event=>{const value=Number(event.target.value);audio.setEnabled(true);localStorage.setItem('rrr-audio','on');audio.setVolume?.(bus,value);localStorage.setItem(`rw.vol.${bus}`,String(value));syncPauseVolumes();};$('quality-setting').value=localStorage.getItem('rrr-quality')||'auto';$('quality-setting').onchange=()=>{view.setQuality($('quality-setting').value);localStorage.setItem('rrr-quality',$('quality-setting').value);};
 window.addEventListener('keydown',event=>{if(event.code==='Escape'&&inRace){setBrowserMenu(!menuOpen);return;}if(['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName))return;if(inRace&&!menuOpen&&['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','F8'].includes(event.code))event.preventDefault();if(event.repeat){keys.add(event.code);return;}if(event.code==='F8'&&inRace&&host()){send({type:'retry'});return;}if(event.code==='KeyE')action('grab');if(event.code==='KeyG')action('door');keys.add(event.code);});window.addEventListener('keyup',event=>keys.delete(event.code));window.addEventListener('blur',()=>keys.clear());
-document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&inRace&&!menuOpen)keys.clear();});document.addEventListener('mousemove',event=>{if(document.pointerLockElement===$('game')&&inRace&&!menuOpen){look.yaw=Math.max(-150,Math.min(150,look.yaw+event.movementX*.12));look.pitch=Math.max(-65,Math.min(75,look.pitch+event.movementY*.12));}});
+document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&inRace&&!menuOpen)keys.clear();});document.addEventListener('mousemove',event=>{if(document.pointerLockElement===$('game')&&inRace&&!menuOpen){look.yaw=Math.max(-150,Math.min(150,look.yaw+event.movementX*drivingSettings.mouse));look.pitch=Math.max(-65,Math.min(75,look.pitch+event.movementY*drivingSettings.mouse));}});
 $('game').addEventListener('pointerdown',()=>{audio.unlock();lockMouse();});
 document.addEventListener('rallyerror',event=>toast(event.detail));window.addEventListener('beforeunload',()=>network.close());
 function frame(now){acknowledgeLobby();const dt=Math.min(.1,(now-lastFrame)/1000||1/60);lastFrame=now;const current=input();if(inRace&&network.connected&&now-lastSend>(network.transport==='http'?100:40)){send({type:'input',epoch,seq:++seq,...current,actions:actions.slice(0,4)});lastSend=now;}view.update(dt,now,current);audio.update(snapshot,slot,current);requestAnimationFrame(frame);}
