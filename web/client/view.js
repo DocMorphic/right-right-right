@@ -7,6 +7,7 @@ import {CarPresentation} from './car-presentation.js';
 import {ImpactShake} from './impact-shake.js';
 import {RenderBudget} from './render-budget.js';
 import {loadNativeScenery,addNativeScenery} from './native-scenery.js';
+import {loadNativeDetails,NativeDetails} from './native-details.js';
 import {CabinFeel,NATIVE_CABIN,roadPitchAt} from './cabin-feel.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
@@ -43,7 +44,7 @@ export class RallyView {
     this.timerFont=new Font(await fetch(this.manifest.fonts.ShareTechMono.typefaceUrl).then(response=>{if(!response.ok)throw new Error('The original timer font could not be loaded.');return response.json();}));
     const nativeCamera=this.manifest.ui.cabinCamera;this.camera.fov=nativeCamera?.fieldOfView||90;this.camera.near=.01;this.camera.far=1000;this.camera.updateProjectionMatrix();
     this.prepareCar();
-    this.nativeScenery=await loadNativeScenery(loader,progress);
+    const [scenery,details]=await Promise.all([loadNativeScenery(loader,progress),Promise.all([1,2,3].map(async scene=>[String(scene),await loadNativeDetails(scene)]))]);this.nativeScenery=scenery;this.nativeDetails=new Map(details);
     progress('Planting the original forest…');
   }
   prepareCar() {
@@ -69,6 +70,7 @@ export class RallyView {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1:value==='auto'?1.25:1.5));this.renderer.shadowMap.enabled=!low;this.scene.fog.far=low?150:this.manifest.atmosphere.fog.far;this.camera.far=low?300:1000;this.camera.updateProjectionMatrix();
   }
   disposeCourse() {
+    this.details?.dispose();this.details=null;
     const courseMaterials=new Set();
     for(const car of this.cars)for(const material of car.dynamicMaterials||[])material.dispose();for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
     for(const child of [...this.world.children]) {this.world.remove(child);if(child.userData.courseMaterial)courseMaterials.add(child.userData.courseMaterial);if(child.isInstancedMesh)child.dispose();if(child.userData.disposable)child.traverse(n=>{n.geometry?.dispose();});}
@@ -84,7 +86,7 @@ export class RallyView {
       geometry.setAttribute('uv',new THREE.Float32BufferAttribute(data.uvs,2));geometry.setIndex(data.indices);
       const mesh=new THREE.Mesh(geometry,this.roadMaterial);mesh.receiveShadow=true;mesh.userData.disposable=true;this.world.add(mesh);
     }else this.ribbon(course.width,this.roadMaterial,.015);
-    if(course.nativeScene)addNativeScenery(this.world,course.nativeScene,this.nativeScenery,this.assets);
+    if(course.nativeScene){addNativeScenery(this.world,course.nativeScene,this.nativeScenery,this.assets);this.details=new NativeDetails(this.world,this.nativeScenery.scenes.get(String(course.nativeScene)),this.nativeDetails.get(String(course.nativeScene)));}
     else this.ribbon(110,this.groundMaterial,-.25,true);
     for(let type=0;type<this.manifest.models.trees.length;type++) {
       const source=this.assets[`tree${type}`];source.updateMatrixWorld(true);const placements=course.trees.filter(t=>t.variant===type);
@@ -196,6 +198,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
         this.camera.quaternion.multiply(q.setFromEuler(new THREE.Euler(this.look.pitch*Math.PI/180,-this.look.yaw*Math.PI/180,0,'YXZ'))).multiply(own.seatRests.get(this.slot%2)).multiply(q.setFromAxisAngle(UP,Math.PI));
         const fov=own.motion?.fov||NATIVE_CABIN.idleFov;if(Math.abs(this.camera.fov-fov)>.005){this.camera.fov=fov;this.camera.updateProjectionMatrix();}
         for(const mesh of this.world.children)if(mesh.isInstancedMesh||mesh.userData.terrainChunk){const sphere=mesh.boundingSphere||mesh.geometry?.boundingSphere,center=sphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=sphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=mesh.isInstancedMesh&&mesh.userData.castShadowAllowed!==false&&distance<(65+radius)**2;}}
+        this.details?.update(state.x,state.z,now);
         this.sun.position.set(state.x-40,state.y+80,state.z+20);this.sun.target.position.set(state.x,state.y,state.z);this.sun.target.updateMatrixWorld();
       }
       if(now-this.lastMap>80){this.drawMap(snapshot);this.lastMap=now;}

@@ -28,7 +28,7 @@ export function detailPatch(source,details,patchX,patchZ){
   const positions=[],sizes=[],colors=[],healthy=new THREE.Color().setRGB(...layer.healthyColor.slice(0,3),THREE.SRGBColorSpace),dry=new THREE.Color().setRGB(...layer.dryColor.slice(0,3),THREE.SRGBColorSpace),color=new THREE.Color(),coverage=details.coverages[index];
   for(let z=patchZ*span;z<Math.min(res,(patchZ+1)*span);z++)for(let x=patchX*span;x<Math.min(res,(patchX+1)*span);x++){
    const value=coverage[z*res+x];if(!value)continue;
-   const expected=value*spec.density*(layer.density??1),count=Math.floor(expected)+(random(x,z,index,0)<expected%1?1:0);
+   const expected=value*(layer.useDensityScaling===0?1:spec.density)*(layer.density??1),count=Math.floor(expected)+(random(x,z,index,0)<expected%1?1:0);
    for(let n=0;n<count;n++){
     const u=(x+random(x,z,index,n*5+1))/res,v=(z+random(x,z,index,n*5+2))/res;
     point.set(-u*terrain.size[0],sampleHeight(terrain,heights,u,v),v*terrain.size[2]).applyMatrix4(transform);positions.push(point.x,point.y,point.z);

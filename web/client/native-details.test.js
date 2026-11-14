@@ -18,6 +18,12 @@ test('grass preserves zero-painted cells and source height scale/handedness with
  }
  assert.equal(detailPatch(source,details,1,1)[0].count,0);
 });
+test('original prototypes that disable global density scaling keep the native painted instance count',()=>{
+ const {source,details}=fixture();details.coverages[0][0]=7;details.data.layers[0].useDensityScaling=0;
+ assert.equal(detailPatch(source,details,0,0)[0].count,7);
+ details.data.density=0;assert.equal(detailPatch(source,details,0,0)[0].count,7);
+ details.data.layers[0].useDensityScaling=1;assert.equal(detailPatch(source,details,0,0)[0].count,0);
+});
 test('nearby grass cache stays bounded, batches two layers, reuses unchanged patches and disposes GPU resources',()=>{
  const{source,details}=fixture({resolution:64,patchSamples:2,size:500});source.data.terrain.matrix=new THREE.Matrix4().toArray();details.coverages.forEach(coverage=>coverage.fill(2));
  const world=new THREE.Group(),grass=new NativeDetails(world,source,details);grass.update(-250,250,0);
