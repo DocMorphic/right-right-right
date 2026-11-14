@@ -1,0 +1,462 @@
+{
+  "runtime": {
+    "sourceDirectory": "GameRuntime_Data",
+    "level1Sha256": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
+    "unityPyVersion": "1.25.4"
+  },
+  "exportedModels": {
+    "car": {
+      "url": "/assets/car.glb",
+      "name": "Car",
+      "bounds": {
+        "min": [
+          -0.9647160307188469,
+          -0.01241225097327986,
+          -2.0341059286817074
+        ],
+        "max": [
+          0.9613172117446166,
+          1.697318984537176,
+          2.0090682061282785
+        ]
+      },
+      "nodes": 397,
+      "meshCount": 129,
+      "triangles": 72137,
+      "bytes": 13928028,
+      "sourceFile": "level1",
+      "sourcePathId": 9179
+    },
+    "tablet": {
+      "url": "/assets/tablet.glb",
+      "name": "Tablet",
+      "bounds": {
+        "min": [
+          -0.11999998986721039,
+          -0.008999999612569809,
+          -0.14000000059604645
+        ],
+        "max": [
+          0.11999998986721039,
+          0.009359999253749864,
+          0.14000000059604645
+        ]
+      },
+      "nodes": 4,
+      "meshCount": 2,
+      "triangles": 14,
+      "bytes": 5040,
+      "sourceFile": "level1",
+      "sourcePathId": 9262
+    },
+    "trees": [
+      {
+        "url": "/assets/trees/CommonTree_3.glb",
+        "name": "CommonTree_3",
+        "bounds": {
+          "min": [
+            -1.524861431688977,
+            -0.1374102602229537,
+            -1.3260327577872564
+          ],
+          "max": [
+            1.5125195491984837,
+            6.456458946754317,
+            1.0500726312210653
+          ]
+        },
+        "nodes": 1,
+        "meshCount": 1,
+        "triangles": 1584,
+        "bytes": 138580,
+        "sourceFile": "level1",
+        "sourcePathId": 237,
+        "collider": {
+          "type": "capsule",
+          "center": [
+            0.011901645975930101,
+            3.159525625893593,
+            -0.1287574648790829
+          ],
+          "radius": 0.3199999065658119,
+          "height": 6.5938693931396415,
+          "up": "+Y"
+        }
+      },
+      {
+        "url": "/assets/trees/CommonTree_5.glb",
+        "name": "CommonTree_5",
+        "bounds": {
+          "min": [
+            -1.7765940465588637,
+            -0.09521715195637845,
+            -0.9974720161323629
+          ],
+          "max": [
+            2.942471997067965,
+            5.235759171436383,
+            1.7433394920305136
+          ]
+        },
+        "nodes": 1,
+        "meshCount": 1,
+        "triangles": 1836,
+        "bytes": 160844,
+        "sourceFile": "level1",
+        "sourcePathId": 276,
+        "collider": {
+          "type": "capsule",
+          "center": [
+            0.5765990023494144,
+            2.5702704088157615,
+            0.4040793813914184
+          ],
+          "radius": 0.31999995280327553,
+          "height": 5.330977474755059,
+          "up": "+Y"
+        }
+      },
+      {
+        "url": "/assets/trees/PineTree_1.glb",
+        "name": "PineTree_1",
+        "bounds": {
+          "min": [
+            -1.7525065451425632,
+            -0.02364419679532364,
+            -1.9732984237319289
+          ],
+          "max": [
+            1.691112012996691,
+            4.888381085920068,
+            1.474670321812317
+          ]
+        },
+        "nodes": 1,
+        "meshCount": 1,
+        "triangles": 1920,
+        "bytes": 164164,
+        "sourceFile": "level1",
+        "sourcePathId": 244,
+        "collider": {
+          "type": "capsule",
+          "center": [
+            0.042144645190773336,
+            2.4323668690184075,
+            -0.15452565741117502
+          ],
+          "radius": 0.3200000201339037,
+          "height": 4.912026258457445,
+          "up": "+Y"
+        }
+      },
+      {
+        "url": "/assets/trees/PineTree_3.glb",
+        "name": "PineTree_3",
+        "bounds": {
+          "min": [
+            -2.3664229243929036,
+            0.001800115331804848,
+            -2.209906091440555
+          ],
+          "max": [
+            2.1023798081360976,
+            7.112290109916872,
+            2.002236580847842
+          ]
+        },
+        "nodes": 1,
+        "meshCount": 1,
+        "triangles": 2392,
+        "bytes": 209552,
+        "sourceFile": "level1",
+        "sourcePathId": 251,
+        "collider": {
+          "type": "capsule",
+          "center": [
+            -0.06349192702879877,
+            3.5570473323371044,
+            -0.048492687474023785
+          ],
+          "radius": 0.3199998910498305,
+          "height": 7.110489776380575,
+          "up": "+Y"
+        }
+      },
+      {
+        "url": "/assets/trees/BirchTree_2.glb",
+        "name": "BirchTree_2",
+        "bounds": {
+          "min": [
+            -1.071795138741387,
+            -0.0814980240415898,
+            -2.3460563314416167
+          ],
+          "max": [
+            1.7177421027623798,
+            7.655124484758101,
+            0.9110466724055784
+          ]
+        },
+        "nodes": 1,
+        "meshCount": 1,
+        "triangles": 1566,
+        "bytes": 135732,
+        "sourceFile": "level1",
+        "sourcePathId": 292,
+        "collider": {
+          "type": "capsule",
+          "center": [
+            0.3792725885343045,
+            3.7868139206083287,
+            -0.6422120185798059
+          ],
+          "radius": 0.31999993201254284,
+          "height": 7.7366232249783025,
+          "up": "+Y"
+        }
+      },
+      {
+        "url": "/assets/trees/BirchTree_3.glb",
+        "name": "BirchTree_3",
+        "bounds": {
+          "min": [
+            -1.2808604037365248,
+            -0.14843132265353784,
+            -1.7975626295885259
+          ],
+          "max": [
+            2.183630789162394,
+            8.286655446999005,
+            1.7387975823321633
+          ]
+        },
+        "nodes": 1,
+        "meshCount": 1,
+        "triangles": 1730,
+        "bytes": 152188,
+        "sourceFile": "level1",
+        "sourcePathId": 298,
+        "collider": {
+          "type": "capsule",
+          "center": [
+            0.49328588886459485,
+            4.06911334684731,
+            -0.10339351266839164
+          ],
+          "radius": 0.31999990288975155,
+          "height": 8.435086978985169,
+          "up": "+Y"
+        }
+      }
+    ],
+    "StageStart": {
+      "url": "/assets/stagestart.glb",
+      "name": "StageStart",
+      "bounds": {
+        "min": [
+          -3.6749999970197678,
+          0.0,
+          -0.17499999701976776
+        ],
+        "max": [
+          3.6749999970197678,
+          4.274999901652336,
+          0.17499999701976776
+        ]
+      },
+      "nodes": 7,
+      "meshCount": 3,
+      "triangles": 36,
+      "bytes": 9004,
+      "sourceFile": "level1",
+      "sourcePathId": 9029
+    },
+    "StageFinish": {
+      "url": "/assets/stagefinish.glb",
+      "name": "StageFinish",
+      "bounds": {
+        "min": [
+          -3.6749999970197678,
+          0.0,
+          -0.17499999701976776
+        ],
+        "max": [
+          3.6749999970197678,
+          4.274999901652336,
+          0.17499999701976776
+        ]
+      },
+      "nodes": 7,
+      "meshCount": 3,
+      "triangles": 36,
+      "bytes": 9016,
+      "sourceFile": "level1",
+      "sourcePathId": 9192
+    }
+  },
+  "textureCount": 45,
+  "soundCount": 28,
+  "formatValidation": {
+    "tool": "Khronos glTF-Validator 2.0.0-dev.3.10",
+    "results": [
+      {
+        "file": "car.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "stagefinish.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "stagestart.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "tablet.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/BirchTree_2.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/BirchTree_3.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/CommonTree_3.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/CommonTree_5.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/PineTree_1.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/PineTree_3.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      }
+    ]
+  },
+  "visualVerification": {
+    "browser": "Brave Browser / WebGL / Three.js 0.187.0",
+    "result": "Passed native asset preview",
+    "proof": "local/web-assets/RightRightRight-native-assets.png",
+    "observed": [
+      "Original complete red car, original red and blue seated occupants, native detailed cockpit/dashboard and steering wheel.",
+      "Original windshield correctly transparent from inside and outside.",
+      "All six original forest tree species upright in original low-poly style.",
+      "Native road dirt and grassy surroundings use original textures.",
+      "No new scenery or substitute models."
+    ]
+  },
+  "limitations": [
+    "Native seated skeletal pose baked; no Unity animator runtime.",
+    "Native procedural mud shader and dynamic tablet screen are recreated by browser client.",
+    "Unity text mesh renderers are not exported as bitmap substitutions."
+  ],
+  "nativeUiVerification": {
+    "font": {
+      "url": "/assets/fonts/LiberationSans.ttf",
+      "licenseUrl": "/assets/fonts/LiberationSans-OFL.txt",
+      "family": "Liberation Sans",
+      "nativeName": "LiberationSans",
+      "nativeFontSize": 16.0,
+      "nativeAscent": 14.484375,
+      "bytes": 350200,
+      "sha256": "e5b0af421ea2bfbc1ac8d251d647268087ae82786234c57f757d1f0b90fa8b49",
+      "sourceFile": "resources.assets",
+      "sourcePathId": 91
+    },
+    "fontParsed": [
+      "Liberation Sans",
+      "Regular"
+    ],
+    "licenseCopiedUnchanged": true,
+    "textureCount": 26,
+    "nativeSkinBytes": 8488,
+    "decodedSkinBytes": 8488,
+    "styleCount": 23,
+    "menu": {
+      "sourceFile": "level0",
+      "sourceCameraPathId": 319,
+      "clearFlags": 2,
+      "clearMode": "SolidColor",
+      "backgroundColor": [
+        0.14000000059604645,
+        0.12999999523162842,
+        0.11999999731779099,
+        1.0
+      ],
+      "fieldOfView": 60.0,
+      "nearClip": 0.30000001192092896,
+      "farClip": 1000.0,
+      "objectCounts": {
+        "MeshRenderer": 0,
+        "MeshFilter": 0,
+        "SkinnedMeshRenderer": 0,
+        "GameObject": 313,
+        "RectTransform": 309,
+        "Transform": 4
+      },
+      "note": "Current native menu has no 3D mesh geometry. DirectSession disables MenuCanvas and draws its IMGUI panel over this flat camera background."
+    }
+  },
+  "tabletVerification": {
+    "sourceFile": "level1",
+    "sourcePathId": 40329,
+    "serializedBytes": 168,
+    "decodedBytes": 168,
+    "font": {
+      "url": "/assets/fonts/ShareTechMono-Regular.ttf",
+      "licenseUrl": "/assets/fonts/ShareTechMono-OFL.txt",
+      "family": "Share Tech Mono",
+      "nativeName": "ShareTechMono-Regular",
+      "nativeFontSize": 16.0,
+      "bytes": 43272,
+      "sha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
+      "sourceFile": "resources.assets",
+      "sourcePathId": 87,
+      "usage": "CabinFont native resource Fonts/ShareTechMono-Regular; dashboard and tablet TextMesh timer"
+    },
+    "cabinCamera": {
+      "sourceFile": "level1",
+      "sourcePathId": 18612,
+      "fieldOfView": 90.0,
+      "nearClip": 0.009999999776482582,
+      "farClip": 1000.0,
+      "clearFlags": 1,
+      "backgroundColor": [
+        0.1921568661928177,
+        0.3019607961177826,
+        0.4745098054409027,
+        0.0
+      ]
+    },
+    "timerSource": "Native x64 IL2CPP methods verified against embedded Cpp2IL method RVA metadata: BuildTimerHud 0x50E2A0, UpdateTimerHud0x5109F0, CabinFont.Font0x4E9650",
+    "status": "Native serialized settings and timer program constants recovered; final game screenshot parity still requires client visual verification."
+  }
+}

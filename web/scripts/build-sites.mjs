@@ -1,0 +1,22 @@
+import {build as buildClient} from 'vite';
+import {build as buildWorker} from 'esbuild';
+import {cp,mkdir,readFile,rm,stat} from 'node:fs/promises';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import path from 'node:path';
+
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const output=path.join(root,'dist');
+const hosting=JSON.parse(await readFile(path.join(root,'.openai/hosting.json'),'utf8'));
+if(!hosting.project_id)throw new Error('Sites project identity is missing from .openai/hosting.json.');
+if(hosting.static)throw new Error('The multiplayer Worker build must omit static from .openai/hosting.json.');
+if(hosting.d1!=='DB')throw new Error('The multiplayer Worker requires the D1 binding named DB.');
+await rm(output,{recursive:true,force:true});
+await buildClient({root,configFile:path.join(root,'vite.config.js'),build:{outDir:path.join(output,'client'),emptyOutDir:true}});
+await buildWorker({absWorkingDir:root,entryPoints:['server/worker.js'],outfile:'dist/server/index.js',bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,legalComments:'none',logLevel:'info'});
+await mkdir(path.join(output,'.openai'),{recursive:true});
+await cp(path.join(root,'.openai/hosting.json'),path.join(output,'.openai/hosting.json'));
+await cp(path.join(root,'drizzle'),path.join(output,'.openai/drizzle'),{recursive:true});
+const worker=await import(pathToFileURL(path.join(output,'server/index.js')).href);
+if(typeof worker.default?.fetch!=='function')throw new Error('Built Worker does not default-export a fetch handler.');
+for(const filename of ['client/index.html','client/assets/manifest.json','.openai/hosting.json','.openai/drizzle/0000_browser_rooms.sql','.openai/drizzle/meta/_journal.json'])await stat(path.join(output,filename));
+console.log('Sites build ready: dist/client, dist/server/index.js, dist/.openai/hosting.json, dist/.openai/drizzle');

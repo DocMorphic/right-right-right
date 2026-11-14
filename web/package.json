@@ -1,0 +1,24 @@
+{
+  "name": "right-right-right-browser",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "dev:server": "node server/index.js",
+    "build": "node scripts/build-sites.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "start": "node server/index.js",
+    "test": "node --test server/*.test.js",
+    "build:client": "vite build",
+    "build:sites": "node scripts/build-sites.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0",
+    "ws": "8.23.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "vite": "8.3.8"
+  }
+}

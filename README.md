@@ -4,7 +4,17 @@
 
 [**Download RightRightRight-Setup.exe**](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.5/RightRightRight-Setup.exe) · [Release notes](https://github.com/DocMorphic/right-right-right/releases/tag/v0.3.0-alpha.5) · [Room-code guide](docs/RELAY-MULTIPLAYER.md)
 
-Double-click the setup EXE. It installs everything, creates shortcuts and starts the game. No Steam, separate game installation, Python, SDK or setup commands are needed. The game uses its own branding and the lobby/HUD font is embedded. All players should install alpha.5. Windows x64 is the game target; Mac users need the [CrossOver setup](docs/MAC-DEVELOPMENT.md).
+Double-click the setup EXE. It installs everything, creates shortcuts and starts the game. No Steam, separate game installation, Python, SDK or setup commands are needed. The game uses its own branding and the lobby/HUD font is embedded. All players should install alpha.5. Windows x64 is the game target; Mac users running the Windows release need the [CrossOver setup](docs/MAC-DEVELOPMENT.md).
+
+## Browser adaptation
+
+The [browser game](https://right-right-right-play.andustry-0633.chatgpt.site) is deployed **owner-private**. Public access has not been enabled, so this is currently an owner preview rather than a shareable public play link.
+
+The browser implementation uses the authorized original models, textures, sounds, fonts and Unity control skin. Its menu/HUD are reconstructed from this repository's native mod source and extracted runtime settings; its driving and networking are implemented in JavaScript. It targets current WebGL browsers on macOS, Windows and Linux. Browser players use separate browser rooms; their codes do not join the downloadable Windows release's Unity Relay/DTLS rooms.
+
+The browser supports two-player co-op and four-player racing, with shared courses, driver/navigator seats, mud, doors, tablets, tree collisions, retries and lobby mode changes. Fifteen automated tests cover local multi-client WebSockets, a SQLite-backed D1 adapter, gameplay rules and all six course profiles. Asset format validation and local visual checks are recorded separately. These checks do not establish exact Unity rendering/physics parity or a complete separate-device playtest of the deployed service.
+
+See the [browser setup and controls](web/README.md), [server/deployment details](web/server/README.md), and [asset export/provenance guide](docs/WEB-ASSET-EXPORT.md). Generated game assets and builds stay outside Git; a source checkout needs an authorized native runtime export before it can build the browser game. The Windows installer above remains a separate downloadable release.
 
 ## Play with friends
 

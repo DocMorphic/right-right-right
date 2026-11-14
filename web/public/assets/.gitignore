@@ -1,0 +1,3 @@
+# Licensed native exports are generated locally and packaged separately.
+*
+!.gitignore
