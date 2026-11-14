@@ -1,6 +1,13 @@
 {
   "date": "2026-11-14",
   "purpose": "Browser handling, co-op road width, finite impact feedback and navigator latency fixes.",
+  "publication": {
+    "version": 7,
+    "url": "https://right-right-right-play.andustry-0633.chatgpt.site",
+    "status": "succeeded",
+    "liveBundleMatchesValidatedBuild": true,
+    "liveMultiplayerSmoke": "passed: four-player race, concurrent inputs, driver ownership, action acknowledgments, guest bootstrap, retry, switching mode and two-player co-op; 31 requests, zero retries"
+  },
   "nativeReference": {
     "source": "Installed Left! Left! LEFT! Playtest, recovered serialized level1/level2/level3 GoofyCarController and road data",
     "cooperativeRoadWidthMeters": 5,
