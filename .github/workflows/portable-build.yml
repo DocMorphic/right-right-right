@@ -7,13 +7,18 @@ on:
       - '.github/workflows/portable-build.yml'
       - 'src/**'
       - 'standalone/**'
+      - 'installer/*.txt'
       - 'levels/stages.json'
       - 'tools/build_from_release.py'
       - 'tools/verify_portable.py'
       - 'tools/portable-base.json'
       - 'tools/portable-requirements.txt'
       - 'tools/package_portable.py'
+      - 'tools/runtime_identity.py'
+      - 'tools/build_installer.py'
       - 'tests/test_portable_builder.py'
+      - 'tests/test_runtime_identity.py'
+      - 'tests/PortableInstaller/**'
       - 'tests/RaceProtocol/**'
       - 'tests/Distribution/**'
 
@@ -35,13 +40,17 @@ jobs:
       - name: Install packaging dependencies
         run: python -m pip install -r tools/portable-requirements.txt
       - name: Check bootstrap integrity rules
-        run: python -m unittest discover -s tests -p test_portable_builder.py -v
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Build and verify Windows package from macOS
         run: python tools/build_from_release.py --output local/ci-windows
       - name: Check mode and protocol rules
         run: dotnet run --project tests/RaceProtocol/RaceProtocol.Tests.csproj -c Release
       - name: Check distribution settings
         run: dotnet run --project tests/Distribution/Distribution.Tests.csproj -c Release
+      - name: Check installer extraction and package verification
+        run: dotnet run --project tests/PortableInstaller/PortableInstaller.Tests.csproj -c Release -- local/ci-windows/player
+      - name: Build complete Windows setup EXE
+        run: python tools/build_installer.py --package local/ci-windows.zip
       - name: Upload small build report
         uses: actions/upload-artifact@v7
         with:

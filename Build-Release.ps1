@@ -1,12 +1,11 @@
-param([string]$DotnetPath = '', [string]$PythonPath = '', [string]$GamePath = '')
+param([string]$PythonPath = '', [string]$DotnetPath = '')
 $ErrorActionPreference = 'Stop'
-if (!$DotnetPath) { $DotnetPath = Join-Path $PSScriptRoot 'local\tools\dotnet\dotnet.exe' }
-if (!$PythonPath) { $PythonPath = Join-Path $PSScriptRoot 'local\.venv-py312\Scripts\python.exe' }
-$GamePath = & (Join-Path $PSScriptRoot 'tools\find_game.ps1') -GamePath $GamePath
-& $PythonPath (Join-Path $PSScriptRoot 'tools\make_player_delta.py') --source $GamePath
-if ($LASTEXITCODE -ne 0) { throw 'Scene delta build failed.' }
-& $DotnetPath build (Join-Path $PSScriptRoot 'src\RightRightRight.csproj') -c Release --nologo
-if ($LASTEXITCODE -ne 0) { throw 'Mod build failed.' }
-& $DotnetPath publish (Join-Path $PSScriptRoot 'installer\RightRightRight.Setup.csproj') -c Release -o (Join-Path $PSScriptRoot 'local\race-installer') --nologo
-if ($LASTEXITCODE -ne 0) { throw 'Friend installer publish failed.' }
-Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'local\race-installer\RightRightRight-RacePrototype-Setup.exe') -Algorithm SHA256
+if (!$PythonPath) { $PythonPath = Join-Path $PSScriptRoot '.venv-build\Scripts\python.exe' }
+$output = Join-Path $PSScriptRoot ('local\builds\windows-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$buildArgs = @((Join-Path $PSScriptRoot 'tools\build_from_release.py'), '--output', $output)
+$installerArgs = @((Join-Path $PSScriptRoot 'tools\build_installer.py'), '--package', ($output + '.zip'))
+if ($DotnetPath) { $buildArgs += @('--dotnet', $DotnetPath); $installerArgs += @('--dotnet', $DotnetPath) }
+& $PythonPath @buildArgs
+if ($LASTEXITCODE -ne 0) { throw 'Standalone game build failed.' }
+& $PythonPath @installerArgs
+if ($LASTEXITCODE -ne 0) { throw 'Complete installer build failed.' }

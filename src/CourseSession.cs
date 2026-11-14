@@ -12,7 +12,7 @@ namespace RightRightRight;
 
 internal static class CourseSession
 {
-    internal const string Version = "0.3.0-alpha.4";
+    internal const string Version = "0.3.0-alpha.5";
     internal static string ContentId = "";
     private static string lastAcknowledged = "";
     private static bool selecting;

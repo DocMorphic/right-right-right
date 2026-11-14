@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Runtime.InteropServices;
 using RightRightRight.Distribution;
 
 string root=AppContext.BaseDirectory;
@@ -33,13 +34,15 @@ try {
     bool relay=File.Exists(Path.Combine(root,RelayConfig.FileName));
     if(relay)RelayConfig.Read(Path.Combine(root,RelayConfig.FileName));
     if(args.Contains("--check-config")) {Report(config.Direct?"CONFIG_PASS: direct multiplayer; no Steam App ID or playtest required.":"CONFIG_PASS: separate Steam App ID configured; account access is not tested by this check.");return 0;}
-    string game=Path.Combine(root,"LeftLeftLEFT.exe");
-    foreach(string file in new[]{"LeftLeftLEFT.exe","GameAssembly.dll","UnityPlayer.dll","version.dll","Mods/RightRightRight.dll","UserData/RightRightRight/stages.json"})
+    string game=Path.Combine(root,"GameRuntime.exe");
+    foreach(string file in new[]{"GameRuntime.exe","GameAssembly.dll","UnityPlayer.dll","version.dll","Mods/RightRightRight.dll","UserData/RightRightRight/stages.json"})
         if(!File.Exists(Path.Combine(root,file)))throw new FileNotFoundException("Incomplete portable download: "+file);
     var start=new ProcessStartInfo(game) {WorkingDirectory=root,UseShellExecute=false};
     if(appId.HasValue){start.Environment["SteamAppId"]=appId.ToString();start.Environment["SteamGameId"]=appId.ToString();}
     else {start.Environment.Remove("SteamAppId");start.Environment.Remove("SteamGameId");}
     start.ArgumentList.Add("--melonloader.hideconsole");
+    start.ArgumentList.Add("--melonloader.disablestartscreen");
+    start.ArgumentList.Add("--melonloader.agfoffline");
     // Steam supplies +connect_lobby on cold-start invites. Forward arguments as
     // separate values; never concatenate a shell command or lose invite data.
     foreach(var arg in args)start.ArgumentList.Add(arg);
@@ -50,6 +53,13 @@ try {
 }
 catch(Exception ex) {
     Report("Could not launch: "+ex.Message);
-    if(!args.Any(a=>a.StartsWith("--"))) {Console.WriteLine("Press Enter to close.");Console.ReadLine();}
+    if(!args.Any(a=>a.StartsWith("--")) && OperatingSystem.IsWindows())
+        LaunchError.Show(IntPtr.Zero,"Could not start Right Right Right.\n\n"+ex.Message+"\n\nRun the setup EXE again to repair the installation.","Right Right Right",0x10);
     return 1;
+}
+
+internal static class LaunchError
+{
+    [DllImport("user32.dll", EntryPoint="MessageBoxW", CharSet=CharSet.Unicode)]
+    internal static extern int Show(IntPtr window, string message, string title, uint flags);
 }

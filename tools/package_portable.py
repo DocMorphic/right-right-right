@@ -7,6 +7,7 @@ import zipfile
 from pathlib import Path
 
 import UnityPy
+from runtime_identity import RUNTIME, COMPANY, PRODUCT, find_runtime, brand_player_settings, brand_menu
 
 ROOT = Path(__file__).resolve().parents[1]
 BLOCKED_IDS = {0, 480, 5425110}
@@ -43,8 +44,9 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
         raise ValueError('Output already exists. Choose a new output folder; packaging never overwrites a build.')
     if source == output or source in output.parents or output in source.parents:
         raise ValueError('Source and output must be separate directories.')
-    required = ['LeftLeftLEFT.exe', 'GameAssembly.dll', 'UnityPlayer.dll', 'baselib.dll', 'version.dll',
-                'LeftLeftLEFT_Data', 'dotnet', 'MelonLoader/net6', 'MelonLoader/Dependencies',
+    runtime, data = find_runtime(source)
+    required = [runtime.name, 'GameAssembly.dll', 'UnityPlayer.dll', 'baselib.dll', 'version.dll',
+                data.name, 'dotnet', 'MelonLoader/net6', 'MelonLoader/Dependencies',
                 'MelonLoader/Il2CppAssemblies', 'MelonLoader/Dependencies/Il2CppAssemblyGenerator/Config.cfg']
     for name in required:
         if not (source / name).exists():
@@ -52,11 +54,11 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     if not launcher.is_file() or not (ROOT / 'src/bin/Release/net6.0/RightRightRight.dll').is_file():
         raise ValueError('Build the portable launcher and mod before packaging.')
     supported = json.loads((ROOT / 'tools/supported-build.json').read_text())
-    for name in ['GameAssembly.dll', 'LeftLeftLEFT_Data/level1']:
-        if digest(source / name) != supported['Files'][name]:
+    for name in ['GameAssembly.dll', 'RuntimeData/level1']:
+        if digest(source / name.replace('RuntimeData', data.name)) != supported['Files'][name]:
             raise ValueError('Unsupported runtime: ' + name)
 
-    env = UnityPy.load(str(source / 'LeftLeftLEFT_Data/globalgamemanagers'))
+    env = UnityPy.load(str(data / 'globalgamemanagers'))
     settings = next(o for o in env.objects if o.type.name == 'BuildSettings')
     tree = settings.read_typetree()
     expected = ['Assets/Scenes/Menu.unity'] + [f'Assets/Scenes/{i}.unity' for i in range(1, 4)]
@@ -68,16 +70,25 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     token = tree.get('m_AuthToken', '')
     tree['m_AuthToken'] = ''
     settings.save_typetree(tree)
+    brand_player_settings(env)
     sanitized = env.file.save()
     if token and token.encode() in sanitized:
         raise ValueError('Original build token survived sanitization.')
+    menu = UnityPy.load(str(data / 'level0'))
+    brand_menu(menu)
+    branded_menu = menu.file.save()
+    resources = UnityPy.load(str(data / 'resources.assets'))
+    embedded_fonts = [o.read_typetree() for o in resources.objects if o.type.name == 'Font']
+    if not any(f['m_Name'] == 'LiberationSans' and len(f.get('m_FontData', [])) > 0 for f in embedded_fonts):
+        raise ValueError('Prepared player is missing the embedded UI font data.')
 
     player = output / 'player'
     player.mkdir(parents=True)
     total = len(required)
     for index, name in enumerate(required, 1):
-        src, dest = source / name, player / name
-        print(f'Bundling component {index}/{total}: {name}', flush=True)
+        branded = RUNTIME + '.exe' if name == runtime.name else RUNTIME + '_Data' if name == data.name else name
+        src, dest = source / name, player / branded
+        print(f'Bundling component {index}/{total}: {branded}', flush=True)
         if src.is_dir():
             shutil.copytree(src, dest, ignore=shutil.ignore_patterns('*.log', 'Logs', 'Latest.log'))
         else:
@@ -85,7 +96,9 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
             shutil.copy2(src, dest)
     if (source / 'D3D12').exists():
         shutil.copytree(source / 'D3D12', player / 'D3D12')
-    (player / 'LeftLeftLEFT_Data/globalgamemanagers').write_bytes(sanitized)
+    (player / (RUNTIME + '_Data/globalgamemanagers')).write_bytes(sanitized)
+    (player / (RUNTIME + '_Data/level0')).write_bytes(branded_menu)
+    (player / (RUNTIME + '_Data/app.info')).write_text(COMPANY + '\n' + PRODUCT, encoding='utf-8')
     shutil.copy2(launcher, player / 'RightRightRight.exe')
     (player / 'Mods').mkdir()
     shutil.copy2(ROOT / 'src/bin/Release/net6.0/RightRightRight.dll', player / 'Mods/RightRightRight.dll')
@@ -93,7 +106,7 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     settings_dir.mkdir(parents=True)
     shutil.copy2(ROOT / 'levels/stages.json', settings_dir / 'stages.json')
     config = {'Format': 1, 'State': 'direct' if direct else 'configured' if app_id else 'pending-steam',
-              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.4'}
+              'SteamAppId': app_id, 'ContentVersion': '0.3.0-alpha.5'}
     (player / 'rrr-distribution.json').write_text(json.dumps(config, indent=2))
     if relay:
         (player / 'rrr-relay.json').write_text(json.dumps(relay, indent=2))
@@ -101,6 +114,7 @@ def package(source: Path, launcher: Path, output: Path, app_id=None, archive=Tru
     licenses.mkdir()
     shutil.copy2(ROOT / 'LICENSE', licenses / 'RightRightRight-code-MIT.txt')
     shutil.copy2(ROOT / 'installer/MELONLOADER-LICENSE.txt', licenses / 'MelonLoader.txt')
+    shutil.copy2(ROOT / 'installer/LiberationSans-OFL.txt', licenses / 'LiberationSans-OFL.txt')
     (licenses / 'Original-game.txt').write_text(
         'Original game runtime, artwork, audio, characters and bundled game dependencies are not covered by '
         'the Right Right Right source-code MIT license. Original game: Stellux Interactive. '

@@ -10,8 +10,8 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.4", "DocMorphic")]
-[assembly: MelonGame("Stellux Interactive", "LeftLeftLEFT")]
+[assembly: MelonInfo(typeof(RightRightRight.Mod), "Right, Right, Right", "0.3.0-alpha.5", "DocMorphic")]
+[assembly: MelonGame("DocMorphic", "RightRightRight")]
 
 namespace RightRightRight;
 
@@ -75,9 +75,8 @@ public sealed class Mod : MelonMod
                     if (cursor != null) cursor.gameObject.SetActive(false);
                 }
                 foreach (var label in Object.FindObjectsOfType<TMP_Text>(true))
-                    if (label.text.Contains("Left! Left! LEFT!"))
+                    if (label.text.Trim() == "Right! Right! RIGHT!")
                     {
-                        label.text = label.text.Replace("Left! Left! LEFT!", "Right! Right! RIGHT!");
                         label.fontSize *= .65f;
                     }
                     else if (label.text == "PICK A STAGE") label.text = "PICK A STAGE / SCROLL";
@@ -98,6 +97,7 @@ public sealed class Mod : MelonMod
 
     public override void OnGUI()
     {
+        GuiFonts.Apply();
         RaceRuntime.Active?.Gui();
         RaceNetwork.Gui();
         if (!string.IsNullOrEmpty(CourseSession.Status) && SceneManager.GetActiveScene().name == "Menu")

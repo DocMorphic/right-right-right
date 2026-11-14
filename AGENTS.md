@@ -7,6 +7,6 @@
 
 # Mac development
 
-- Current multiplayer source is on `standalone/portable-steam`. The packaged Unity game is Windows x64; this repository is an extension plus packaging tools, not the original editable Unity project.
+- Current multiplayer source is on `main` and `standalone/portable-steam`. The packaged Unity game is Windows x64; this repository is an extension plus packaging tools, not the original editable Unity project.
 - On macOS, read `docs/MAC-DEVELOPMENT.md` and use `python tools/build_from_release.py`. It fetches the pinned public runtime/references and builds the Windows package without a home-PC installation.
 - A successful macOS-hosted build does not establish native Mac support or CrossOver playability. Apple Silicon/Tahoe CrossOver gameplay still needs a real compatibility test.

@@ -1,0 +1,233 @@
+{
+  "Version": "0.3.0-alpha.5",
+  "Date": "2026-11-14",
+  "Build": {
+    "Pass": true,
+    "Warnings": 0,
+    "Errors": 0,
+    "Host": "Apple Silicon macOS",
+    "Target": "Windows x64"
+  },
+  "PythonTests": 10,
+  "InstallerChecks": 13,
+  "ProtocolRulesPass": true,
+  "DistributionChecksPass": true,
+  "InstallerBundleVerification": {
+    "Passed": true,
+    "Files": 638,
+    "Version": "0.3.0-alpha.5",
+    "SteamOrPlaytestRequired": false
+  },
+  "InstalledManifestFiles": 638,
+  "NormalCrossOverInstallPass": true,
+  "InstalledGuiFontPass": true,
+  "NativeModSha256": "444c1067f79303e80d633491ba0f163a41579714fb8f5325f23a60439e8a5dec",
+  "Installer": {
+    "Name": "RightRightRight-Setup.exe",
+    "Bytes": 265694838,
+    "Sha256": "2f06c7512e377b4db6540f7d083542b3b2a9de3d300f5a0f2086e3bff0845fe5"
+  },
+  "CoopGameplay": {
+    "Pass": true,
+    "Version": "0.3.0-alpha.5",
+    "Players": 2,
+    "Flow": false,
+    "Host": "Apple Silicon macOS with CrossOver",
+    "LiveUnityRelay": true,
+    "Dtls": true,
+    "SeparateComputers": false,
+    "ScriptedTest": true,
+    "Results": [
+      {
+        "Process": "host",
+        "Pass": true,
+        "Client": 0,
+        "Slot": 0,
+        "Players": 2,
+        "Cars": 1,
+        "Tablets": 1,
+        "Rounds": 2,
+        "FinishTime": 26.2958,
+        "TreeDeaths": 1,
+        "Checks": {
+          "one_car_two_seats": true,
+          "navigator_map": true,
+          "driving": true,
+          "mud": true,
+          "remote_drop": true,
+          "tablet_falls": true,
+          "remote_door": true,
+          "remote_wipe": true,
+          "shared_finish": true,
+          "tree_ends_coop": true
+        },
+        "Error": ""
+      },
+      {
+        "Process": "client1",
+        "Pass": true,
+        "Client": 1,
+        "Slot": 1,
+        "Players": 2,
+        "Cars": 1,
+        "Tablets": 1,
+        "Rounds": 2,
+        "FinishTime": 26.2958,
+        "TreeDeaths": 1,
+        "Checks": {
+          "one_car_two_seats": true,
+          "navigator_map": true,
+          "replicated_tree_failure": true
+        },
+        "Error": ""
+      }
+    ]
+  },
+  "FourPlayerRace": {
+    "Pass": true,
+    "Version": "0.3.0-alpha.5",
+    "Players": 4,
+    "Flow": false,
+    "Host": "Apple Silicon macOS with CrossOver",
+    "LiveUnityRelay": true,
+    "Dtls": true,
+    "SeparateComputers": false,
+    "ScriptedTest": true,
+    "Results": [
+      {
+        "Process": "host",
+        "Client": 0,
+        "Slot": 0,
+        "Host": true,
+        "Pass": true,
+        "InputPackets": 19726,
+        "SnapshotPackets": 0,
+        "Impacts": 2,
+        "Steals": 1,
+        "TreeDeaths": 1,
+        "FinishA": 26.288853,
+        "FinishB": -1,
+        "Checks": {
+          "steam_not_initialized": true,
+          "relay_transport": true,
+          "tablet_maps": true,
+          "independent_driving": true,
+          "cockpit_jolt": true,
+          "car_collision": true,
+          "both_mud": true,
+          "closed_door_guard": true,
+          "steal": true,
+          "navigator_drop": true,
+          "fall_out": true,
+          "tree_fatal": true,
+          "early_finish_guard": true,
+          "remote_wipe": true,
+          "finish_time": true
+        }
+      },
+      {
+        "Process": "client1",
+        "Client": 1,
+        "Slot": 1,
+        "Host": false,
+        "Pass": true,
+        "InputPackets": 0,
+        "SnapshotPackets": 789,
+        "Impacts": 2,
+        "Steals": 1,
+        "TreeDeaths": 1,
+        "FinishA": 26.288853,
+        "FinishB": -1,
+        "Checks": {
+          "steam_not_initialized": true,
+          "relay_transport": true,
+          "tablet_maps": true,
+          "cockpit_jolt": true,
+          "remote_state": true
+        }
+      },
+      {
+        "Process": "client2",
+        "Client": 2,
+        "Slot": 2,
+        "Host": false,
+        "Pass": true,
+        "InputPackets": 0,
+        "SnapshotPackets": 788,
+        "Impacts": 2,
+        "Steals": 1,
+        "TreeDeaths": 1,
+        "FinishA": 26.288853,
+        "FinishB": -1,
+        "Checks": {
+          "steam_not_initialized": true,
+          "relay_transport": true,
+          "tablet_maps": true,
+          "cockpit_jolt": true,
+          "remote_state": true
+        }
+      },
+      {
+        "Process": "client3",
+        "Client": 3,
+        "Slot": 3,
+        "Host": false,
+        "Pass": true,
+        "InputPackets": 0,
+        "SnapshotPackets": 786,
+        "Impacts": 2,
+        "Steals": 1,
+        "TreeDeaths": 1,
+        "FinishA": 26.288853,
+        "FinishB": -1,
+        "Checks": {
+          "steam_not_initialized": true,
+          "relay_transport": true,
+          "tablet_maps": true,
+          "cockpit_jolt": true,
+          "remote_state": true
+        }
+      }
+    ]
+  },
+  "LobbyLifecycle": {
+    "Pass": true,
+    "Version": "0.3.0-alpha.5",
+    "Players": 2,
+    "Flow": true,
+    "Host": "Apple Silicon macOS with CrossOver",
+    "LiveUnityRelay": true,
+    "Dtls": true,
+    "SeparateComputers": false,
+    "ScriptedTest": true,
+    "Results": [
+      {
+        "Process": "host",
+        "Pass": true,
+        "Players": 2,
+        "Rounds": 2,
+        "ReturnedToLobby": true,
+        "ModeSwitchObserved": true,
+        "FinalMode": 2,
+        "SteamInitialized": false,
+        "Relay": true,
+        "RoomCodePresent": true,
+        "Error": ""
+      },
+      {
+        "Process": "client1",
+        "Pass": true,
+        "Players": 2,
+        "Rounds": 2,
+        "ReturnedToLobby": true,
+        "ModeSwitchObserved": true,
+        "FinalMode": 2,
+        "SteamInitialized": false,
+        "Relay": true,
+        "RoomCodePresent": true,
+        "Error": ""
+      }
+    ]
+  },
+  "Scope": "Scripted headless Windows game processes on one Apple Silicon Mac using CrossOver 26.3.0 and live Unity Relay/DTLS. Native car physics and player actions are exercised; the harness positions cars at hazards and finish points. Manual full-course driving, graphics/input performance, native Windows installation, and separate-computer internet sessions are not established by these tests."
+}

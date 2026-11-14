@@ -1,5 +1,9 @@
 # Verification
 
+## Current standalone installation and branding
+
+The current checkout replaces the historical playtest setup with the complete [standalone installer](INSTALLER.md). The old installation finder, delta installer and preparation scripts described in historical results below are retired. Current packaging imports the SHA256-pinned public runtime, applies independent branding and checks that the UI font data is embedded. Ten Python integrity/identity tests and thirteen installer checks pass on the Mac, along with the protocol and distribution suites. See [the local verification record](local-mac-verification.json) for CrossOver scope and remaining player checks. The reports below describe the builds and environments recorded at the time; they are not fresh results for this modified package.
+
 ## Selectable modes (alpha.4)
 
 Two-player co-op is the standalone default. Protocol tests cover supported counts, seat ownership, occupied-lobby shrink rejection, and invalidating readiness acknowledgments when the mode changes. Two native processes pass a live Relay/DTLS test with exactly one active native car and one tablet, driver/nav roles and map privacy, driving, actual mud crossing, remote tablet drop/fall, remote door close and wiping, a shared finish, retry and replicated fatal tree failure. A separate lifecycle test covers ready/countdown, retry, return to lobby and synchronized 2→4→2 mode changes on the same room.

@@ -23,7 +23,7 @@ if(Test-Path -LiteralPath $manifest) {
 $runs=@()
 foreach($name in @('host','client1','client2','client3')) {
     $folder=Join-Path $testRoot $name
-    if(!(Test-Path -LiteralPath (Join-Path $folder 'LeftLeftLEFT.exe'))) {
+    if(!(Test-Path -LiteralPath (Join-Path $folder 'GameRuntime.exe'))) {
         New-Item -ItemType Directory -Path $folder -Force|Out-Null
         robocopy $BasePlayer $folder /E /R:0 /W:0 /XF Latest.log /NFL /NDL /NJH /NJS /NP|Out-Null
         if($LASTEXITCODE-ge 8){throw ('Could not prepare isolated player: '+$name)}
@@ -35,8 +35,8 @@ foreach($name in @('host','client1','client2','client3')) {
     $arguments=@('-batchmode','-nographics','--melonloader.hideconsole','-logFile',('"'+$log+'"'))
     if($Direct){$arguments+='--rrr-direct-verify';if($name-eq 'host'){$arguments+=@('--rrr-direct-host','--rrr-players=4')};if($Flow){$arguments+='--rrr-direct-flow'}else{$arguments+='--rrr-race-verify'}}else{$arguments+=@('--rrr-lan='+$role,'--rrr-race-verify')}
     if($Proxy-and $name-ne 'host'){$arguments+=('--rrr-port='+(7787+[int]$name.Substring(6)))}
-    $process=Start-Process -FilePath (Join-Path $folder 'LeftLeftLEFT.exe') -WorkingDirectory $folder -WindowStyle Hidden -PassThru -ArgumentList $arguments
-    $runs+=@{Name=$name;Id=$process.Id;Path=(Join-Path $folder 'LeftLeftLEFT.exe');Process=$process;Folder=$folder}
+    $process=Start-Process -FilePath (Join-Path $folder 'GameRuntime.exe') -WorkingDirectory $folder -WindowStyle Hidden -PassThru -ArgumentList $arguments
+    $runs+=@{Name=$name;Id=$process.Id;Path=(Join-Path $folder 'GameRuntime.exe');Process=$process;Folder=$folder}
 }
 $runs|Select-Object Id,Path|ConvertTo-Json|Set-Content -LiteralPath $manifest
 $deadline=(Get-Date).AddSeconds($TimeoutSeconds)

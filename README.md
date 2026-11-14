@@ -1,12 +1,14 @@
 # Right Right Right — two-player co-op and four-player racing
 
-**0.3.0-alpha.4** adds a lobby mode selector. **2 PLAYER CO-OP** is the default: one driver and one navigator in one car. Choose **4 PLAYER RACE** for two crews in two cars. The game, runtime and online settings are bundled. No original playtest, Steam, Porthole, player account signup or setup commands are required.
+**0.3.0-alpha.5** includes the complete Windows game in one setup EXE. **2 PLAYER CO-OP** is the default: one driver and one navigator in one car. Choose **4 PLAYER RACE** for two crews in two cars.
 
-[**Download the online standalone ZIP**](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.4/RightRightRight-Standalone-0.3.0-alpha.4.zip) · [Room-code guide](docs/RELAY-MULTIPLAYER.md)
+[**Download RightRightRight-Setup.exe**](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.5/RightRightRight-Setup.exe) · [Release notes](https://github.com/DocMorphic/right-right-right/releases/tag/v0.3.0-alpha.5) · [Room-code guide](docs/RELAY-MULTIPLAYER.md)
+
+Double-click the setup EXE. It installs everything, creates shortcuts and starts the game. No Steam, separate game installation, Python, SDK or setup commands are needed. The game uses its own branding and the lobby/HUD font is embedded. All players should install alpha.5. Windows x64 is the game target; Mac users need the [CrossOver setup](docs/MAC-DEVELOPMENT.md).
 
 ## Play with friends
 
-1. Everyone extracts the same-version ZIP and opens **player/RightRightRight.exe**.
+1. Everyone runs the same **RightRightRight-Setup.exe** and uses its shortcut. For the published ZIP, extract everything and open **player/RightRightRight.exe**.
 2. The host chooses **2 PLAYER CO-OP** or **4 PLAYER RACE**, clicks **HOST GAME**, and shares the room code. **COPY CODE** copies it to the clipboard.
 3. Friends enter that code and click **JOIN CODE**.
 4. Wait for **2/2** or **4/4**, then the host chooses a course. Keep the host's game open.
@@ -32,15 +34,17 @@ WASD/Space drives. **E** grabs/drops tablets, **G** closes the door, hold **C** 
 
 ## Alpha scope
 
+Alpha.5 passes scripted native gameplay checks through CrossOver on Apple Silicon: two-player co-op, four-player racing, retry/return to lobby and synchronized 2→4→2 mode changes, all through live Unity Relay/DTLS. The complete installer also passes its embedded-file verification and normal installation/launch. See [release checks and limits](docs/RELEASE-0.3.0-alpha.5.md) and [the sanitized results](docs/alpha5-verification-results.json). These are same-Mac headless tests, not a manual full-course or separate-computer playtest.
+
 Two-player co-op and four-player racing are tested with native game processes using real Unity Authentication, Relay rooms and DTLS. Co-op tests cover one-car/two-seat setup, driving, navigator map privacy, mud/wiping, doors, loose tablets, shared finish, retry and tree failure. Lobby lifecycle tests cover retry, return and synchronized 2→4→2 mode changes with the same room. Processes run on one PC through Unity's hosted service; separate home-network playtests remain needed. See the [mode verification report](docs/mode-verification-results.json).
 
 Both cars are simulated on the host. The second driver's controls have round-trip latency with no client prediction yet. There is no host migration or in-race joining. Lost tablets remain in the world until retrieved or the host retries. Tree DNF uses the race HUD so the other crew can continue.
 
-This remains a licensed distribution of the original compiled runtime and assets with our extension; it does not recover editable original gameplay source. The original Steam install is untouched. Original content is attributable to Stellux Interactive under the developer permission stated by the project owner, and is not covered by our source-code MIT license.
+Right Right Right is independently branded. It includes licensed compiled runtime/assets and our extension; this repository does not contain the editable original Unity project. Licensed content is attributable to Stellux Interactive under the developer permission stated by the project owner, and is not covered by our source-code MIT license.
 
 ## Developer build
 
-**Developing on a Mac:** [Mac setup and cross-platform build guide](docs/MAC-DEVELOPMENT.md). Use `python tools/build_from_release.py` to fetch a pinned published runtime and build the Windows package on macOS without the home Windows laptop. A native Mac game is not available; CrossOver play remains an unverified compatibility test. Check out `standalone/portable-steam` for the current multiplayer source.
+**Developing on a Mac:** [Mac setup and cross-platform build guide](docs/MAC-DEVELOPMENT.md). Use `python tools/build_from_release.py` to fetch a pinned published runtime and build the Windows package on macOS without the home Windows laptop. A native Mac game is not available. CrossOver startup and the embedded font have runtime checks, and the user confirmed readable text. Scripted co-op, four-player gameplay and lobby lifecycle pass through live Relay/DTLS on the Mac. Manual full-course driving and separate-computer play remain untested. The current source is on `main` and `standalone/portable-steam`.
 
 On Windows x64, a prepared pinned player and the local Python 3.12/.NET toolchain build the portable release:
 

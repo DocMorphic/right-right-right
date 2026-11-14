@@ -1,8 +1,4 @@
 @echo off
-if not exist "%~dp0local\playable\Mods\RightRightRight.dll" (
-  echo Run Setup.ps1 first.
-  pause
-  exit /b 1
-)
-cd /d "%~dp0local\playable"
-start "" "LeftLeftLEFT.exe" --melonloader.hideconsole
+cd /d "%~dp0"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Play.ps1" %*
+if errorlevel 1 pause

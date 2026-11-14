@@ -27,13 +27,13 @@ try {
     $names=@('host')+@(1..($Players-1)|ForEach-Object{"client$_"})
     foreach($name in $names){
         $folder=Join-Path $testRoot $name
-        if(!(Test-Path -LiteralPath (Join-Path $folder 'LeftLeftLEFT.exe'))){
+        if(!(Test-Path -LiteralPath (Join-Path $folder 'GameRuntime.exe'))){
             New-Item -ItemType Directory -Path $folder -Force|Out-Null
             robocopy $BasePlayer $folder /E /R:0 /W:0 /XF Latest.log /NFL /NDL /NJH /NJS /NP|Out-Null
             if($LASTEXITCODE-ge 8){throw ('Could not prepare isolated player: '+$name)}
         }
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'src\bin\Release\net6.0\RightRightRight.dll') -Destination (Join-Path $folder 'Mods\RightRightRight.dll')
-        @{Format=1;State='direct';SteamAppId=$null;ContentVersion='0.3.0-alpha.4'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $folder 'rrr-distribution.json')
+        @{Format=1;State='direct';SteamAppId=$null;ContentVersion='0.3.0-alpha.5'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $folder 'rrr-distribution.json')
         if($Fixture){
             @{Format=1;ProjectId='11111111-1111-4111-8111-111111111111';EnvironmentName='production';Region=''}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $folder 'rrr-relay.json')
         }else{Copy-Item -LiteralPath $RelayConfig -Destination (Join-Path $folder 'rrr-relay.json')}
@@ -45,8 +45,8 @@ try {
         if($Flow){$arguments+='--rrr-direct-flow';if($Players-eq 2){$arguments+='--rrr-mode-switch-verify'}}else{$arguments+='--rrr-race-verify'}
         if($name-eq 'host'){$arguments+=@('--rrr-direct-host',('--rrr-players='+$Players),('--rrr-relay-code-file='+$codeFile))}
         else{$arguments+=('--rrr-room='+$roomCode)}
-        $process=Start-Process -FilePath (Join-Path $folder 'LeftLeftLEFT.exe') -WorkingDirectory $folder -WindowStyle Hidden -PassThru -ArgumentList $arguments
-        $runs+=@{Name=$name;Process=$process;Path=(Join-Path $folder 'LeftLeftLEFT.exe');Folder=$folder}
+        $process=Start-Process -FilePath (Join-Path $folder 'GameRuntime.exe') -WorkingDirectory $folder -WindowStyle Hidden -PassThru -ArgumentList $arguments
+        $runs+=@{Name=$name;Process=$process;Path=(Join-Path $folder 'GameRuntime.exe');Folder=$folder}
         if($name-eq 'host'){
             $deadline=(Get-Date).AddSeconds(60)
             while(!(Test-Path -LiteralPath $codeFile)){

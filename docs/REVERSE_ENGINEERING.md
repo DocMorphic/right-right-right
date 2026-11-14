@@ -34,7 +34,7 @@ Primary tool sources: [UnityPy](https://github.com/K0lb3/UnityPy), [Cpp2IL](http
 
 ## Implementation
 
-`prepare_build.py` validates the supported original hashes, copies the player, appends six scene paths to BuildSettings, and creates `level4` through `level9` from the original `level1`. Unity then exposes unique scene names to its normal scene and networking APIs. The originals are untouched in the Steam install and retained in the copied player.
+The retired `prepare_build.py` validated the supported imported hashes, copied the player, appended six scene paths to BuildSettings, and created `level4` through `level9` from the imported `level1`. Current builds use the pinned, already-prepared standalone release through `tools/build_from_release.py`; no Steam installation is consulted. Unity exposes the distinct scene names to its normal scene and networking APIs.
 
 The menu patch runs before native `MainMenu.Start`, adds six cloned map buttons, publishes a course seed, waits for matching crew acknowledgments, then calls the original `MainMenu.LoadMap` method. The existing scroll layout handles all nine entries. Stage generation runs before native `StageController.Awake` in the six appended scenes. Other original scenes bypass stage generation.
 

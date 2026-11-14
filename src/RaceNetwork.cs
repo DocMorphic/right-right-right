@@ -17,7 +17,7 @@ namespace RightRightRight;
 
 internal static class RaceNetwork
 {
-    internal const string Build = "0.3.0-alpha.4";
+    internal const string Build = "0.3.0-alpha.5";
     internal const float Width=9.5f;
     internal static bool Enabled => !Args.Contains("--rrr-legacy-coop");
     internal static readonly string[] Args=Environment.GetCommandLineArgs();

@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
-$playerPath = Join-Path $PSScriptRoot 'local\playable'
-if (!(Test-Path -LiteralPath (Join-Path $playerPath 'Mods\RightRightRight.dll'))) {
-    throw 'Run Setup.ps1 first.'
+$installed = Join-Path $env:LOCALAPPDATA 'RightRightRight\versions\0.3.0-alpha.5\player\RightRightRight.exe'
+if (Test-Path -LiteralPath $installed) {
+    Start-Process -FilePath $installed -WorkingDirectory (Split-Path $installed -Parent)
 }
-Start-Process -FilePath (Join-Path $playerPath 'LeftLeftLEFT.exe') -WorkingDirectory $playerPath -WindowStyle Normal -ArgumentList @('--melonloader.hideconsole')
+else { & (Join-Path $PSScriptRoot 'Setup.ps1') }

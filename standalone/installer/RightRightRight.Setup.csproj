@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>RightRightRight-Setup</AssemblyName>
+    <Version>0.3.0-alpha.5</Version>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(PortablePackageZip)" LogicalName="player.zip" Condition="'$(PortablePackageZip)' != ''" />
+    <EmbeddedResource Include="$(PortablePackageHash)" LogicalName="player.sha256" Condition="'$(PortablePackageHash)' != ''" />
+  </ItemGroup>
+  <Target Name="RequirePayload" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(PortablePackageZip)') Or !Exists('$(PortablePackageHash)')" Text="Run tools/build_installer.py with a verified standalone ZIP. The installer bundles the complete game." />
+  </Target>
+</Project>
