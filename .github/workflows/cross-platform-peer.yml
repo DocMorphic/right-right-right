@@ -1,0 +1,49 @@
+name: Native Windows cross-play peer
+on:
+  workflow_dispatch:
+    inputs:
+      room_code:
+        description: Temporary room code from the Mac test host
+        required: true
+        type: string
+      flow:
+        description: Run retry/lobby/mode checks instead of gameplay
+        required: false
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  windows-peer:
+    runs-on: windows-2025
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Prepare verified matching player
+        run: |
+          python -m pip install -r tools/portable-requirements.txt
+          python tools/build_from_release.py --output local/cross-play --no-archive
+      - name: Join Mac host and exercise native gameplay
+        env:
+          RRR_TEST_ROOM: ${{ inputs.room_code }}
+          RRR_TEST_FLOW: ${{ inputs.flow }}
+        shell: pwsh
+        run: |
+          Write-Output "::add-mask::$env:RRR_TEST_ROOM"
+          $arguments = @('tools/verify_windows_peer.py', '--player', 'local/cross-play/player', '--report', 'local/cross-play-report/native-peer.json')
+          if ($env:RRR_TEST_FLOW -eq 'true') { $arguments += '--flow' }
+          python @arguments
+      - name: Upload sanitized peer result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-windows-peer-result
+          path: local/cross-play-report/native-peer.json
+          if-no-files-found: ignore
+          retention-days: 7
