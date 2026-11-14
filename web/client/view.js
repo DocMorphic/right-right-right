@@ -4,9 +4,10 @@ import {Font} from 'three/addons/loaders/FontLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { direction } from '../shared/course.js';
 import {CarPresentation} from './car-presentation.js';
+import {ImpactShake} from './impact-shake.js';
+import {RenderBudget} from './render-budget.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
-const angle=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
 // Start the navigator looking at the native lap-held tablet; mouse look stays free.
 export const initialLookPitch=slot=>slot%2===1?46.6:0;
 export class RallyView {
@@ -60,8 +61,9 @@ export class RallyView {
     });
   }
   setQuality(value) {
+    this.quality=value;this.renderBudget=new RenderBudget();
     const low=value==='low'||value==='auto'&&((navigator.hardwareConcurrency||8)<6||matchMedia('(pointer:coarse)').matches);
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1:1.5));this.renderer.shadowMap.enabled=!low;this.scene.fog.far=low?150:this.manifest.atmosphere.fog.far;this.camera.far=low?300:1000;this.camera.updateProjectionMatrix();
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1:value==='auto'?1.25:1.5));this.renderer.shadowMap.enabled=!low;this.scene.fog.far=low?150:this.manifest.atmosphere.fog.far;this.camera.far=low?300:1000;this.camera.updateProjectionMatrix();
   }
   disposeCourse() {
     for(const car of this.cars)for(const material of car.dynamicMaterials||[])material.dispose();for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
@@ -136,26 +138,23 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
   }
   find(parent,name) {if(!parent)return null;let found=null;parent.traverse(n=>{if(!found&&(n.name===name||n.name.startsWith(name.replaceAll(' ','_'))))found=n;});return found;}
   setSeat(slot) {this.slot=Math.max(0,slot);this.cars.forEach((car,team)=>car.heads.forEach((head,seat)=>{if(head)head.pivot.visible=!(this.active&&team===Math.floor(this.slot/2)&&seat===this.slot%2);}));}
-  setActive(active) {this.active=active;this.predicted=null;this.setSeat(this.slot);}
+  setActive(active) {this.active=active;this.predicted=null;this.impactShake=new ImpactShake();this.setSeat(this.slot);}
   setSnapshot(snapshot,{latencySeconds=0}={}) {
     if(!snapshot)return;const now=performance.now();this.snapshots.push({snapshot,received:now});if(this.snapshots.length>12)this.snapshots.shift();this.snapshot=snapshot;
-    const authority=snapshot.cars[Math.floor(this.slot/2)];if(!authority)return;
-    if(this.slot%2===0){
-      if(!this.presentation)this.presentation=new CarPresentation(this.course);
-      this.presentation.accept(authority,{phase:snapshot.phase,latencySeconds,input:snapshot.inputs?.[this.slot]||{},inputAgeSeconds:Math.max(0,(snapshot.time||0)-(snapshot.inputs?.[this.slot]?.arrived||snapshot.time||0))});
-      this.predicted=this.presentation.predicted;
-    }else this.predicted=structuredClone(authority);
+    this.cars.forEach((car,team)=>{
+      const authority=snapshot.cars[team];if(!authority)return;const drive=snapshot.inputs?.[team*2]||{};
+      if(!car.presentation)car.presentation=new CarPresentation(this.course,{remote:this.slot!==team*2});
+      car.presentation.accept(authority,{phase:snapshot.phase,latencySeconds,input:drive,inputAgeSeconds:Math.max(0,(snapshot.time||0)-(drive.arrived??snapshot.time??0))});
+      if(team===Math.floor(this.slot/2)){this.presentation=car.presentation;this.predicted=car.presentation.predicted;}
+    });
   }
   update(dt,now,input={}) {
+    if(this.active&&this.quality==='auto'){const ratio=this.renderBudget?.sample(dt);if(ratio!==null&&ratio!==undefined)this.renderer.setPixelRatio(Math.min(devicePixelRatio,ratio));}
     if(!this.active){const previous=this.scene.background;this.scene.background=new THREE.Color('#24211f');this.world.visible=false;this.renderer.render(this.scene,this.camera);this.world.visible=true;this.scene.background=previous;return;}if(!this.course)return;const snapshot=this.snapshot;
     if(this.active&&snapshot) {
-      const ownPresentation=this.slot%2===0?this.presentation?.advance(Math.min(dt,.04),input,snapshot.phase):null;
-      const renderAt=now-100;let previous=this.snapshots[0],next=this.snapshots.at(-1);
-      for(let i=0;i<this.snapshots.length-1;i++){if(this.snapshots[i].received<=renderAt&&this.snapshots[i+1].received>=renderAt){previous=this.snapshots[i];next=this.snapshots[i+1];break;}}
-      const t=previous&&next?THREE.MathUtils.clamp((renderAt-previous.received)/(next.received-previous.received||1),0,1):1;
       this.cars.forEach((car,team)=>{
-        const a=previous?.snapshot.cars[team]||snapshot.cars[team],b=next?.snapshot.cars[team]||a;if(!b)return;
-        const local=team===Math.floor(this.slot/2)&&ownPresentation;const state=local||{...b,x:THREE.MathUtils.lerp(a.x,b.x,t),z:THREE.MathUtils.lerp(a.z,b.z,t),y:THREE.MathUtils.lerp(a.y,b.y,t),yaw:angle(a.yaw,b.yaw,t)};
+        const b=snapshot.cars[team];if(!b)return;
+        const state=car.presentation?.advance(dt,input,snapshot.phase)||b;
         this.applyCar(car,state,b,now,input,dt);
       });
       this.tablets.forEach((pad,i)=>{const state=snapshot.tablets[i];if(!state)return;const carrier=this.cars[state.carrier];
@@ -165,11 +164,11 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
       });
       const own=this.cars[Math.floor(this.slot/2)],state=snapshot.cars[Math.floor(this.slot/2)];
       if(own&&state){const eye=this.manifest.anchors[this.slot%2===0?'Main Camera':'EyeAnchor'].position;v.fromArray(eye);own.model.localToWorld(v);this.camera.position.copy(v);
-        const j=state.jolt||0;this.camera.position.add(v.set(Math.sin(now*.047),Math.cos(now*.039),-Math.abs(Math.sin(now*.029))).multiplyScalar(.045*j));
+        if(!this.impactShake)this.impactShake=new ImpactShake();const shake=this.impactShake.update(state,dt);this.camera.position.add(v.set(shake.x,shake.y,shake.z));
         
         // A Three.js camera looks down -Z: yaw + PI faces the native +Z car forward.
         this.camera.quaternion.setFromEuler(new THREE.Euler(-(this.look.pitch+(this.slot%2===0?11.29:8.1))*Math.PI/180,own.model.rotation.y+Math.PI-this.look.yaw*Math.PI/180,0,'YXZ'));
-        for(const mesh of this.world.children)if(mesh.isInstancedMesh){const center=mesh.boundingSphere?.center;if(center)mesh.visible=(center.x-state.x)**2+(center.z-state.z)**2<(this.scene.fog.far+60)**2;}
+        for(const mesh of this.world.children)if(mesh.isInstancedMesh){const center=mesh.boundingSphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=mesh.boundingSphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=distance<(65+radius)**2;}}
         this.sun.position.set(state.x-40,state.y+80,state.z+20);this.sun.target.position.set(state.x,state.y,state.z);this.sun.target.updateMatrixWorld();
       }
       if(now-this.lastMap>80){this.drawMap(snapshot);this.lastMap=now;}
