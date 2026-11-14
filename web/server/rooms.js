@@ -20,18 +20,18 @@ export function newRoom(code,session,message,now=clockSeconds()){
   const mode=message.mode??'coop';if(!validMode(mode))fail('mode','Choose co-op or race.');
   if(message.seed!==undefined&&!validSeed(message.seed))fail('seed','Seed must be an integer from 1 to 2147483647.');
   const practice=message.practice===true;if(practice&&mode!=='coop')fail('practice','Practice uses one co-op car.');
-  return {code,hostId:session.id,mode,seed:message.seed??randomSeed(),profile:0,practice,status:'lobby',epoch:0,seats:[{id:session.id,name:safeName(message.name||session.name),ready:false,lastSeen:now}],world:null,inputs:[],lastAt:now,createdAt:now};
+  return {code,revision:0,hostId:session.id,mode,seed:message.seed??randomSeed(),profile:0,practice,status:'lobby',epoch:0,seats:[{id:session.id,name:safeName(message.name||session.name),ready:false,lastSeen:now}],world:null,inputs:[],lastAt:now,createdAt:now};
 }
 export function lobbyMessage(room){
-  return {type:'lobby',version:PROTOCOL_VERSION,code:room.code,hostId:room.hostId,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,status:room.status,epoch:room.epoch,
+  return {type:'lobby',version:PROTOCOL_VERSION,revision:room.revision??0,code:room.code,hostId:room.hostId,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,status:room.status,epoch:room.epoch,
     playersRequired:playerCount(room),seats:Array.from({length:room.practice?1:MODES[room.mode].players},(_,i)=>room.seats[i]?{id:room.seats[i].id,name:room.seats[i].name,ready:room.seats[i].ready}:null)};
 }
 export function snapshotMessage(room,now=clockSeconds()){
   const world=room.world;if(!world)return null;
-  return {type:'snapshot',...world,time:now,serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
+  return {type:'snapshot',...world,revision:room.revision??0,time:now,serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
 }
 export function raceMessage(room,now=clockSeconds()){
-  return {type:'race',epoch:room.epoch,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,courseHash:courseHash(courseFor(room)),snapshot:snapshotMessage(room,now)};
+  return {type:'race',revision:room.revision??0,epoch:room.epoch,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,courseHash:courseHash(courseFor(room)),snapshot:snapshotMessage(room,now)};
 }
 export function roomMessages(room,now=clockSeconds(),includeRace=false){
   return [lobbyMessage(room),...(room.world?[includeRace?raceMessage(room,now):snapshotMessage(room,now)]:[])];

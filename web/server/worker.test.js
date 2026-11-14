@@ -34,3 +34,14 @@ test('Worker practice is explicitly solo; rejects cross-origin, malformed input 
   const response=await worker.fetch(new Request('https://game.example/api/session',{method:'POST',headers:{Origin:'https://evil.example'},body:'{}'}),env,{});assert.equal(response.status,403);
   const unauthenticated=await post('/api/poll',{id:a.id,token:'0'.repeat(64)});assert.equal(unauthenticated.status,401);
 });
+test('HTTP responses identify the authoritative room revision through same-profile readiness reset',async t=>{
+  const {post,session,send}=await setup(t),a=await session(),b=await session();
+  const created=await send(a,{type:'create',mode:'coop',seed:901234}),code=message(created,'joined').code;
+  await send(b,{type:'join',code});await Promise.all([a,b].map(s=>send(s,{type:'ready',ready:true})));
+  const old=message(await post('/api/poll',{id:a.id,token:a.token,epoch:0}),'lobby');assert.ok(old.seats.every(s=>s.ready));
+  const configured=message(await send(a,{type:'configure',mode:'coop',profile:0,seed:901235}),'lobby');
+  assert.ok(configured.revision>old.revision);assert.equal(configured.profile,old.profile);assert.ok(configured.seats.every(s=>!s.ready));
+  const premature=await send(a,{type:'start'});assert.equal(message(premature,'error').code,'not_ready');
+  await Promise.all([a,b].map(s=>send(s,{type:'ready',ready:true})));
+  const race=message(await send(a,{type:'start'}),'race');assert.ok(race.revision>configured.revision);assert.equal(race.snapshot.revision,race.revision);assert.equal(race.seed,901235);
+});

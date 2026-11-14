@@ -15,7 +15,7 @@ async function mutateRoom(db,code,mutator){
   for(let attempt=0;attempt<12;attempt++){
     const record=await db.prepare('SELECT revision, data FROM rooms WHERE code = ?').bind(code).first();
     if(!record)throw new ProtocolError('not_found','Room not found. Ask the host to create a room.');
-    const room=JSON.parse(record.data),result=mutator(room);
+    const room=JSON.parse(record.data);room.revision=record.revision+1;const result=mutator(room);
     const write=await db.prepare('UPDATE rooms SET revision = revision + 1, data = ?, updated_at = ? WHERE code = ? AND revision = ?').bind(JSON.stringify(room),now(),code,record.revision).run();
     if(write.meta.changes===1)return {room,result,revision:record.revision+1};
   }

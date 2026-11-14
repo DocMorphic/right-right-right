@@ -5,7 +5,7 @@ import {clockSeconds, newRoom, joinRoom, removePlayer, commandRoom, advanceRoom,
 export class GameService {
   constructor({send=()=>{},now=clockSeconds}={}){this.rooms=new Map();this.sessions=new Map();this.send=send;this.now=now;}
   connect(id=randomBytes(12).toString('base64url')){const session={id,name:'Player',code:null,lastSeen:this.now()};this.sessions.set(id,session);this.send(id,{type:'welcome',version:PROTOCOL_VERSION,id,transport:'websocket'});return session;}
-  broadcast(room,race=false){for(const seat of room.seats)if(seat)for(const message of roomMessages(room,this.now(),race))this.send(seat.id,message);}
+  broadcast(room,race=false){room.revision=(room.revision||0)+1;for(const seat of room.seats)if(seat)for(const message of roomMessages(room,this.now(),race))this.send(seat.id,message);}
   receive(id,message){
     const session=this.sessions.get(id);if(!session)return;
     try{
