@@ -32,6 +32,12 @@ from fontTools.pens.boundsPen import BoundsPen
 ROOT = Path(__file__).resolve().parents[1]
 REFLECT = np.diag([-1., 1., 1., 1.])
 TREES = ['CommonTree_3', 'CommonTree_5', 'PineTree_1', 'PineTree_3', 'BirchTree_2', 'BirchTree_3']
+ASSET_SOURCE = 'Authorized compiled Right Right Right native runtime'
+ASSET_CREDITS = ('Original game and assets: Stellux Interactive\n'
+                 'Browser adaptation: Right Right Right\n'
+                 'Used under the developer permission stated by the project owner.\n'
+                 'Licensed original content is excluded from the repository source-code MIT license.\n'
+                 'See the repository LICENSE for the adaptation license.\n')
 
 
 def safe_name(value):
@@ -323,8 +329,9 @@ class Exporter:
         fonts,ui=self.export_ui()
         path=self.output/'manifest.json'
         manifest=json.loads(path.read_text()) if path.exists() else {'schemaVersion':1}
-        manifest.update(fonts=fonts,ui=ui)
+        manifest.update(source=ASSET_SOURCE,fonts=fonts,ui=ui)
         path.write_text(json.dumps(manifest,indent=2)+'\n')
+        (self.output/'CREDITS.txt').write_text(ASSET_CREDITS)
         print(json.dumps({'fonts':fonts,'uiTextures':len(ui['textures']),'styles':list(ui['skin']['styles'])},indent=2))
 
     def run(self):
@@ -351,13 +358,13 @@ class Exporter:
         self.export_textures()
         surfaces=self.surfaces()
         sounds = self.audio()
-        manifest = {'schemaVersion': 1, 'source': 'Authorized original Left Left LEFT / Right Right Right native runtime', 'copyright': 'Original game and assets: Stellux Interactive. Used under developer permission stated by project owner; excluded from the source-code MIT license.', 'coordinateSystem': {'up': '+Y', 'forward': '+Z', 'units': 'meters', 'conversion': 'Unity X reflected; winding reversed; UV V flipped; native seated skeletal pose baked'}, 'models': models, 'anchors': anchors, 'textures': self.texture_manifest, 'sounds': sounds, 'materials': self.material_inventory, 'mud': {'source': 'Native Car_Glass material procedural shader; no mud bitmap exists', 'color': [0.2999999821, 0.1999999583, 0.1099999622], 'noiseScale': 3.5, 'opacity': 1.0}, 'warnings': self.warnings}
+        manifest = {'schemaVersion': 1, 'source': ASSET_SOURCE, 'copyright': 'Original game and assets: Stellux Interactive. Used under developer permission stated by project owner; excluded from the source-code MIT license.', 'coordinateSystem': {'up': '+Y', 'forward': '+Z', 'units': 'meters', 'conversion': 'Unity X reflected; winding reversed; UV V flipped; native seated skeletal pose baked'}, 'models': models, 'anchors': anchors, 'textures': self.texture_manifest, 'sounds': sounds, 'materials': self.material_inventory, 'mud': {'source': 'Native Car_Glass material procedural shader; no mud bitmap exists', 'color': [0.2999999821, 0.1999999583, 0.1099999622], 'noiseScale': 3.5, 'opacity': 1.0}, 'warnings': self.warnings}
         manifest['surfaces']=surfaces
         manifest['atmosphere']=self.atmosphere()
         manifest['runtime']={'sourceDirectory':self.runtime.name,'level1Sha256':hashlib.sha256((self.runtime/'level1').read_bytes()).hexdigest(),'unityPyVersion':UnityPy.__version__}
         manifest['fonts'],manifest['ui']=self.export_ui()
         (self.output/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
-        (self.output/'CREDITS.txt').write_text('Original game and assets: Stellux Interactive — Left Left LEFT\nBrowser adaptation: Right Right Right\nUsed under the developer permission stated by the project owner.\nLicensed original content is excluded from the repository source-code MIT license.\nSee the repository LICENSE for the adaptation license.\n')
+        (self.output/'CREDITS.txt').write_text(ASSET_CREDITS)
         print(json.dumps({'output': str(self.output), 'models': models, 'anchors': anchors, 'textures': len(self.texture_manifest), 'sounds': len(sounds), 'warnings': self.warnings}, indent=2))
 
 
@@ -503,7 +510,12 @@ class GLB:
         elif floats.get('_AlphaClip', 0) > .5: result.update(alphaMode='MASK', alphaCutoff=floats.get('_Cutoff', .5))
         # URP unlit materials are common for the original hand-colored cabin.
         # Preserve their appearance rather than darkening them with PBR lighting.
-        try: shader_name = m.m_Shader.read().m_Name
+        try:
+            shader = m.m_Shader.read()
+            # Unity 6 compiled shaders leave Object.m_Name empty; the actual
+            # name is serialized in Shader.m_ParsedForm. Inspect it so native
+            # unlit cabin materials do not accidentally become lit PBR.
+            shader_name = shader.m_Name or shader.m_ParsedForm.m_Name
         except Exception: shader_name = ''
         if 'Unlit' in shader_name:
             result['extensions'] = {'KHR_materials_unlit': {}}

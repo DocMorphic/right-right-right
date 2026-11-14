@@ -23,7 +23,7 @@
       "nodes": 397,
       "meshCount": 129,
       "triangles": 72137,
-      "bytes": 13928028,
+      "bytes": 13934768,
       "sourceFile": "level1",
       "sourcePathId": 9179
     },
@@ -45,7 +45,7 @@
       "nodes": 4,
       "meshCount": 2,
       "triangles": 14,
-      "bytes": 5040,
+      "bytes": 5096,
       "sourceFile": "level1",
       "sourcePathId": 9262
     },
@@ -68,7 +68,7 @@
         "nodes": 1,
         "meshCount": 1,
         "triangles": 1584,
-        "bytes": 138580,
+        "bytes": 138668,
         "sourceFile": "level1",
         "sourcePathId": 237,
         "collider": {
@@ -101,7 +101,7 @@
         "nodes": 1,
         "meshCount": 1,
         "triangles": 1836,
-        "bytes": 160844,
+        "bytes": 160904,
         "sourceFile": "level1",
         "sourcePathId": 276,
         "collider": {
@@ -134,7 +134,7 @@
         "nodes": 1,
         "meshCount": 1,
         "triangles": 1920,
-        "bytes": 164164,
+        "bytes": 164224,
         "sourceFile": "level1",
         "sourcePathId": 244,
         "collider": {
@@ -167,7 +167,7 @@
         "nodes": 1,
         "meshCount": 1,
         "triangles": 2392,
-        "bytes": 209552,
+        "bytes": 209612,
         "sourceFile": "level1",
         "sourcePathId": 251,
         "collider": {
@@ -200,7 +200,7 @@
         "nodes": 1,
         "meshCount": 1,
         "triangles": 1566,
-        "bytes": 135732,
+        "bytes": 135848,
         "sourceFile": "level1",
         "sourcePathId": 292,
         "collider": {
@@ -233,7 +233,7 @@
         "nodes": 1,
         "meshCount": 1,
         "triangles": 1730,
-        "bytes": 152188,
+        "bytes": 152304,
         "sourceFile": "level1",
         "sourcePathId": 298,
         "collider": {
@@ -267,7 +267,7 @@
       "nodes": 7,
       "meshCount": 3,
       "triangles": 36,
-      "bytes": 9004,
+      "bytes": 9088,
       "sourceFile": "level1",
       "sourcePathId": 9029
     },
@@ -289,7 +289,7 @@
       "nodes": 7,
       "meshCount": 3,
       "triangles": 36,
-      "bytes": 9016,
+      "bytes": 9104,
       "sourceFile": "level1",
       "sourcePathId": 9192
     }
@@ -306,31 +306,7 @@
         "firstErrors": []
       },
       {
-        "file": "stagefinish.glb",
-        "errors": 0,
-        "warnings": 0,
-        "firstErrors": []
-      },
-      {
-        "file": "stagestart.glb",
-        "errors": 0,
-        "warnings": 0,
-        "firstErrors": []
-      },
-      {
         "file": "tablet.glb",
-        "errors": 0,
-        "warnings": 0,
-        "firstErrors": []
-      },
-      {
-        "file": "trees/BirchTree_2.glb",
-        "errors": 0,
-        "warnings": 0,
-        "firstErrors": []
-      },
-      {
-        "file": "trees/BirchTree_3.glb",
         "errors": 0,
         "warnings": 0,
         "firstErrors": []
@@ -358,6 +334,30 @@
         "errors": 0,
         "warnings": 0,
         "firstErrors": []
+      },
+      {
+        "file": "trees/BirchTree_2.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "trees/BirchTree_3.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "stagestart.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
+      },
+      {
+        "file": "stagefinish.glb",
+        "errors": 0,
+        "warnings": 0,
+        "firstErrors": []
       }
     ]
   },
@@ -371,7 +371,8 @@
       "All six original forest tree species upright in original low-poly style.",
       "Native road dirt and grassy surroundings use original textures.",
       "No new scenery or substitute models."
-    ]
+    ],
+    "scope": "Earlier native asset preview only; the later compiled-shader-name correction has passed format validation and awaits client visual verification. This does not establish final-game rendering parity."
   },
   "limitations": [
     "Native seated skeletal pose baked; no Unity animator runtime.",
@@ -525,5 +526,35 @@
       ]
     },
     "scope": "Original-font format/outlines validation only; no redesigned browser UI GUI parity claim."
+  },
+  "materialShaderVerification": {
+    "source": "Compiled Unity 6 Shader.m_ParsedForm.m_Name, falling back from empty Object.m_Name",
+    "carNativeUnlitMaterialCount": 71,
+    "gltfExtension": "KHR_materials_unlit",
+    "glass": {
+      "shader": "RollingWreck/CarGlass",
+      "sourceFile": "sharedassets1.assets",
+      "sourceMaterialPathId": 31,
+      "sourceShaderPathId": 198,
+      "passes": [
+        "Forward"
+      ],
+      "cull": "Off",
+      "depthWrite": false,
+      "nativeTintAlpha": 0.13725490868091583,
+      "limitation": "GLB preserves tint/transparency and native shader metadata, while browser client must recreate procedural mud/custom glass. No native ShadowCaster pass exists."
+    },
+    "validation": "All 10 regenerated GLBs: zero Khronos validator errors and warnings. No browser GUI check performed for this correction."
+  },
+  "treeMatrixVerification": {
+    "tool": "Local Three.js 0.187 GLTFLoader; browser client placement matrix reproduced without GUI",
+    "seed": 84183,
+    "profile": 404,
+    "courseTreeCount": 10777,
+    "first100mTreeCount": 190,
+    "allSixVariantsUpright": true,
+    "allMatricesPositiveDeterminant": true,
+    "maximumTrunkCenterErrorXZ": 0,
+    "scope": "Placement/export consistency check, not deployed browser visibility proof."
   }
 }

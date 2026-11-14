@@ -2,7 +2,7 @@
 
 `tools/export_web_assets.py` reads the authorized original native player directly with UnityPy. It exports the original car, cabin, two seated occupants, tablet, six matching forest species, native start/finish geometry, textures, material settings and all 28 available sounds. It adds no scenery or substitute models.
 
-Original game and asset credit: **Stellux Interactive, Left Left LEFT**. The project owner states that developer permission covers the independently branded adaptation. These generated files are excluded from the repository's source-code MIT license. Keep the generated `CREDITS.txt` with packaged browser assets.
+Original game and asset credit: **Stellux Interactive**. The project owner states that developer permission covers the independently branded adaptation. These generated files are excluded from the repository's source-code MIT license. Keep the generated `CREDITS.txt` with packaged browser assets.
 
 ```sh
 .venv-build/bin/pip install -r tools/web-assets-requirements.txt
@@ -30,6 +30,8 @@ The browser UI and gameplay are reconstructed from the native mod source and rec
 The 397-node car GLB retains original hierarchy and door/steering pivots. The two original skinned occupants are baked to their native scene's seated bone pose; this preserves the existing seated shape without requiring a Unity animator in the browser. Meshes retain vertex normals, tangent vectors, UVs, material submeshes and vertex colors. Color textures are PNG in sRGB, normal maps use linear RGB. Material color factors are converted from Unity's serialized sRGB values to glTF linear values. Collider data is attached to each relevant node's `extras.colliders`.
 
 The car's native `Car_Glass` shader implements mud procedurally; the source contains no mud bitmap. Its source color/noise/opacity settings are in `manifest.mud`. A browser shader can reuse those parameters with the original windshield mesh. Dynamic tablet map rendering also remains browser behavior attached to its original `Screen` mesh. Unity text rendering and custom shader programs are not portable glTF features.
+
+Compiled Unity 6 shader names are read from `m_ParsedForm.m_Name` when the object's `m_Name` is empty. This preserves 71 original car/cabin unlit materials using `KHR_materials_unlit`, preventing ordinary PBR lighting from darkening them. Custom glass remains a source-parameter PBR fallback in GLB: native `RollingWreck/CarGlass` has only a transparent Forward pass, `Cull Off` and `ZWrite Off`; its serialized tint alpha is 0.1373. The client must implement its glass/mud behavior and omit opaque glass shadows. Format validation and tree-placement matrix checks do not establish visual parity with that custom shader.
 
 For a visual diagnostic, serve the repository root and open the included preview:
 
