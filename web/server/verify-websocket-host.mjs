@@ -3,6 +3,7 @@
  */
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
 import {setTimeout as wait} from 'node:timers/promises';
 import {WebSocket} from 'ws';
 import {STAGES,generateCourse} from '../shared/course.js';
@@ -36,6 +37,6 @@ try{
  const guestByTick=new Map(guest.messages.filter(m=>m.type==='snapshot'&&m.epoch===epoch&&m.phase==='running').map(m=>[m.seq,m]));let matching=0;
  for(const m of host.messages.filter(m=>m.type==='snapshot'&&m.epoch===epoch&&m.phase==='running')){const other=guestByTick.get(m.seq);if(other){assert.deepEqual(other.cars,m.cars);matching++;}}assert.ok(matching>100);
  phase='retry';host.send({type:'retry'});const retried=await host.next(m=>m.type==='race'&&m.epoch>epoch);assert.equal(retried.snapshot.phase,'countdown');assert.equal(retried.snapshot.stageReady,undefined);
- const report={ok:true,url:base.origin,checkedAt:new Date().toISOString(),transport:'websocket',physicalMachines:1,independentClients:2,source:'e0615f8',originalStage:1,drivingSeconds:15,drivenMeters:Number(moved.toFixed(2)),statePlacements:0,matchingHostGuestTicks:matching,verified:['host','join','both-R-required','five-second-countdown','normal-throttle-and-steering','handbrake','same-tick-state-agreement','retry-ready-reset'],clients:peers.map(p=>({pingMs:{median:percentile(p.pings,.5),p95:percentile(p.pings,.95)},snapshotIntervalMs:{median:percentile(p.intervals,.5),p95:percentile(p.intervals,.95)}})),limitation:'Both clients run on the host Mac. This does not verify the friend laptop, Wi-Fi peer reachability, GPU frame rate, or human-perceived smoothness.'};
+ const report={ok:true,url:base.origin,checkedAt:new Date().toISOString(),transport:'websocket',physicalMachines:1,independentClients:2,source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),originalStage:1,drivingSeconds:15,drivenMeters:Number(moved.toFixed(2)),statePlacements:0,matchingHostGuestTicks:matching,verified:['host','join','both-R-required','five-second-countdown','normal-throttle-and-steering','handbrake','same-tick-state-agreement','retry-direct-countdown'],clients:peers.map(p=>({pingMs:{median:percentile(p.pings,.5),p95:percentile(p.pings,.95)},snapshotIntervalMs:{median:percentile(p.intervals,.5),p95:percentile(p.intervals,.95)}})),limitation:'Both clients run on the host Mac. This does not verify the friend laptop, Wi-Fi peer reachability, GPU frame rate, or human-perceived smoothness.'};
  if(process.argv[3])await writeFile(process.argv[3],JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));
 }finally{for(const timer of timers)clearInterval(timer);for(const p of peers){p.ws.close();setTimeout(()=>p.ws.terminate(),250).unref();}}
