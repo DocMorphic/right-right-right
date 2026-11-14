@@ -7,7 +7,7 @@ const token=()=>{const bytes=crypto.getRandomValues(new Uint8Array(32));return A
 const errorMessage=error=>({type:'error',code:error.code||'server',message:error instanceof ProtocolError?error.message:'The multiplayer server is busy. Please try again.'});
 // Production uses wall time; integration fixtures inject a clock without exposing a request override.
 export function createWorker({clock=clockSeconds}={}){
-const now=clock;
+const now=clock,HTTP_INPUT_TTL=1.5;
 async function loadSession(db,body){
   if(typeof body.id!=='string'||typeof body.token!=='string'||body.id.length>64||body.token.length!==64)throw new ProtocolError('auth','Session expired. Reconnect to the server.');
   const session=await db.prepare('SELECT id, token, code, name FROM sessions WHERE id = ? AND token = ?').bind(body.id,body.token).first();
@@ -65,7 +65,7 @@ async function receive(db,session,message,seenEpoch=0){
   }
   const batch=message.type==='batch'?message.messages:[message];
   if(!Array.isArray(batch)||!batch.length||batch.length>8||batch.some(m=>!['input','poll','ready','seat','configure','start','retry','lobby'].includes(m?.type)))throw new ProtocolError('message','Invalid message batch.');
-  const {room,result}=await mutateRoom(db,session.code,room=>{let race=false;for(const command of batch){const result=commandRoom(room,session,command,at);race||=result.race===true;}return {race};});
+  const {room,result}=await mutateRoom(db,session.code,room=>{let race=false;for(const command of batch){const result=commandRoom(room,session,command,at,{inputTtl:HTTP_INPUT_TTL});race||=result.race===true;}return {race};});
   return roomMessages(room,at,result.race||Boolean(room.world&&seenEpoch!==room.epoch));
 }
 return {
@@ -73,7 +73,7 @@ return {
     const url=new URL(request.url);
     if(url.pathname==='/health'){
       if(!env.DB)return json({ok:false,error:'Database is not configured.'},503);
-      try{await env.DB.prepare('SELECT 1 FROM rooms LIMIT 1').first();return json({ok:true,protocol:1,transport:'http',authority:'d1-cas'});}catch{return json({ok:false,error:'Multiplayer database migrations are missing.'},503);}
+      try{await env.DB.prepare('SELECT 1 FROM rooms LIMIT 1').first();return json({ok:true,protocol:1,transport:'http',authority:'d1-cas',inputHoldSeconds:HTTP_INPUT_TTL});}catch{return json({ok:false,error:'Multiplayer database migrations are missing.'},503);}
     }
     if(!url.pathname.startsWith('/api/')){
       if(url.pathname==='/ws')return json({error:'Use the HTTP multiplayer transport on this host.'},426);

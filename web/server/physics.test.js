@@ -56,7 +56,7 @@ test('action IDs execute at most once, including duplicate actions in the same i
 test('stale controls stop accelerating and expired HTTP peer pauses race and transfers host',()=>{
   const a={id:'a'},b={id:'b'},room=newRoom('ABC123',a,{mode:'coop',seed:1},0);joinRoom(room,b,{},0);
   commandRoom(room,a,{type:'ready',ready:true},0);commandRoom(room,b,{type:'ready',ready:true},0);commandRoom(room,a,{type:'start'},0);room.world.phase='running';
-  commandRoom(room,a,{type:'input',epoch:1,seq:1,throttle:1,steer:0,pitch:0,yaw:0},0);advanceRoom(room,.2);const speed=room.world.cars[0].speed;
+  commandRoom(room,a,{type:'input',epoch:1,seq:1,throttle:1,steer:0,pitch:0,yaw:0},0);advanceRoom(room,.49);const speed=room.world.cars[0].speed;
   advanceRoom(room,1);assert.ok(room.world.cars[0].speed<speed);
   commandRoom(room,b,{type:'poll'},31);assert.equal(room.hostId,'b');assert.equal(room.world.phase,'paused');assert.equal(room.seats.filter(Boolean).length,1);
 });

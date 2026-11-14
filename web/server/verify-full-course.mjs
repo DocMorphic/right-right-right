@@ -21,13 +21,14 @@ try{
   const code=find(await send(0,{type:'create',mode:'coop',seed:12345,name:'Full-route verification driver'}),'joined').code;
   await send(1,{type:'join',code,name:'Full-route verification navigator'});await Promise.all([0,1].map(slot=>send(slot,{type:'ready',ready:true})));
   const race=find(await send(0,{type:'start'}),'race');epoch=race.epoch;const stage=STAGES[race.profile],course=generateCourse(race.seed,race.mode,stage.blocks,stage.seed);
-  let snapshot=race.snapshot,seq=0,lastNavigator=0,lastReport=0;const started=performance.now();
+  let snapshot=race.snapshot,seq=0,lastNavigator=0,lastReport=0,responseSeconds=.65;const started=performance.now();
   console.log(JSON.stringify({event:'started',host:origin,mode:'coop',seed:race.seed,routeMeters:Math.round(course.length),statePlacements:0,maxSpeedMetersPerSecond:8.5}));
   while(snapshot.phase!=='ended'&&(performance.now()-started)/1000<limit){
     const at=performance.now(),heartbeat=at-lastNavigator>2000;if(heartbeat)lastNavigator=at;
-    const replies=await Promise.all([send(0,{type:'input',epoch,seq:++seq,...routeInput(course,snapshot,0,{maxSpeed:8.5})}),...(heartbeat?[poll(1)]:[])]);
+    const replies=await Promise.all([send(0,{type:'input',epoch,seq:++seq,...routeInput(course,snapshot,0,{maxSpeed:8.5,responseSeconds})}),...(heartbeat?[poll(1)]:[])]);
+    responseSeconds=responseSeconds*.85+Math.min(1.2,Math.max(.1,(performance.now()-at)/1000))*.15;
     snapshot=find(replies[0],'snapshot')||find(replies[0],'race')?.snapshot||snapshot;
-    if(at-lastReport>10000){lastReport=at;console.log(JSON.stringify({event:'progress',elapsed:Number(snapshot.elapsed.toFixed(1)),progressPercent:Number((100*snapshot.cars[0].progress/course.points.length).toFixed(1)),speed:Number(snapshot.cars[0].speed.toFixed(2)),mud:snapshot.stats.mud,dead:snapshot.cars[0].dead,...counts}));}
+    if(at-lastReport>10000){lastReport=at;console.log(JSON.stringify({event:'progress',elapsed:Number(snapshot.elapsed.toFixed(1)),progressPercent:Number((100*snapshot.cars[0].progress/course.points.length).toFixed(1)),speed:Number(snapshot.cars[0].speed.toFixed(2)),mud:snapshot.stats.mud,dead:snapshot.cars[0].dead,responseSeconds:Number(responseSeconds.toFixed(3)),...counts}));}
     await wait(Math.max(0,100-(performance.now()-at)));
   }
   assert.equal(snapshot.cars[0].dead,false,'The driving controller hit a tree; this is a failed route verification.');

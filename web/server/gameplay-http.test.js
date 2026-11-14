@@ -97,3 +97,29 @@ test('real HTTP four-client race covers doors, tablets, collisions, fatal trees,
   await s.send(1,{type:'lobby'});await s.send(1,{type:'leave'});assert.equal(s.fixture.sqlite.prepare('SELECT COUNT(*) count FROM rooms WHERE code = ?').get(s.code).count,0);
   t.diagnostic(JSON.stringify({clients:4,httpRequests:s.requests,statePlacements:s.placements,verified:['nonfatal-car-contact','navigator-drive-spoof-rejected','handbrake-and-reverse','driver-and-navigator-wiping','turn-open-and-G-close','E-drop-and-grab','closed-rival-door-theft-guard','loose-tablet-door-ejection','open-rival-door-steal','tree-DNF','race-result-agreement','same-seed-and-new-seed-retry','four-to-two-player-mode','silent-peer-pause-resume','host-disconnect-migration','empty-room-cleanup']}));
 });
+
+test('real HTTP controls remain usable at650ms latency and a full course still finishes without placement',async t=>{
+  const s=await scenario(t),race=s.initialRace,stage=STAGES[race.profile],course=generateCourse(race.seed,race.mode,stage.blocks,stage.seed);
+  let snapshot=race.snapshot,steps=0;
+  for(;steps<3000&&snapshot.phase!=='ended';steps++){
+    s.advance(.65);snapshot=find(await s.input(0,routeInput(course,snapshot,0,{maxSpeed:8.5,responseSeconds:.65})),'snapshot');
+    await s.poll(1);
+  }
+  assert.equal(s.placements,0);assert.equal(snapshot.cars[0].dead,false);assert.ok(snapshot.cars[0].finish>0);assert.equal(snapshot.winner,0);
+  t.diagnostic(JSON.stringify({requestCadenceMs:650,finishSeconds:snapshot.cars[0].finish,normalInputPackets:steps,statePlacements:0,httpRequests:s.requests}));
+});
+
+test('650ms HTTP input gaps match continuous controls, then the bounded hold expires safely',async t=>{
+  const coarse=await scenario(t),fine=await scenario(t),catchup=await scenario(t),fineExpiry=await scenario(t);
+  for(const s of [coarse,fine,catchup,fineExpiry]){s.place(room=>{room.world.phase='running';room.world.countdown=0;});await s.input(0,{throttle:1});}
+  const a=await coarse.tick(.65);let b;
+  for(let i=0;i<6;i++)b=await fine.tick(.1,{0:{throttle:1}});b=await fine.tick(.05,{0:{throttle:1}});
+  assert.equal(a.inputs[0].ttl,1.5);assert.ok(a.inputs[0].arrived<=a.time);assert.ok(Math.abs(a.cars[0].speed-b.cars[0].speed)<.0001);assert.ok(Math.abs(a.cars[0].z-b.cars[0].z)<.0001);
+  const largeSlice=await catchup.tick(1.8);let smallSlices;for(let i=0;i<18;i++)smallSlices=await fineExpiry.tick(.1);
+  assert.ok(Math.abs(largeSlice.cars[0].speed-smallSlices.cars[0].speed)<.0001);assert.ok(Math.abs(largeSlice.cars[0].z-smallSlices.cars[0].z)<.0001,'expiry is evaluated at each physics step, not once against the final request time');
+  // Keep the comparison driver pressing W while the coarse client's controls stop arriving.
+  let expired=a,continuous=b;for(let i=0;i<20;i++){expired=await coarse.tick(.1);continuous=await fine.tick(.1,{0:{throttle:1}});}
+  assert.ok(expired.time-expired.inputs[0].arrived>1.5);assert.ok(expired.cars[0].speed<continuous.cars[0].speed-2);
+  const before=expired.cars[0].speed;expired=await coarse.tick(.5);assert.ok(expired.cars[0].speed<before);
+  t.diagnostic(JSON.stringify({gapMs:650,holdSeconds:a.inputs[0].ttl,coarseSpeed:a.cars[0].speed,continuousSpeed:b.cars[0].speed,expiredSpeed:expired.cars[0].speed}));
+});

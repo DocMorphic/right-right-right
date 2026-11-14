@@ -28,7 +28,7 @@ export function lobbyMessage(room){
 }
 export function snapshotMessage(room,now=clockSeconds()){
   const world=room.world;if(!world)return null;
-  return {type:'snapshot',...world,revision:room.revision??0,time:now,serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
+  return {type:'snapshot',...world,revision:room.revision??0,time:Math.max(now,room.lastAt),serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,arrived:i.arrived,ttl:i.ttl??.5,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
 }
 export function raceMessage(room,now=clockSeconds()){
   return {type:'race',revision:room.revision??0,epoch:room.epoch,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,courseHash:courseHash(courseFor(room)),snapshot:snapshotMessage(room,now)};
@@ -61,14 +61,15 @@ export function advanceRoom(room,now=clockSeconds()){
   const missing=room.seats.filter(Boolean).length!==playerCount(room)||room.seats.some(s=>s&&now-s.lastSeen>10);
   if(missing&&world.phase!=='ended'&&world.phase!=='paused'){world.resumePhase=world.phase;world.phase='paused';}
   if(!missing&&world.phase==='paused'){world.phase=world.resumePhase||'running';delete world.resumePhase;}
+  const simulationStart=room.lastAt;let progressed=0;
   let remaining=Math.max(0,Math.min(2,now-room.lastAt));room.lastAt=Math.max(room.lastAt,now);
   if(world.phase==='paused'||world.phase==='ended')return;
   const course=courseFor(room);
   while(remaining>1e-6){
-    const dt=Math.min(.02,remaining);remaining-=dt;
+    const dt=Math.min(.02,remaining);remaining-=dt;progressed+=dt;const stepAt=simulationStart+progressed-dt*.5;
     if(world.phase==='countdown'){world.countdown=Math.max(0,world.countdown-dt);if(world.countdown<=.00001){world.countdown=0;world.phase='running';}}
     else if(world.phase==='running'){
-      const active=room.inputs.map(input=>input&&now-input.arrived<.5?input:{});stepWorld(world,active,dt,course);
+      const active=room.inputs.map(input=>input&&stepAt-input.arrived<(input.ttl??.5)?input:{});stepWorld(world,active,dt,course);
     }
   }
   world.seq++;
@@ -80,7 +81,7 @@ function startRoom(room,now){
   if(room.practice)room.world.tablets[0].holder=0;
 }
 /** All room mutations are transport independent and JSON serializable for the D1 adapter. */
-export function commandRoom(room,session,message,now=clockSeconds()){
+export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5}={}){
   // HTTP tabs have no reliable disconnect event. Expired peers release their seats;
   // the oldest remaining crew member becomes host through removePlayer.
   for(const seat of [...room.seats])if(seat&&seat.id!==session.id&&now-seat.lastSeen>30)removePlayer(room,seat.id,now);
@@ -122,7 +123,7 @@ export function commandRoom(room,session,message,now=clockSeconds()){
       let actionId=previous?.actionId??0;
       const actions=(message.actions||[]).filter(action=>{if(!newer(action.id,actionId))return false;actionId=action.id;return true;});
       // The sender's connection determines their seat. Client-supplied slot/team is ignored.
-      room.inputs[slot]={seq:message.seq,actionId,throttle:slot%2===0?message.throttle:0,steer:slot%2===0?message.steer:0,pitch:message.pitch,yaw:message.yaw,handbrake:slot%2===0&&message.handbrake===true,wipe:message.wipe===true,arrived:now};
+      room.inputs[slot]={seq:message.seq,actionId,throttle:slot%2===0?message.throttle:0,steer:slot%2===0?message.steer:0,pitch:message.pitch,yaw:message.yaw,handbrake:slot%2===0&&message.handbrake===true,wipe:message.wipe===true,arrived:Math.max(now,room.lastAt),ttl:inputTtl};
       if(room.world.phase!=='ended'&&room.world.phase!=='paused')applyActions(room.world,slot,{...room.inputs[slot],actions});
       return {broadcast:false};
     }
