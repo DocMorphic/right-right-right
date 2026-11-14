@@ -3,6 +3,7 @@ import nativeCatalog from './native-courses.generated.json' with {type:'json'};
 // Keep existing protocol indices stable. The menu sorts these by their native number.
 export const STAGES = Object.freeze([{name:'04 / PINE NEEDLE',seed:404,blocks:7},{name:'05 / SWITCHBACK',seed:505,blocks:8},{name:'06 / RIDGELINE',seed:606,blocks:8},{name:'07 / SERPENT',seed:707,blocks:9},{name:'08 / LONG WAY HOME',seed:808,blocks:10},{name:'09 / RIGHT RIGHT RIGHT',seed:909,blocks:10},
   ...nativeCatalog.courses.map(course=>({name:course.name,seed:1000+Number(course.id),blocks:0,nativeScene:course.id}))]);
+export const DEFAULT_STAGE = STAGES.findIndex(stage=>stage.nativeScene==='1');
 
 function authoredCourse(source,seed,mode,profile){
   const points=source.points.map(([x,y,z])=>({x,y,z}));
