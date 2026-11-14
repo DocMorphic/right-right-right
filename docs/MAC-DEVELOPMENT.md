@@ -48,6 +48,8 @@ Edit source, rebuild, test, then commit/push the authored changes. Do not commit
 
 The **Build Windows package on Mac** GitHub Actions workflow also builds and verifies from a standard Apple Silicon macOS 26 runner when relevant source/build files are pushed. It uploads a small build report, not a native Mac game or a playable build. The local command above keeps the full ZIP on your own Mac.
 
+This workflow [passed on an arm64 macOS 26 runner](https://github.com/DocMorphic/right-right-right/actions/runs/43586429691), including a fresh base download, C# compilation, Windows launcher publication, all 638 package hashes, six bootstrap integrity tests, protocol/mode rules and distribution checks. See [the verification record](mac-build-verification.json). This is build verification; it does not run the game under macOS or CrossOver.
+
 ## Playing on an M1 Max with macOS Tahoe
 
 Use the published [Windows alpha.4 ZIP](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.4/RightRightRight-Standalone-0.3.0-alpha.4.zip), or a Windows package you rebuilt. **This game has not been verified under CrossOver on the M1 Max.** A successful Mac compile does not establish graphics, loader, input or multiplayer runtime compatibility.

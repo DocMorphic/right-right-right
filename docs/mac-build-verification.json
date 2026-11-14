@@ -1,0 +1,18 @@
+{
+  "Date": "2026-11-14",
+  "BuilderCommit": "a05bfc66eb4e9dfa4c5e7ac038b166e502659303",
+  "WorkflowUrl": "https://github.com/DocMorphic/right-right-right/actions/runs/43586429691",
+  "Runner": "macos-26",
+  "HostOS": "Darwin",
+  "HostArchitecture": "arm64",
+  "Target": "win-x64",
+  "NativeMacGame": false,
+  "ManifestFiles": 638,
+  "PackageVerified": true,
+  "PinnedPublicBaseDownloaded": true,
+  "BootstrapTests": {"Passed": 6, "Failed": 0},
+  "ProtocolAndModeTests": true,
+  "DistributionTests": true,
+  "CrossOverGameplayTested": false,
+  "NativeMacExportAvailable": false
+}
