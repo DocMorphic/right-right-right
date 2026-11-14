@@ -58,7 +58,7 @@ The server owns car motion, tree deaths, nonfatal car impacts, mud/wiping, autom
 npm test
 ```
 
-The 15 automated tests use real two- and four-client WebSocket connections on one machine and a real SQLite-backed D1 interface adapter. They do not exercise the deployed Cloudflare D1 service or replace a separate-device full-course playtest. They cover readiness, seed/epoch synchronization, ownership spoofing, host commands and mode changes, disconnects, concurrent D1 updates, session authentication and resumption, practice, car collisions, fatal trees, mud, doors, tablet stealing, action replay protection, and finish crossing. Tests require Node 22.13 or later for the built-in `node:sqlite` module; production Worker code has no Node dependency.
+The automated tests use real two- and four-client WebSocket connections on one machine and a real SQLite-backed D1 interface adapter. The fixture tests do not exercise deployed Cloudflare D1 or replace a separate-device full-course playtest. The separate public full-course verifier has completed a real hosted run, recorded in [the sanitized report](../../docs/browser-gameplay-verification.json). They cover readiness, seed/epoch synchronization, ownership spoofing, host commands and mode changes, disconnects, concurrent D1 updates, session authentication and resumption, practice, car collisions, fatal trees, mud, doors, tablet stealing, action replay protection, and finish crossing. Tests require Node 22.13 or later for the built-in `node:sqlite` module; production Worker code has no Node dependency.
 
 ## Transport choice
 

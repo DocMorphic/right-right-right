@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "verifiedAtUtc": "2026-11-14 13:39:42 UTC",
+  "purpose": "Authoritative browser gameplay and deployed HTTP latency verification.",
+  "production": {
+    "url": "https://right-right-right-play.andustry-0633.chatgpt.site",
+    "status": "passed",
+    "mode": "coop",
+    "stage": "04 / PINE NEEDLE",
+    "seed": 12345,
+    "courseMeters": 4739.246709922885,
+    "hairpins": 8,
+    "hardCorners": 18,
+    "finishSeconds": 557.0639898679591,
+    "wallSeconds": 562.1,
+    "normalInputPackets": 3057,
+    "httpRequestsBeforeCleanup": 3334,
+    "statePlacements": 0,
+    "clockOverride": false,
+    "mudDeposits": 26,
+    "treeDeaths": 0,
+    "casBusyRetries": 0,
+    "navigatorFinishAgreement": true,
+    "cleanup": "The script left its own two seats in finally and exited successfully.",
+    "backendHealth": {
+      "ok": true,
+      "protocol": 1,
+      "transport": "http",
+      "authority": "d1-cas",
+      "inputHoldSeconds": 1.5
+    },
+    "maxLoggedRoundTripEstimateSeconds": 0.475,
+    "milestones": [
+      {
+        "elapsedSeconds": 64,
+        "progressPercent": 11.6,
+        "speedMetersPerSecond": 8.42,
+        "mudDeposits": 3,
+        "httpRequests": 403,
+        "roundTripEstimateSeconds": 0.176
+      },
+      {
+        "elapsedSeconds": 144.7,
+        "progressPercent": 26.1,
+        "speedMetersPerSecond": 8.54,
+        "mudDeposits": 7,
+        "httpRequests": 900,
+        "roundTripEstimateSeconds": 0.175
+      },
+      {
+        "elapsedSeconds": 286,
+        "progressPercent": 51.2,
+        "speedMetersPerSecond": 8.54,
+        "mudDeposits": 14,
+        "httpRequests": 1758,
+        "roundTripEstimateSeconds": 0.189
+      },
+      {
+        "elapsedSeconds": 396.8,
+        "progressPercent": 71.3,
+        "speedMetersPerSecond": 7.3,
+        "mudDeposits": 19,
+        "httpRequests": 2437,
+        "roundTripEstimateSeconds": 0.174
+      },
+      {
+        "elapsedSeconds": 510.2,
+        "progressPercent": 91.7,
+        "speedMetersPerSecond": 8.56,
+        "mudDeposits": 25,
+        "httpRequests": 3064,
+        "roundTripEstimateSeconds": 0.169
+      }
+    ],
+    "method": "Two independent authenticated HTTP clients in a new temporary room. Feedback driving used normal throttle/steering/wipe packets and public snapshots/course geometry. The driver forecast command arrival from measured request latency. No database access or privileged state endpoint.",
+    "command": "node web/server/verify-full-course.mjs https://right-right-right-play.andustry-0633.chatgpt.site 1200"
+  },
+  "priorProductionAttempt": {
+    "status": "failed",
+    "lastLoggedElapsedSeconds": 388.6,
+    "lastLoggedProgressPercent": 68.2,
+    "termination": "Tree DNF; the failed check was reported before the corrected retest.",
+    "changesBeforeRetest": [
+      "Held inputs are evaluated at each 20 ms physics interval, instead of erasing the entire catch-up slice using the final request time.",
+      "Hosted HTTP controls hold for at most 1.5 seconds; WebSocket controls retain a 0.5-second limit.",
+      "Snapshots expose input acceptance time/hold duration, and snapshot time does not precede simulated state.",
+      "The verification driver predicts the pose at command arrival rather than steering from an RTT-old pose."
+    ]
+  },
+  "localHttp": {
+    "ordinaryFullCourse": {
+      "status": "passed",
+      "clients": 2,
+      "courseMeters": 4739,
+      "drivenMeters": 4701,
+      "finishSeconds": 406.4,
+      "physicsSteps": 20320,
+      "httpRequests": 4537,
+      "normalInputPackets": 4114,
+      "statePlacements": 0,
+      "mudDeposits": 26,
+      "leftSteeringPackets": 696,
+      "rightSteeringPackets": 708,
+      "wipePackets": 311,
+      "clock": "Injected fixture clock; actual HTTP Worker handler and SQLite D1 adapter."
+    },
+    "coarseFullCourse": {
+      "status": "passed",
+      "requestCadenceMs": 650,
+      "finishSeconds": 552.9500000196131,
+      "normalInputPackets": 859,
+      "httpRequests": 1725,
+      "statePlacements": 0,
+      "clock": "Injected fixture clock; arrival-aware feedback."
+    },
+    "actualDelayedResponses": {
+      "status": "passed",
+      "responseDelayMs": 650,
+      "maxObservedReplyAgeSeconds": 0.653,
+      "drivenMeters": 44.711177554623646,
+      "speedMetersPerSecond": 13.266242585872781,
+      "clockOverride": false,
+      "statePlacements": 0,
+      "normalCountdown": true
+    },
+    "cadenceAndExpiry": {
+      "status": "passed",
+      "gapMs": 650,
+      "holdSeconds": 1.5,
+      "coarseSpeed": 4.82345282010116,
+      "frequentInputSpeed": 4.823452819365526,
+      "expiredSpeed": 4.021538315508503,
+      "checks": [
+        "650ms gaps match frequent identical commands.",
+        "A 1.8-second catch-up matches small steps across the expiry boundary.",
+        "Expired controls stop accelerating and speed decays."
+      ]
+    },
+    "fourClientRace": {
+      "status": "passed",
+      "httpRequests": 180,
+      "statePlacements": 9,
+      "placementScope": "Cars/tablets were placed near interactions, an existing tree trunk, and the race finish. Subsequent controls/decisions used real HTTP. The separate full co-op courses used no placements.",
+      "checks": [
+        "Driver ownership; navigator cannot drive.",
+        "Nonfatal car contact and cockpit jolt state.",
+        "Handbrake and reverse.",
+        "Driver and navigator wiping.",
+        "Door opens on a sustained turn; G closes it.",
+        "E drop/retrieve and open-door tablet ejection.",
+        "Closed rival door blocks theft.",
+        "Held tablets stay protected through an open door.",
+        "Loose rival tablet can be stolen through an open door.",
+        "Existing tree trunk causes DNF.",
+        "All four clients agree on race results.",
+        "Same-seed and new-seed retry.",
+        "Return to lobby and four-to-two-player mode change.",
+        "Silent peer pauses/resumes the run.",
+        "Host departure transfers lobby authority.",
+        "Empty room is removed."
+      ]
+    }
+  },
+  "sources": [
+    "web/server/gameplay-http.test.js",
+    "web/server/verify-full-course.mjs",
+    "web/server/route-driver.js",
+    "web/server/GAMEPLAY-VERIFICATION.md"
+  ],
+  "scopeLimits": [
+    "Public requests came from two clients on one computer; this was not a manual separate-device browser playtest.",
+    "HTTP checks do not validate WebGL pixels, camera feel, audible playback, touch input, or exact native Unity rendering/physics parity.",
+    "Tablet privacy is a client rendering rule and is verified separately from the authoritative HTTP tests.",
+    "Only stage 04 seed 12345 was driven fully here; all six native profile hashes are covered by separate parity tests.",
+    "The full public run verifies authoritative browser rooms, which remain separate from the downloadable Unity/DTLS rooms."
+  ]
+}
