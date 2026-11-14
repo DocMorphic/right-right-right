@@ -22,3 +22,13 @@ button:active:not(:disabled),button:focus-visible{background:transparent}
 
 /* The driving view stays clean; the native tablet carries the route and clock. */
 #race-status{left:50%;top:32px;width:auto;max-width:calc(100vw - 40px);height:auto;min-height:0;transform:translateX(-50%);padding:10px 20px;white-space:pre-line;font:22px/1.35 ShareTechMono,monospace;text-align:center}
+
+#result-title{display:block}#result-time,#result-subtitle{display:none}
+#hud.result #race-status{top:50%;width:640px;height:280px;max-width:calc(100vw - 40px);transform:translate(-50%,-50%) rotate(-7deg);padding:0;background:#292617;color:#dbb86b}
+#hud.result #result-title{position:absolute;left:6%;right:6%;top:8%;height:50%;display:flex;align-items:center;justify-content:center;font-size:78px;font-weight:bold;line-height:1;color:#f48d1e}
+#hud.result #result-time{position:absolute;left:15%;right:15%;top:58%;height:20%;display:flex;align-items:center;justify-content:center;font:28px/1 ShareTechMono,monospace;color:#dbb86b}
+#hud.result #result-subtitle{position:absolute;left:12%;right:12%;top:76%;height:18%;display:flex;align-items:center;justify-content:center;font:italic 22px/1 ShareTechMono,monospace;color:#99804d}
+
+#race-status.crashed{--stamp-title:url('/assets/ui/TreeStampTitle.png');--stamp-size:188.5px 69.0625px}
+#race-status.finished{--stamp-title:url('/assets/ui/FinishStampTitle.png');--stamp-size:248.625px 70.6875px}
+#hud.result #result-title{color:transparent;background:#f48d1e;mask-image:var(--stamp-title);mask-position:center;mask-repeat:no-repeat;mask-size:var(--stamp-size);-webkit-mask-image:var(--stamp-title);-webkit-mask-position:center;-webkit-mask-repeat:no-repeat;-webkit-mask-size:var(--stamp-size)}

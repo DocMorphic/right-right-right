@@ -56,10 +56,13 @@ function startRace(message){
   show('menu',false);show('hud',false);show('browser-menu',false);
   if(message.snapshot)onSnapshot(message.snapshot);lockMouse();
 }
+function resultTime(seconds){if(!Number.isFinite(seconds)||seconds<0)return '—';if(seconds<60)return `${seconds.toFixed(2)}s`;const minutes=Math.floor(seconds/60);return `${minutes}:${(seconds-minutes*60).toFixed(2).padStart(5,'0')}`;}
 function onSnapshot(message){
   if(!inRace||message.epoch!==epoch||snapshot&&message.seq<snapshot.seq)return;snapshot=message;actions=actions.filter(a=>a.id>(message.inputs?.[slot]?.actionId||0));view.setSnapshot(message,{latencySeconds:(network.roundTripMs||0)/2000});
-  const own=message.cars[Math.floor(slot/2)],feedback=message.phase==='paused'?'PLAYER DISCONNECTED':own?.dead?"TREE'D":own?.finish>=0?'FINISHED':'';
-  show('hud',Boolean(feedback));if($('race-status').textContent!==feedback)$('race-status').textContent=feedback;
+  const own=message.cars[Math.floor(slot/2)],crashed=Boolean(own?.dead),finished=own?.finish>=0,stamp=crashed||finished;
+  show('hud',stamp||message.phase==='paused');$('hud').classList.toggle('result',stamp);$('race-status').classList.toggle('crashed',crashed);$('race-status').classList.toggle('finished',finished&&!crashed);
+  $('result-title').textContent=crashed?"TREE'D":finished?'FINISHED':message.phase==='paused'?'PLAYER DISCONNECTED':'';
+  $('result-time').textContent=stamp?resultTime(crashed?own.stoppedAt:own.finish):'';$('result-subtitle').textContent=crashed?'The tree won.':finished?'Lap in the books.':'';
 }
 function setBrowserMenu(value){menuOpen=value;keys.clear();show('browser-menu',value);if(value)releaseMouse();else lockMouse();}
 network.addEventListener('welcome',event=>id=event.detail.id);network.addEventListener('joined',event=>{id=event.detail.id||id;slot=event.detail.slot;});network.addEventListener('lobby',event=>onLobby(event.detail));network.addEventListener('race',event=>startRace(event.detail));network.addEventListener('snapshot',event=>onSnapshot(event.detail));network.addEventListener('error',event=>{const error=event.detail;if(pendingCourse&&['not_ready','busy'].includes(error.code)&&pendingCourse.matches(room)){pendingCourse.retry();note=`Waiting for all ${required()} players to confirm the course...`;renderMenu();return;}note=error.message;pendingCourse=null;renderMenu();toast(note);});network.addEventListener('disconnected',()=>{keys.clear();note='Connection lost. Host a new room or rejoin from the menu.';toast(note);disconnect();});
