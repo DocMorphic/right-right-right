@@ -75,7 +75,9 @@ test('real HTTP four-client race covers doors, tablets, collisions, fatal trees,
   assert.equal(state.cars[1].door,true);assert.ok(state.cars[1].doorAngle>30);
   s.place(room=>{park(room.world.cars[0],0,80);park(room.world.cars[1],-1.9,80);const p=room.world.tablets[1];Object.assign(p,{holder:-1,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
   for(let i=0;i<5;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,false);
-  s.place(room=>{const p=room.world.tablets[1];Object.assign(p,{holder:-1,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
+  s.place(room=>{const p=room.world.tablets[1];Object.assign(p,{holder:3,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
+  state=find(await s.action(0,'grab',{yaw:90}),'snapshot');assert.equal(state.tablets[1].holder,3);assert.equal(state.stats.steals,0,'held tablets remain protected even through an open door');
+  state=find(await s.action(3,'grab'),'snapshot');assert.equal(state.tablets[1].holder,-1);
   state=find(await s.action(0,'grab',{yaw:90}),'snapshot');assert.equal(state.tablets[1].holder,0);assert.equal(state.tablets[1].carrier,0);assert.equal(state.stats.steals,1);
   state=find(await s.action(0,'grab'),'snapshot');assert.equal(state.tablets[1].holder,-1);
   // Own navigator can retrieve a dropped tablet at close range.
@@ -96,7 +98,7 @@ test('real HTTP four-client race covers doors, tablets, collisions, fatal trees,
   s.advance(11);state=find(await s.poll(0),'snapshot');assert.equal(state.phase,'paused');state=find(await s.poll(1),'snapshot');assert.equal(state.phase,'countdown');
   await s.send(0,{type:'leave'});let remaining=await s.poll(1);assert.equal(find(remaining,'lobby').hostId,s.players[1].id);assert.equal(find(remaining,'snapshot').phase,'paused');
   await s.send(1,{type:'lobby'});await s.send(1,{type:'leave'});assert.equal(s.fixture.sqlite.prepare('SELECT COUNT(*) count FROM rooms WHERE code = ?').get(s.code).count,0);
-  t.diagnostic(JSON.stringify({clients:4,httpRequests:s.requests,statePlacements:s.placements,verified:['nonfatal-car-contact','navigator-drive-spoof-rejected','handbrake-and-reverse','driver-and-navigator-wiping','turn-open-and-G-close','E-drop-and-grab','closed-rival-door-theft-guard','loose-tablet-door-ejection','open-rival-door-steal','tree-DNF','race-result-agreement','same-seed-and-new-seed-retry','four-to-two-player-mode','silent-peer-pause-resume','host-disconnect-migration','empty-room-cleanup']}));
+  t.diagnostic(JSON.stringify({clients:4,httpRequests:s.requests,statePlacements:s.placements,verified:['nonfatal-car-contact','navigator-drive-spoof-rejected','handbrake-and-reverse','driver-and-navigator-wiping','turn-open-and-G-close','E-drop-and-grab','closed-rival-door-theft-guard','loose-tablet-door-ejection','held-tablet-protection','open-rival-door-steal','tree-DNF','race-result-agreement','same-seed-and-new-seed-retry','four-to-two-player-mode','silent-peer-pause-resume','host-disconnect-migration','empty-room-cleanup']}));
 });
 
 test('real HTTP controls remain usable at650ms latency and a full course still finishes without placement',async t=>{
