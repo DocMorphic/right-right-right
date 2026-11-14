@@ -6,6 +6,7 @@ import { direction } from '../shared/course.js';
 import {CarPresentation} from './car-presentation.js';
 import {ImpactShake} from './impact-shake.js';
 import {RenderBudget} from './render-budget.js';
+import {CabinFeel,NATIVE_CABIN,roadPitchAt} from './cabin-feel.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
 // Start the navigator looking at the native lap-held tablet; mouse look stays free.
@@ -117,10 +118,11 @@ export class RallyView {
       const model=clone(this.assets.car);this.world.add(model);
       const driver=model.getObjectByName('character_fat')||this.find(model,'character fat');
       const nav=model.getObjectByName('character_skiny')||this.find(model,'character skiny');
-      const car={model,driver,nav,door:this.find(model,'door_rf_ok'),wheel:this.find(model,'WheelRotationHelper'),wipers:[this.find(model,'wiper_L'),this.find(model,'wiper_R')],mudUniforms:[],heads:[],dynamicMaterials:[]};
+      const car={model,driver,nav,body:this.find(model,'BodyVisual'),motion:new CabinFeel(),door:this.find(model,'door_rf_ok'),wheel:this.find(model,'WheelRotationHelper'),wipers:[this.find(model,'wiper_L'),this.find(model,'wiper_R')],mudUniforms:[],heads:[],dynamicMaterials:[]};
+      car.bodyRest=car.body?.quaternion.clone();
       for(const [body,key] of [[driver,'driverHead'],[nav,'navigatorHead']]) {
         const head=this.find(body,'Casual2_Head');
-        if(head){const pivot=new THREE.Group();pivot.position.fromArray(this.manifest.anchors[key].position);model.add(pivot);model.updateMatrixWorld(true);pivot.attach(head);const bone=this.find(body,'Head');if(bone&&bone!==head)pivot.attach(bone);car.heads.push({mesh:head,bone,pivot});}else car.heads.push(null);
+        if(head){const pivot=new THREE.Group();pivot.position.fromArray(this.manifest.anchors[key].position);(car.body||model).add(pivot);model.updateMatrixWorld(true);pivot.attach(head);const bone=this.find(body,'Head');if(bone&&bone!==head)pivot.attach(bone);car.heads.push({mesh:head,bone,pivot});}else car.heads.push(null);
       }
       car.doorRest=car.door?.quaternion.clone();car.wheelRest=car.wheel?.quaternion.clone();car.wiperRests=car.wipers.map(w=>w?.quaternion.clone());
       model.traverse(mesh=>{if(!mesh.isMesh||!mesh.name.toLowerCase().includes('windscreen'))return;
@@ -171,12 +173,23 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
         if(pad.screen)pad.screen.material.map=this.slot%2===1||this.practice?pad.mapTexture:this.privacyTexture;this.updateTimer(pad,snapshot,state);
       });
       const own=this.cars[Math.floor(this.slot/2)],state=snapshot.cars[Math.floor(this.slot/2)];
-      if(own&&state){const eye=this.manifest.anchors[this.slot%2===0?'Main Camera':'EyeAnchor'].position;v.fromArray(eye);own.model.localToWorld(v);this.camera.position.copy(v);
+      if(own&&state){const seat=this.manifest.anchors[this.slot%2===0?'Main Camera':'EyeAnchor'];
+        const cabin=own.body||own.model;v.fromArray(seat.position);v.z+=own.motion?.lean||0;cabin.localToWorld(v);this.camera.position.copy(v);
         if(!this.impactShake)this.impactShake=new ImpactShake();const shake=this.impactShake.update(state,dt);
         if(snapshot.phase==='running'&&!state.dead&&state.finish<0)this.camera.position.add(v.set(shake.x,shake.y,shake.z));
         
-        // A Three.js camera looks down -Z: yaw + PI faces the native +Z car forward.
-        this.camera.quaternion.setFromEuler(new THREE.Euler(-(this.look.pitch+(this.slot%2===0?11.29:8.1))*Math.PI/180,own.model.rotation.y+Math.PI-this.look.yaw*Math.PI/180,0,'YXZ'));
+        // Keep the original seat's entire rest orientation, including its tiny
+        // authored roll. Body pitch/roll and road grade carry the eye with it.
+        if(!own.seatRests)own.seatRests=new Map();
+        if(!own.seatRests.has(this.slot%2)){
+          const rest=new THREE.Quaternion();
+          if(seat.matrix){new THREE.Matrix4().fromArray(seat.matrix).decompose(new THREE.Vector3(),rest,new THREE.Vector3());}
+          else rest.setFromAxisAngle(new THREE.Vector3(1,0,0),(this.slot%2===0?11.29:8.1)*Math.PI/180);
+          own.seatRests.set(this.slot%2,rest.normalize());
+        }
+        cabin.getWorldQuaternion(this.camera.quaternion);
+        this.camera.quaternion.multiply(q.setFromEuler(new THREE.Euler(this.look.pitch*Math.PI/180,-this.look.yaw*Math.PI/180,0,'YXZ'))).multiply(own.seatRests.get(this.slot%2)).multiply(q.setFromAxisAngle(UP,Math.PI));
+        const fov=own.motion?.fov||NATIVE_CABIN.idleFov;if(Math.abs(this.camera.fov-fov)>.005){this.camera.fov=fov;this.camera.updateProjectionMatrix();}
         for(const mesh of this.world.children)if(mesh.isInstancedMesh){const center=mesh.boundingSphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=mesh.boundingSphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=distance<(65+radius)**2;}}
         this.sun.position.set(state.x-40,state.y+80,state.z+20);this.sun.target.position.set(state.x,state.y,state.z);this.sun.target.updateMatrixWorld();
       }
@@ -188,11 +201,15 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
     this.renderer.render(this.scene,this.camera);
   }
   applyCar(car,state,authority,now,input,dt=1/60) {
-    car.model.position.set(state.x,state.y-CAR.height,state.z);car.model.rotation.set(0,state.yaw,0);
-    const body=this.find(car.model,'BodyVisual');if(body){body.rotation.z=THREE.MathUtils.lerp(body.rotation.z,-(authority.steer||0)*Math.min(Math.abs(authority.speed)*.001,.015),Math.min(1,dt*8));body.rotation.x=0;}
+    const team=this.cars.indexOf(car),ownTeam=Math.floor(this.slot/2),prediction=car.presentation;
+    if(!car.motion)car.motion=new CabinFeel();
+    const controls=team===ownTeam&&this.slot%2===0?input:prediction?(prediction.hold>0?prediction.input:{}):this.snapshot.inputs?.[team*2]||{};
+    const motion=car.motion.update({...authority,...state,vx:prediction?.predicted.vx??authority.vx,vz:prediction?.predicted.vz??authority.vz},controls,dt,this.snapshot.phase,roadPitchAt(this.course,prediction?.predicted.nearest??authority.nearest??authority.progress));
+    car.model.position.set(state.x,state.y-CAR.height,state.z);car.model.rotation.set(motion.roadPitch,state.yaw,0,'YXZ');
+    const body=car.body||this.find(car.model,'BodyVisual');if(body){if(!car.bodyRest)car.bodyRest=body.quaternion.clone();body.quaternion.copy(car.bodyRest).multiply(q.setFromEuler(new THREE.Euler(motion.pitch,0,motion.roll,'YXZ')));}
     if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,-(authority.doorAngle||0)*Math.PI/180));
-    if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-(authority.steer||0)*2.1));
-    const team=this.cars.indexOf(car),ownTeam=Math.floor(this.slot/2);const wipe=(team===ownTeam&&input.wipe)||this.snapshot.inputs?.[team*2]?.wipe||this.snapshot.inputs?.[team*2+1]?.wipe;
+    if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-(prediction?.predicted.steer??authority.steer??0)*NATIVE_CABIN.steeringWheelDegrees*Math.PI/180));
+    const wipe=(team===ownTeam&&input.wipe)||this.snapshot.inputs?.[team*2]?.wipe||this.snapshot.inputs?.[team*2+1]?.wipe;
     car.wipers.forEach((w,i)=>{if(w&&car.wiperRests[i])w.quaternion.copy(car.wiperRests[i]).multiply(q.setFromAxisAngle(UP,wipe?Math.sin(now*.008)*.75:0));});
     car.mudUniforms.forEach(u=>u.mud.value=authority.mud||0);
     car.heads.forEach((head,seat)=>{const state=this.snapshot.inputs?.[car===this.cars[0]?seat:seat+2];if(head&&state){head.pivot.rotation.set((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ');}});

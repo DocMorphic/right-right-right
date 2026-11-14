@@ -80,9 +80,12 @@ export function stepCar(car, input, dt, course) {
   const yawBias=1+((Math.abs(throttle)>.1?.92:1.04)-1)*weight;
   const desiredYaw=clamp(-forward/CAR.wheelbase*Math.tan(steeringAngle)*yawBias,-1.7,1.7);
   car.yawRate=(car.yawRate||0)+(desiredYaw-(car.yawRate||0))*(1-Math.exp(-5.4*dt));
-  car.yaw+=car.yawRate*dt;
+  const yawStep=car.yawRate*dt;car.yaw+=yawStep;
   const grip=input?.handbrake?2.5:offroad?5:11;
-  lateral*=Math.exp(-grip*dt);
+  // Velocity keeps its previous world direction as the body turns. Project it
+  // into the new heading before applying tyre grip, rather than rotating it
+  // instantly with the chassis (which made even handbrake turns feel on rails).
+  lateral=(lateral*Math.cos(yawStep)-forward*Math.sin(yawStep))*Math.exp(-grip*dt);
   car.vx=Math.sin(car.yaw)*forward+Math.cos(car.yaw)*lateral;
   car.vz=Math.cos(car.yaw)*forward-Math.sin(car.yaw)*lateral;
   car.lastX=car.x;car.lastZ=car.z;
