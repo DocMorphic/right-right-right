@@ -33,10 +33,10 @@ function doorAim(ray,door,bounds){
 
 /** Uses the current camera and only the player's own native car hierarchy. */
 export function interactionTarget({camera,carRoot,car,snapshot,slot,enabled=true,practice=false}){
- if(!enabled||!camera||!carRoot||!car||car.dead||car.finish>=0||!['running','countdown'].includes(snapshot?.phase)||hasTablet(snapshot,slot)||!(practice||snapshot.practice||slot%2===1))return null;
+ if(!enabled||!camera||!carRoot||!car||car.dead||car.finish>=0||!['running','countdown'].includes(snapshot?.phase)||!(practice||snapshot.practice||slot%2===1))return null;
  carRoot.updateMatrixWorld(true);camera.updateMatrixWorld(true);
  const raycaster=new THREE.Raycaster();raycaster.setFromCamera(new THREE.Vector2(0,0),camera);const {knob,door,bounds}=carParts(carRoot);
- if(knobAim(raycaster.ray,knob))return 'knob';
+ if(!hasTablet(snapshot,slot)&&knobAim(raycaster.ray,knob))return 'knob';
  if(car.door&&doorAim(raycaster.ray,door,bounds))return 'door';
  return null;
 }
@@ -48,12 +48,12 @@ export class NativeInteractions {
  reset(){this.clearing=false;this.grab=null;this.slamPending=false;this.lastE=false;this.lastLeft=false;this.epoch=undefined;this.slot=undefined;}
  update({camera,carRoot,car,snapshot,slot,eHeld=false,leftHeld=false,look={},dt=1/60,enabled=true,practice=false}={}){
   if(this.epoch!==snapshot?.epoch||this.slot!==slot){this.reset();this.epoch=snapshot?.epoch;this.slot=slot;}
-  const permitted=enabled&&car&&!car.dead&&car.finish<0&&['running','countdown'].includes(snapshot?.phase)&&!hasTablet(snapshot,slot)&&(practice||snapshot.practice||slot%2===1);
+  const permitted=enabled&&car&&!car.dead&&car.finish<0&&['running','countdown'].includes(snapshot?.phase)&&(practice||snapshot.practice||slot%2===1),canWipe=permitted&&!hasTablet(snapshot,slot);
   if(!car?.door){this.grab=null;this.slamPending=false;}
   const target=interactionTarget({camera,carRoot,car,snapshot,slot,enabled:permitted,practice}),actions=[];
   if(!permitted){this.clearing=false;this.grab=null;}
-  if(!eHeld)this.clearing=false;
-  if(permitted&&eHeld&&!this.lastE&&target==='knob'&&!this.grab)this.clearing=true;
+  if(!eHeld||!canWipe)this.clearing=false;
+  if(canWipe&&eHeld&&!this.lastE&&target==='knob'&&!this.grab)this.clearing=true;
   if(!leftHeld)this.grab=null;
   if(permitted&&leftHeld&&!this.lastLeft&&target==='door'&&!this.clearing&&!this.slamPending){
    this.grab={yaw:look.yaw||0,pitch:look.pitch||0,startAngle:car.doorAngle||0,angle:car.doorAngle||0,velocity:car.doorVelocity||0,previousTarget:car.doorAngle||0};
@@ -77,6 +77,6 @@ export class NativeInteractions {
    }
   }
   this.lastE=Boolean(eHeld);this.lastLeft=Boolean(leftHeld);
-  return {wipe:Boolean(permitted&&this.clearing),actions,target:this.slamPending?null:target,holdingDoor:Boolean(this.grab),doorAngle:this.grab?.angle??null};
+  return {wipe:Boolean(canWipe&&this.clearing),actions,target:this.slamPending?null:target,holdingDoor:Boolean(this.grab),doorAngle:this.grab?.angle??null};
  }
 }

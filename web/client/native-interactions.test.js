@@ -40,12 +40,19 @@ test('mouse hold grips the open door; right/down head motion latches once and st
   assert.deepEqual(actions,[{kind:'door'}]);assert.equal(result.holdingDoor,false);assert.equal(result.target,null,'no second slam while the authoritative close is in flight');
  }
 });
-test('left/up motion, tablet carrying, mouse release and disabled controls cannot slam the door',()=>{
+test('left/up motion, mouse release and disabled controls cannot slam the door',()=>{
  const c=cabin(),o=c.context,controls=new NativeInteractions();c.aim(c.door);controls.update({...o,leftHeld:true});o.look={yaw:-40,pitch:-20};
  for(let i=0;i<60;i++)assert.deepEqual(controls.update({...o,leftHeld:true}).actions,[]);
- assert.equal(controls.update({...o,leftHeld:false}).holdingDoor,false);o.snapshot.tablets[0].holder=1;assert.equal(controls.update({...o,leftHeld:true}).holdingDoor,false);
+ assert.equal(controls.update({...o,leftHeld:false}).holdingDoor,false);o.snapshot.tablets[0].holder=1;assert.equal(controls.update({...o,leftHeld:true}).holdingDoor,true);
  o.snapshot.tablets[0].holder=-1;controls.update({...o,leftHeld:false});assert.equal(controls.update({...o,leftHeld:true}).holdingDoor,true);
  const disabled=controls.update({...o,leftHeld:true,enabled:false});assert.equal(disabled.holdingDoor,false);assert.equal(disabled.wipe,false);assert.deepEqual(disabled.actions,[]);
+});
+test('passenger can slam the door while keeping the tablet in hand',()=>{
+ const c=cabin(),o=c.context,controls=new NativeInteractions();o.snapshot.tablets[0].holder=1;c.aim(c.door);
+ assert.equal(interactionTarget(o),'door');assert.equal(controls.update({...o,leftHeld:true}).holdingDoor,true);
+ o.look.yaw=40;const actions=[];for(let i=0;i<60;i++)actions.push(...controls.update({...o,leftHeld:true}).actions);
+ assert.deepEqual(actions,[{kind:'door'}]);assert.equal(o.snapshot.tablets[0].holder,1,'closing never drops or transfers the held tablet');
+ o.slot=0;assert.equal(interactionTarget(o),null,'driver still cannot use the navigator door grab');
 });
 test('door grab respects 1.6m reach through padded native renderer bounds',()=>{
  const c=cabin(),o=c.context;c.aim(c.door);assert.equal(interactionTarget(o),'door');

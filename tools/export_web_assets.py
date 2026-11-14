@@ -198,7 +198,7 @@ class Exporter:
     def atmosphere(self):
         d=next(o.read() for o in self.scene.objects.values() if o.type.name=='RenderSettings')
         sun=d.m_Sun.read()
-        return {'fog':{'enabled':d.m_Fog,'color':color(d.m_FogColor)[:3],'near':d.m_LinearFogStart,'far':d.m_LinearFogEnd,'density':d.m_FogDensity,'mode':'linear'},'ambient':{'sky':color(d.m_AmbientSkyColor)[:3],'ground':color(d.m_AmbientGroundColor)[:3],'intensity':d.m_AmbientIntensity},'sun':{'color':color(sun.m_Color)[:3],'intensity':sun.m_Intensity},'skybox':{'px':'/assets/textures/Left_Tex.png','nx':'/assets/textures/Right_Tex.png','py':'/assets/textures/Up_Tex.png','ny':'/assets/textures/Down_Tex.png','pz':'/assets/textures/Front_Tex.png','nz':'/assets/textures/Back_Tex.png'}}
+        return {'fog':{'enabled':d.m_Fog,'color':color(d.m_FogColor)[:3],'near':d.m_LinearFogStart,'far':d.m_LinearFogEnd,'density':d.m_FogDensity,'mode':'linear'},'reflections':{'intensity':d.m_ReflectionIntensity,'resolution':d.m_DefaultReflectionResolution,'mode':'skybox'},'ambient':{'sky':color(d.m_AmbientSkyColor)[:3],'ground':color(d.m_AmbientGroundColor)[:3],'intensity':d.m_AmbientIntensity},'sun':{'color':color(sun.m_Color)[:3],'intensity':sun.m_Intensity},'skybox':{'px':'/assets/textures/Left_Tex.png','nx':'/assets/textures/Right_Tex.png','py':'/assets/textures/Up_Tex.png','ny':'/assets/textures/Down_Tex.png','pz':'/assets/textures/Front_Tex.png','nz':'/assets/textures/Back_Tex.png'}}
 
     def export_ui(self):
         """Export only the native IMGUI assets and embedded font, losslessly."""

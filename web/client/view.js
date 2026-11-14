@@ -12,6 +12,9 @@ import {CrashSequence,CrashCamera} from './crash-presentation.js';
 import {DriverHands} from './hand-rig.js';
 import {NativeWipers,NATIVE_WINDSHIELD} from './windshield-wipers.js';
 import {installWindshieldMud,smoothMud} from './windshield-material.js';
+import {assetUrl} from './asset-url.js';
+import {CockpitCluster} from './cockpit-cluster.js';
+import {originalCabinProbe,prepareCabinSurfaces} from './cabin-materials.js';
 import {CabinFeel,NATIVE_CABIN,roadPitchAt} from './cabin-feel.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
@@ -33,22 +36,26 @@ export class RallyView {
     canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();document.dispatchEvent(new CustomEvent('rallyerror',{detail:'Graphics were interrupted. Reload this page to return to the rally.'}));});
   }
   async load(progress=()=>{}) {
-    const response=await fetch('/assets/manifest.json');if(!response.ok)throw new Error('The original game assets could not be loaded.');this.manifest=await response.json();
+    const response=await fetch(assetUrl('/assets/manifest.json'));if(!response.ok)throw new Error('The original game assets could not be loaded.');this.manifest=await response.json();
     const loader=new GLTFLoader();let loaded=0;
     const entries=[['car',this.manifest.models.car],['driverRig',{url:'/assets/driver-rig.glb'}],['tablet',this.manifest.models.tablet],['start',this.manifest.models.StageStart],['finish',this.manifest.models.StageFinish],...this.manifest.models.trees.map((m,i)=>[`tree${i}`,m])];
     this.assets={};
-    await Promise.all(entries.map(async([name,asset])=>{this.assets[name]=(await loader.loadAsync(asset.url)).scene;progress(`Loading original models… ${++loaded}/${entries.length}`);}));
-    const handResponse=await fetch('/assets/DriverWheelHandIk.json');if(!handResponse.ok)throw new Error('The original driver hand settings could not be loaded.');this.handConfig=await handResponse.json();
+    await Promise.all(entries.map(async([name,asset])=>{this.assets[name]=(await loader.loadAsync(assetUrl(asset.url))).scene;progress(`Loading original models… ${++loaded}/${entries.length}`);}));
+    const handResponse=await fetch(assetUrl('/assets/DriverWheelHandIk.json'));if(!handResponse.ok)throw new Error('The original driver hand settings could not be loaded.');this.handConfig=await handResponse.json();
     const textures=new THREE.TextureLoader();
-    const tex=async(name,linear=false)=>{const t=await textures.loadAsync(this.manifest.textures[name].url);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=linear?THREE.NoColorSpace:THREE.SRGBColorSpace;t.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());return t;};
+    const tex=async(name,linear=false)=>{const t=await textures.loadAsync(assetUrl(this.manifest.textures[name].url));t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=linear?THREE.NoColorSpace:THREE.SRGBColorSpace;t.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());return t;};
     const [road,roadNormal,ground]=await Promise.all([tex('dirtRoad_A'),tex('road_N_gltf_normal',true),tex('RW_Grass_MatchTrees')]);
-    const atmosphere=this.manifest.atmosphere;if(atmosphere){const f=atmosphere.fog;this.scene.fog=new THREE.Fog(new THREE.Color().setRGB(...f.color,THREE.SRGBColorSpace),f.near,f.far);this.sun.color.setRGB(...atmosphere.sun.color,THREE.SRGBColorSpace);this.sun.intensity=atmosphere.sun.intensity;this.hemi.color.setRGB(...atmosphere.ambient.sky,THREE.SRGBColorSpace);this.hemi.groundColor.setRGB(...atmosphere.ambient.ground,THREE.SRGBColorSpace);const sky=atmosphere.skybox;try{const cube=await new THREE.CubeTextureLoader().loadAsync([sky.px,sky.nx,sky.py,sky.ny,sky.pz,sky.nz]);cube.colorSpace=THREE.SRGBColorSpace;this.scene.background=cube;}catch{}}
+    const atmosphere=this.manifest.atmosphere;if(atmosphere){const f=atmosphere.fog;this.scene.fog=new THREE.Fog(new THREE.Color().setRGB(...f.color,THREE.SRGBColorSpace),f.near,f.far);this.sun.color.setRGB(...atmosphere.sun.color,THREE.SRGBColorSpace);this.sun.intensity=atmosphere.sun.intensity;this.hemi.color.setRGB(...atmosphere.ambient.sky,THREE.SRGBColorSpace);this.hemi.groundColor.setRGB(...atmosphere.ambient.ground,THREE.SRGBColorSpace);const sky=atmosphere.skybox;try{const cube=await new THREE.CubeTextureLoader().loadAsync([sky.px,sky.nx,sky.py,sky.ny,sky.pz,sky.nz].map(url=>assetUrl(url)));cube.colorSpace=THREE.SRGBColorSpace;this.scene.background=cube;}catch{}}
     this.roadMaterial=new THREE.MeshStandardMaterial({map:road,normalMap:roadNormal,normalScale:new THREE.Vector2(.32,.32),roughness:.97,color:'#ffffff'});
     this.groundMaterial=new THREE.MeshStandardMaterial({map:ground,roughness:1,color:new THREE.Color().setRGB(...this.manifest.surfaces.ground.tint.slice(0,3),THREE.SRGBColorSpace),side:THREE.DoubleSide});
     const rtSize=this.manifest.ui.tablet.rtSize;this.privateCanvas.width=this.privateCanvas.height=rtSize;this.drawPrivate();
-    this.timerFont=new Font(await fetch(this.manifest.fonts.ShareTechMono.typefaceUrl).then(response=>{if(!response.ok)throw new Error('The original timer font could not be loaded.');return response.json();}));
+    this.timerFont=new Font(await fetch(assetUrl(this.manifest.fonts.ShareTechMono.typefaceUrl)).then(response=>{if(!response.ok)throw new Error('The original timer font could not be loaded.');return response.json();}));
     const nativeCamera=this.manifest.ui.cabinCamera;this.camera.fov=nativeCamera?.fieldOfView||90;this.camera.near=.01;this.camera.far=1000;this.camera.updateProjectionMatrix();
+    const cockpitResponse=await fetch(assetUrl('/assets/cockpit.json'));if(!cockpitResponse.ok)throw new Error('The original cockpit settings could not be loaded.');this.cockpitMetadata=await cockpitResponse.json();
+    const cockpitFontResponse=await fetch(assetUrl('/assets/fonts/NativeCockpit.typeface.json'));if(!cockpitFontResponse.ok)throw new Error('The original cockpit font could not be loaded.');this.cockpitFont=new Font(await cockpitFontResponse.json());
+    if(this.scene.background?.isCubeTexture){this.cabinReflectionTarget=originalCabinProbe(this.renderer,this.scene.background,this.manifest.atmosphere.reflections?.resolution||128);}
     this.prepareCar();
+    for(const model of [this.assets.car,this.assets.tablet,this.assets.driverRig])prepareCabinSurfaces(model,this.cabinReflectionTarget?.texture,this.manifest.atmosphere.reflections?.intensity??.95,Math.min(8,this.renderer.capabilities.getMaxAnisotropy()));
     const [scenery,details]=await Promise.all([loadNativeScenery(loader,progress),Promise.all([1,2,3].map(async scene=>[String(scene),await loadNativeDetails(scene)]))]);this.nativeScenery=scenery;this.nativeDetails=new Map(details);
     progress('Planting the original forest…');
   }
@@ -77,7 +84,7 @@ export class RallyView {
   disposeCourse() {
     this.details?.dispose();this.details=null;
     const courseMaterials=new Set();
-    for(const car of this.cars){car.hands?.dispose();car.driverRig?.traverse(node=>{if(node.isSkinnedMesh)node.skeleton.dispose();});for(const material of car.dynamicMaterials||[])material.dispose();}for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
+    for(const car of this.cars){car.cluster?.dispose();car.hands?.dispose();car.driverRig?.traverse(node=>{if(node.isSkinnedMesh)node.skeleton.dispose();});for(const material of car.dynamicMaterials||[])material.dispose();}for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
     for(const child of [...this.world.children]) {this.world.remove(child);if(child.userData.courseMaterial)courseMaterials.add(child.userData.courseMaterial);if(child.isInstancedMesh)child.dispose();if(child.userData.disposable)child.traverse(n=>{n.geometry?.dispose();});}
     for(const material of courseMaterials){for(const texture of material.userData.ownedTextures||[])texture.dispose();material.dispose();}
     this.cars=[];this.tablets=[];this.snapshots=[];this.predicted=null;this.presentation=null;
@@ -140,6 +147,7 @@ export class RallyView {
       }
       car.doorRest=car.door?.quaternion.clone();car.wheelRest=car.wheel?.quaternion.clone();car.wiperRests=car.wipers.map(w=>w?.quaternion.clone());
       car.wiperMotion=new NativeWipers();car.knob=this.find(model,'mud_knob_location');car.knobRest=car.knob?.quaternion.clone();car.knobSpin=0;
+      car.cluster=new CockpitCluster(model,this.cockpitFont,this.cockpitMetadata);
       car.hands=new DriverHands(model,this.handConfig);if(!car.hands.ready)throw new Error(car.hands.reason||'The original driver rig could not be initialized.');
       model.traverse(mesh=>{if(!mesh.isMesh||!mesh.name.toLowerCase().includes('windscreen'))return;
         const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(material=>{
@@ -148,7 +156,7 @@ export class RallyView {
         });mesh.material=Array.isArray(mesh.material)?materials:materials[0];
       });
       this.cars.push(car);
-      const tablet=clone(this.assets.tablet);let screen=null;tablet.traverse(n=>{if(n.isMesh&&n.name.toLowerCase().includes('screen')){screen=n;n.material=new THREE.MeshBasicMaterial({map:this.privacyTexture,side:THREE.DoubleSide});const native=this.manifest.ui.tablet.screenRuntimeTransform;n.position.fromArray(native.position);n.rotation.set(-Math.PI/2,0,0);n.scale.fromArray(native.scale);}});this.world.add(tablet);const mapCanvas=document.createElement('canvas');mapCanvas.width=mapCanvas.height=this.manifest.ui.tablet.rtSize;const mapTexture=new THREE.CanvasTexture(mapCanvas);mapTexture.colorSpace=THREE.SRGBColorSpace;mapTexture.flipY=false;const pad={model:tablet,screen,mapCanvas,mapTexture};this.makeTimer(pad);this.tablets.push(pad);
+      const tablet=clone(this.assets.tablet);let screen=null;tablet.traverse(n=>{if(n.isMesh&&n.name.toLowerCase().includes('screen')){screen=n;n.material=new THREE.MeshBasicMaterial({map:this.privacyTexture,side:THREE.DoubleSide,toneMapped:false,fog:false});const native=this.manifest.ui.tablet.screenRuntimeTransform;n.position.fromArray(native.position);n.rotation.set(-Math.PI/2,0,0);n.scale.fromArray(native.scale);}});this.world.add(tablet);const mapCanvas=document.createElement('canvas');mapCanvas.width=mapCanvas.height=this.manifest.ui.tablet.rtSize;const mapTexture=new THREE.CanvasTexture(mapCanvas);mapTexture.colorSpace=THREE.SRGBColorSpace;mapTexture.flipY=false;mapTexture.generateMipmaps=false;mapTexture.minFilter=THREE.LinearFilter;mapTexture.magFilter=THREE.LinearFilter;mapTexture.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());const pad={model:tablet,screen,mapCanvas,mapTexture};this.makeTimer(pad);this.tablets.push(pad);
     }
     this.setSeat(this.slot);
   }
@@ -236,13 +244,14 @@ export class RallyView {
     car.mudUniforms.forEach(u=>{u.mud.value=displayedMud;u.mudAhead.value=wiper.ahead;u.wipeFrom.value=sweep(wiper.fromT);u.wipeTo.value=-wiper.angle;u.wipeRunning.value=Number(wiper.running);});
     car.heads.forEach((head,seat)=>{const state=this.snapshot.inputs?.[car===this.cars[0]?seat:seat+2];if(head&&state){if(head.skinned&&head.bone)head.bone.quaternion.copy(head.rest).multiply(q.setFromEuler(new THREE.Euler((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ')));else head.pivot?.rotation.set((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ');}});
     car.hands?.update(steer,{steerDegrees:steer*NATIVE_CABIN.steeringWheelDegrees,handbrake:controls.handbrake===true,dt});
+    car.cluster?.update({...authority,...state,vx:prediction?.predicted.vx??authority.vx,vz:prediction?.predicted.vz??authority.vz,elapsed:this.snapshot.elapsed},controls,dt,this.snapshot.phase);
     if(team===ownTeam&&authority.dead&&this.currentCrash?.hold)car.crashHold=true;
   }
   makeTimer(pad) {
     const native=this.manifest.ui.tablet.timer,root=pad.model.getObjectByName('Tablet')||pad.model,window=new THREE.Group();window.name='TimerWindow';window.position.fromArray(native.window.position);root.add(window);pad.timerWindow=window;
-    function cube(spec,color){const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:new THREE.Color().setRGB(...color.slice(0,3),THREE.SRGBColorSpace)}));mesh.position.fromArray(spec.position);mesh.scale.fromArray(spec.scale);window.add(mesh);}
+    function cube(spec,color){const mesh=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:new THREE.Color().setRGB(...color.slice(0,3),THREE.SRGBColorSpace),toneMapped:false}));mesh.position.fromArray(spec.position);mesh.scale.fromArray(spec.scale);window.add(mesh);}
     cube(native.plate,native.plate.color);for(const rim of native.rim.cubes)cube(rim,native.rim.color);
-    const text=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:'#fff',side:THREE.DoubleSide}));text.name='TimerText';text.position.fromArray(native.text.position);text.quaternion.set(0,Math.SQRT1_2,Math.SQRT1_2,0);text.scale.fromArray(native.text.scale);window.add(text);pad.timer=text;pad.timerValue=null;
+    const text=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:'#fff',side:THREE.DoubleSide,toneMapped:false,fog:false}));text.name='TimerText';text.position.fromArray(native.text.position);text.quaternion.set(0,Math.SQRT1_2,Math.SQRT1_2,0);text.scale.fromArray(native.text.scale);window.add(text);pad.timer=text;pad.timerValue=null;
   }
   updateTimer(pad,snapshot,state) {
     const car=snapshot.cars[state.carrier];pad.timer.visible=this.slot%2===1||this.practice;if(!pad.timer.visible)return;
