@@ -12,11 +12,13 @@
     <div class="crew-heading"><span>CREW</span><span id="crew-count">0 / 2</span></div><div id="crew-seats" class="crew-seats"></div>
     <div class="course-heading"><span>PICK A STAGE</span><span id="course-status">HOST A ROOM TO BEGIN</span></div><div id="courses"></div>
     <button id="start-game" class="menu-primary start-game" disabled>START GAME</button><p id="native-status" class="menu-status">Host a game, or enter your friend's room code.</p>
-    <div id="advanced-section" class="hidden"><p>WASD / arrows — drive<br>Mouse — look around<br>E — grab / drop tablet<br>G — close door · hold C — wipe<br>Space — handbrake · F8 — host retry</p></div>
+    <div id="advanced-section" class="hidden"><p>WASD / arrows — drive<br>Mouse — look around<br>E — grab / drop tablet<br>G — close door · hold C — wipe<br>Space — handbrake · R — ready / restart</p></div>
     <footer class="tablet-footer"><button id="advanced-toggle">CONTROLS</button><span id="version-note">FOREST RUN</span><button id="disconnect" class="hidden">LEAVE</button></footer>
   </div></div><div class="tablet-bottom"><span>RIGHT RIGHT RIGHT</span><i></i></div></section>
 </main>
 <div id="hud" class="hidden"><div id="race-status" class="native-box" role="status" aria-live="polite"><span id="result-title"></span><span id="result-time"></span><span id="result-subtitle"></span></div></div>
+<div id="stage-ready" class="hidden" aria-label="Controls and stage readiness"><section class="ready-card"><h1 id="ready-controls-title" class="ready-anton">CONTROLS</h1><h2 id="ready-driver-title" class="ready-anton">DRIVER</h2><p id="ready-driver-controls"></p><h2 id="ready-navigator-title" class="ready-anton">NAVIGATOR</h2><p id="ready-navigator-controls"></p><div id="ready-footer" class="ready-anton">PRESS R WHEN READY</div><div id="ready-status" class="ready-anton" data-ready="00" role="status" aria-live="polite">DRIVER  —      NAVIGATOR  —</div></section></div>
+<div id="race-hint" class="hidden"><div id="race-hint-text"></div></div>
 <div id="browser-menu" class="hidden" role="dialog" aria-modal="true" aria-label="Pause menu">
   <section class="pause-shell"><div class="pause-lip"></div><div class="pause-screen"></div><div class="pause-route-marker"></div><div class="pause-timer-rim"></div><div class="pause-timer">PAUSED</div>
     <div data-pause-page="home"><div id="pause-role">DRIVER</div><button id="resume-game" class="pause-resume">RESUME</button><button id="retry-game" class="pause-restart">RESTART</button><button id="exit-game" class="pause-leave">LEAVE SESSION</button><button id="pause-settings" class="pause-settings-button">SETTINGS</button><button id="menu-lobby" class="pause-main-menu">BACK TO MENU</button><div class="pause-footer">ESC  BACK TO THE ROAD</div></div>

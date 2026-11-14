@@ -60,3 +60,29 @@ button:active:not(:disabled),button:focus-visible{background:transparent}
 #browser-menu input[type=range]::-moz-range-track{height:12px;border-radius:6.667px;background:#14120d}#browser-menu input[type=range]::-moz-range-progress{height:12px;border-radius:6.667px;background:rgba(204,107,20,.85)}#browser-menu input[type=range]::-moz-range-thumb{width:14px;height:16px;border:0;border-radius:4px;background:#dbb86b}
 #browser-menu input[type=range]:focus-visible{outline:1px solid #ed851f;outline-offset:2px}
 #menu.game-menu #courses.nine-stages{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#menu.game-menu #courses.nine-stages button{padding:6px;gap:5px;font-size:11px}#menu.game-menu #courses.nine-stages .stage-number{font-size:17px}
+
+/* Original StageReadyOverlay.Build: centered980x620 card, native text and glyphs. */
+#stage-ready{position:fixed;inset:0;z-index:4;background:rgba(0,0,0,.72);pointer-events:none}
+.ready-card{position:absolute;left:50%;top:50%;width:980px;height:620px;transform:translate(-50%,-50%) scale(var(--pause-scale,1));transform-origin:center;background:#241c17;border-radius:18px;color:#dbb86b;font-family:ShareTechMono,monospace}
+.ready-card>*{position:absolute;margin:0;padding:0}.ready-anton{color:transparent!important;background:#f48d1e;mask-image:var(--ready-image);mask-position:var(--ready-position,center);mask-repeat:no-repeat;mask-size:var(--ready-size);-webkit-mask-image:var(--ready-image);-webkit-mask-position:var(--ready-position,center);-webkit-mask-repeat:no-repeat;-webkit-mask-size:var(--ready-size)}
+#ready-controls-title{left:39.2px;top:12.4px;width:901.6px;height:74.4px;font-size:52px}
+#ready-driver-title{left:58.8px;top:86.8px;width:411.6px;height:62px;font-size:26px;--ready-position:left center}
+#ready-navigator-title{left:509.6px;top:86.8px;width:411.6px;height:62px;font-size:26px;--ready-position:left center}
+#ready-driver-controls,#ready-navigator-controls{top:148.8px;width:411.6px;font:20px/1.2 ShareTechMono,monospace;white-space:pre;color:#dbb86b;text-align:left}
+#ready-driver-controls{left:58.8px;height:248px}#ready-navigator-controls{left:509.6px;height:285.2px}
+#ready-footer{left:58.8px;top:458.8px;width:862.4px;height:86.8px;font-size:36px}
+#ready-status{left:39.2px;top:545.6px;width:901.6px;height:62px;font-size:22px;background:#dbb86b}
+#race-hint{position:fixed;left:50%;bottom:calc(56px * var(--pause-scale,1));width:640px;height:64px;transform:translateX(-50%) scale(var(--pause-scale,1));transform-origin:center bottom;border:6px solid #ed851f;border-radius:25px;background:#050505;z-index:4;pointer-events:none}
+#race-hint-text{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font:26px/1 ShareTechMono,monospace;color:#dbb86b;white-space:pre}
+#ready-controls-title{--ready-image:url('/assets/ui/ReadyControlsTitle.png');--ready-size:190.666667px 47.125px}
+#ready-driver-title{--ready-image:url('/assets/ui/ReadyDriverTitle.png');--ready-size:65.8125px 23.020833px}
+#ready-navigator-title{--ready-image:url('/assets/ui/ReadyNavigatorTitle.png');--ready-size:104.0px 23.5625px}
+#ready-footer{--ready-image:url('/assets/ui/ReadyFooter.png');--ready-size:285.0px 32.625px}
+#ready-status[data-ready="00"]{--ready-image:url('/assets/ui/ReadyStatus00.png');--ready-size:221.833333px 19.9375px}
+#ready-status[data-ready="01"]{--ready-image:url('/assets/ui/ReadyStatus01.png');--ready-size:261.020833px 19.9375px}
+#ready-status[data-ready="10"]{--ready-image:url('/assets/ui/ReadyStatus10.png');--ready-size:260.5625px 19.9375px}
+#ready-status[data-ready="11"]{--ready-image:url('/assets/ui/ReadyStatus11.png');--ready-size:299.75px 19.9375px}
+
+/* Native GameUiColors .cctor, separate from the PauseCanvas tablet palette. */
+#stage-ready{background:#24211f}.ready-card{background:rgba(20,19,18,.96);color:#dbc794}.ready-anton{background:#ffb021}#ready-driver-controls,#ready-navigator-controls{color:#dbc794}#ready-status{background:#dbc794}
+#hud.result #race-status{background:#1f1412;color:#dbc794}#hud.result #result-title{background:#ffb021}#hud.result #result-time{color:#dbc794}#hud.result #result-subtitle{color:#857a66}
