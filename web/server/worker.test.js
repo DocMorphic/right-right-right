@@ -45,3 +45,18 @@ test('HTTP responses identify the authoritative room revision through same-profi
   await Promise.all([a,b].map(s=>send(s,{type:'ready',ready:true})));
   const race=message(await send(a,{type:'start'}),'race');assert.ok(race.revision>configured.revision);assert.equal(race.snapshot.revision,race.revision);assert.equal(race.seed,901235);
 });
+
+test('an authenticated driving packet needs only two sequential D1 round trips without losing CAS protection',async t=>{
+  const {env,session,send,post}=await setup(t),player=await session();
+  await send(player,{type:'create',mode:'coop',practice:true,seed:12345});
+  await send(player,{type:'configure',profile:7});await send(player,{type:'ready',ready:true,catalog:9});
+  const race=message(await send(player,{type:'start'}),'race');
+  const statements=[],prepare=env.DB.prepare.bind(env.DB);
+  env.DB.prepare=sql=>{statements.push(sql);return prepare(sql);};
+  const reply=await send(player,{type:'input',epoch:race.epoch,seq:1,throttle:1,steer:0,pitch:0,yaw:0});
+  assert.equal(reply.status,200);assert.equal(message(reply,'snapshot').inputs[0].seq,1);
+  assert.equal(statements.length,2,'one authenticated joined read and one conditional write');
+  assert.match(statements[0],/sessions\.token = \?/);assert.match(statements[1],/AND revision = \?/);
+  const forged=await post('/api/message',{id:player.id,token:'0'.repeat(64),message:{type:'lobby'}});assert.equal(forged.status,401);
+  t.diagnostic(JSON.stringify({authenticatedInputD1RoundTrips:2,previousRoundTrips:3,conditionalRevisionWrite:true}));
+});

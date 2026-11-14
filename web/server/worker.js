@@ -10,12 +10,15 @@ export function createWorker({clock=clockSeconds}={}){
 const now=clock,HTTP_INPUT_TTL=1.5;
 async function loadSession(db,body){
   if(typeof body.id!=='string'||typeof body.token!=='string'||body.id.length>64||body.token.length!==64)throw new ProtocolError('auth','Session expired. Reconnect to the server.');
-  const session=await db.prepare('SELECT id, token, code, name FROM sessions WHERE id = ? AND token = ?').bind(body.id,body.token).first();
+  // Load the authenticated room in the same D1 round trip. The revision below
+  // still guards every write; a concurrent update reloads before retrying.
+  const session=await db.prepare('SELECT sessions.id, sessions.token, sessions.code, sessions.name, rooms.revision AS room_revision, rooms.data AS room_data FROM sessions LEFT JOIN rooms ON rooms.code = sessions.code WHERE sessions.id = ? AND sessions.token = ?').bind(body.id,body.token).first();
   if(!session)throw new ProtocolError('auth','Session expired. Reconnect to the server.');return session;
 }
-async function mutateRoom(db,code,mutator){
+const sessionRecord=session=>session.room_data==null?null:{revision:session.room_revision,data:session.room_data};
+async function mutateRoom(db,code,mutator,initialRecord=null){
   for(let attempt=0;attempt<12;attempt++){
-    const record=await db.prepare('SELECT revision, data FROM rooms WHERE code = ?').bind(code).first();
+    const record=attempt===0&&initialRecord?initialRecord:await db.prepare('SELECT revision, data FROM rooms WHERE code = ?').bind(code).first();
     if(!record)throw new ProtocolError('not_found','Room not found. Ask the host to create a room.');
     const room=JSON.parse(record.data);room.revision=record.revision+1;const result=mutator(room);
     const write=await db.prepare('UPDATE rooms SET revision = revision + 1, data = ?, updated_at = ? WHERE code = ? AND revision = ?').bind(JSON.stringify(room),now(),code,record.revision).run();
@@ -26,7 +29,7 @@ async function mutateRoom(db,code,mutator){
 async function createSession(db,body){
   if(body.id&&body.token){
     const session=await loadSession(db,body);let messages=[];
-    if(session.code){try{const state=await mutateRoom(db,session.code,room=>commandRoom(room,session,{type:'poll'},now()));messages=[{type:'joined',id:session.id,code:session.code,slot:seatOf(state.room,session.id)},...roomMessages(state.room,now(),true)];}catch(error){if(error.code!=='not_found'&&error.code!=='membership')throw error;await db.prepare('UPDATE sessions SET code = NULL WHERE id = ?').bind(session.id).run();}}
+    if(session.code){try{const state=await mutateRoom(db,session.code,room=>commandRoom(room,session,{type:'poll'},now()),sessionRecord(session));messages=[{type:'joined',id:session.id,code:session.code,slot:seatOf(state.room,session.id)},...roomMessages(state.room,now(),true)];}catch(error){if(error.code!=='not_found'&&error.code!=='membership')throw error;await db.prepare('UPDATE sessions SET code = NULL WHERE id = ?').bind(session.id).run();}}
     return json({id:session.id,token:session.token,messages:[{type:'welcome',id:session.id,version:PROTOCOL_VERSION,transport:'http'},...messages],retryAfterMs:100});
   }
   const session={id:crypto.randomUUID(),token:token(),name:'Player'};
@@ -60,12 +63,12 @@ async function receive(db,session,message,seenEpoch=0){
   }
   if(!session.code){if(message.type==='poll')return [];throw new ProtocolError('membership','Create or join a room first.');}
   if(message.type==='leave'){
-    try{const removed=await mutateRoom(db,session.code,room=>removePlayer(room,session.id,at));if(!removed.room.seats.some(Boolean))await db.prepare('DELETE FROM rooms WHERE code = ? AND revision = ?').bind(session.code,removed.revision).run();}catch(error){if(error.code!=='not_found')throw error;}
+    try{const removed=await mutateRoom(db,session.code,room=>removePlayer(room,session.id,at),sessionRecord(session));if(!removed.room.seats.some(Boolean))await db.prepare('DELETE FROM rooms WHERE code = ? AND revision = ?').bind(session.code,removed.revision).run();}catch(error){if(error.code!=='not_found')throw error;}
     await db.prepare('UPDATE sessions SET code = NULL, updated_at = ? WHERE id = ?').bind(at,session.id).run();session.code=null;return [{type:'left'}];
   }
   const batch=message.type==='batch'?message.messages:[message];
-  if(!Array.isArray(batch)||!batch.length||batch.length>8||batch.some(m=>!['input','poll','ready','seat','configure','start','retry','lobby'].includes(m?.type)))throw new ProtocolError('message','Invalid message batch.');
-  const {room,result}=await mutateRoom(db,session.code,room=>{let race=false;for(const command of batch){const result=commandRoom(room,session,command,at,{inputTtl:HTTP_INPUT_TTL});race||=result.race===true;}return {race};});
+  if(!Array.isArray(batch)||!batch.length||batch.length>8||batch.some(m=>!['input','poll','ready','stageReady','seat','configure','start','retry','lobby'].includes(m?.type)))throw new ProtocolError('message','Invalid message batch.');
+  const {room,result}=await mutateRoom(db,session.code,room=>{let race=false;for(const command of batch){const result=commandRoom(room,session,command,at,{inputTtl:HTTP_INPUT_TTL});race||=result.race===true;}return {race};},sessionRecord(session));
   return roomMessages(room,at,result.race||Boolean(room.world&&seenEpoch!==room.epoch));
 }
 return {

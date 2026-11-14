@@ -19,8 +19,9 @@ const fail=(code,message)=>{throw new ProtocolError(code,message);};
 export function newRoom(code,session,message,now=clockSeconds()){
   const mode=message.mode??'coop';if(!validMode(mode))fail('mode','Choose co-op or race.');
   if(message.seed!==undefined&&!validSeed(message.seed))fail('seed','Seed must be an integer from 1 to 2147483647.');
+  if(message.profile!==undefined&&(!Number.isInteger(message.profile)||message.profile<0||message.profile>=STAGES.length))fail('profile','Invalid course profile.');
   const practice=message.practice===true;if(practice&&mode!=='coop')fail('practice','Practice uses one co-op car.');
-  return {code,revision:0,hostId:session.id,mode,seed:message.seed??randomSeed(),profile:0,practice,status:'lobby',epoch:0,seats:[{id:session.id,name:safeName(message.name||session.name),ready:false,lastSeen:now}],world:null,inputs:[],lastAt:now,createdAt:now};
+  return {code,revision:0,hostId:session.id,mode,seed:message.seed??randomSeed(),profile:message.profile??0,practice,status:'lobby',epoch:0,seats:[{id:session.id,name:safeName(message.name||session.name),ready:false,lastSeen:now}],world:null,inputs:[],lastAt:now,createdAt:now};
 }
 export function lobbyMessage(room){
   return {type:'lobby',version:PROTOCOL_VERSION,revision:room.revision??0,code:room.code,hostId:room.hostId,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,status:room.status,epoch:room.epoch,
@@ -55,15 +56,22 @@ export function removePlayer(room,id,now=clockSeconds()){
   if(room.world&&room.world.phase!=='ended'){room.world.resumePhase=room.world.phase==='paused'?room.world.resumePhase:room.world.phase;room.world.phase='paused';}
   resetReady(room);room.lastAt=now;
 }
+function beginStageCountdown(room,now){
+  const world=room.world,count=playerCount(room);
+  if(world?.phase==='waiting'&&room.seats.filter(Boolean).length===count&&room.seats.slice(0,count).every((seat,slot)=>seat&&now-seat.lastSeen<=10&&world.stageReady?.[slot])){
+    world.phase='countdown';world.countdown=5;room.lastAt=now;
+  }
+}
 export function advanceRoom(room,now=clockSeconds()){
   if(!room.world){room.lastAt=now;return;}
   const world=room.world;
   const missing=room.seats.filter(Boolean).length!==playerCount(room)||room.seats.some(s=>s&&now-s.lastSeen>10);
   if(missing&&world.phase!=='ended'&&world.phase!=='paused'){world.resumePhase=world.phase;world.phase='paused';}
   if(!missing&&world.phase==='paused'){world.phase=world.resumePhase||'running';delete world.resumePhase;}
+  beginStageCountdown(room,now);
   const simulationStart=room.lastAt;let progressed=0;
   let remaining=Math.max(0,Math.min(2,now-room.lastAt));room.lastAt=Math.max(room.lastAt,now);
-  if(world.phase==='paused'||world.phase==='ended')return;
+  if(world.phase==='paused'||world.phase==='ended'||world.phase==='waiting')return;
   const course=courseFor(room);
   while(remaining>1e-6){
     const dt=Math.min(.02,remaining);remaining-=dt;progressed+=dt;const stepAt=simulationStart+progressed-dt*.5;
@@ -79,6 +87,7 @@ function startRoom(room,now){
   if(STAGES[room.profile]?.nativeScene&&room.seats.some(seat=>(seat?.catalog??6)<STAGES.length))fail('content','An older game page is connected. Everyone refresh the page to play all nine stages.');
   room.epoch=(room.epoch+1)>>>0||1;room.status='race';room.inputs=[];room.lastAt=now;
   room.world=makeWorld(courseFor(room),room.mode,room.epoch);room.world.seed=room.seed;
+  if(room.stageReadyRequired){room.world.phase='waiting';room.world.stageReady=Array(playerCount(room)).fill(false);}
   if(room.practice)room.world.tablets[0].holder=0;
 }
 /** All room mutations are transport independent and JSON serializable for the D1 adapter. */
@@ -111,7 +120,12 @@ export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5
       room.mode=mode;room.seed=message.seed??room.seed;room.profile=message.profile??room.profile;
       if(room.seats.length>playerCount(room))room.seats=room.seats.filter(Boolean);resetReady(room);return {broadcast:true};
     }
-    case 'start':if(!host)fail('host','Only the host can start.');if(room.status!=='lobby')fail('started','The run has already started.');startRoom(room,now);return {broadcast:true,race:true};
+    case 'start':if(!host)fail('host','Only the host can start.');if(room.status!=='lobby')fail('started','The run has already started.');room.stageReadyRequired=message.stageReady===true;startRoom(room,now);return {broadcast:true,race:true};
+    case 'stageReady':
+      if(!room.world||message.epoch!==room.epoch)fail('epoch','Readiness belongs to a different run.');
+      if(!room.stageReadyRequired||!['waiting','paused'].includes(room.world.phase))return {broadcast:false};
+      if(room.world.phase==='paused'&&room.world.resumePhase!=='waiting')return {broadcast:false};
+      room.world.stageReady[slot]=message.ready===true;beginStageCountdown(room,now);return {broadcast:true};
     case 'retry':
       if(!host)fail('host','Only the host can retry.');if(!room.world)fail('lobby','Start a run first.');
       if(message.newSeed===true)room.seed=randomSeed();for(const s of room.seats)if(s)s.ready=true;startRoom(room,now);return {broadcast:true,race:true};
@@ -125,7 +139,7 @@ export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5
       const actions=(message.actions||[]).filter(action=>{if(!newer(action.id,actionId))return false;actionId=action.id;return true;});
       // The sender's connection determines their seat. Client-supplied slot/team is ignored.
       room.inputs[slot]={seq:message.seq,actionId,throttle:slot%2===0?message.throttle:0,steer:slot%2===0?message.steer:0,pitch:message.pitch,yaw:message.yaw,handbrake:slot%2===0&&message.handbrake===true,wipe:message.wipe===true,arrived:Math.max(now,room.lastAt),ttl:inputTtl};
-      if(room.world.phase!=='ended'&&room.world.phase!=='paused')applyActions(room.world,slot,{...room.inputs[slot],actions});
+      if(room.world.phase==='running'||room.world.phase==='countdown')applyActions(room.world,slot,{...room.inputs[slot],actions});
       return {broadcast:false};
     }
     default:fail('message','Unknown room message.');

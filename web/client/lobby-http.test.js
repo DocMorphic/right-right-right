@@ -109,3 +109,32 @@ test('two real HTTP clients survive an in-flight old poll and repeated same-prof
   assert.equal(resumed.lobby.seats.filter(Boolean).length,2);
   assert.deepEqual(resumed.errors,[]);
 });
+
+test('driving input reaches the HTTP authority while an older poll response is delayed',async t=>{
+  const originalFetch=globalThis.fetch,originalLocation=globalThis.location;
+  let hostId,hold=false,releasePoll,capturePoll;
+  const captured=new Promise(resolve=>capturePoll=resolve);
+  const fixture=await createHttpFixture({async afterResponse({url,body,bytes}){
+    if(hold&&url.endsWith('/api/poll')&&body.id===hostId){
+      hold=false;const reply=JSON.parse(Buffer.from(bytes).toString());capturePoll(reply);
+      await new Promise(resolve=>releasePoll=resolve);
+    }
+  }});
+  globalThis.location=new URL(`${fixture.url}/?transport=http`);
+  globalThis.fetch=(url,options)=>originalFetch(new URL(url,fixture.url),options);
+  const players=[];
+  t.after(async()=>{releasePoll?.();players.forEach(player=>player.network.close());await Promise.all(players.map(player=>player.network.httpTail));await fixture.close();globalThis.fetch=originalFetch;globalThis.location=originalLocation;});
+  const host=await connectPlayer();players.push(host);hostId=host.id;
+  host.network.send({type:'create',mode:'coop',practice:true,seed:12345});
+  await until(()=>host.lobby?.seats[0]?.ready,'solo host acknowledges lobby');
+  host.network.send({type:'start'});await until(()=>host.race,'race starts');
+  let newestRevision=host.network.roomRevision,ack;
+  host.network.addEventListener('snapshot',event=>{if(event.detail.inputs[0]?.seq===1)ack=event.detail;});
+  hold=true;const old=await Promise.race([captured,delay(5000).then(()=>{throw new Error('Poll was not captured');})]);
+  host.network.send({type:'input',epoch:host.race.epoch,seq:1,throttle:1,steer:0,pitch:0,yaw:0,actions:[]});
+  await until(()=>ack,'input acknowledges before the delayed poll is released',1500);
+  assert.equal(ack.inputs[0].throttle,1);assert.ok(ack.revision>old.messages.find(message=>message.type==='snapshot').revision);
+  newestRevision=host.network.roomRevision;releasePoll();await delay(50);
+  assert.ok(host.network.roomRevision>=newestRevision,'delayed poll cannot roll back a newer driving snapshot');
+  assert.deepEqual(host.errors,[]);
+});

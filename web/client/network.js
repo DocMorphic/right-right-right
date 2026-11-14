@@ -45,7 +45,10 @@ export class Network extends EventTarget {
     if(message.actions?.length>4)message.actions=message.actions.slice(-4);this.pending.push(message);this.flush();return true;
   }
   request(path,extra={}) {
-    // Polls and commands share a queue: an older poll cannot overtake a course change.
+    // Lobby commands and polls stay ordered. During a run, a continuous input
+    // must not wait for an already in-flight poll to return over a slow link.
+    // flush() still permits only one command at a time, and revision filtering
+    // prevents the older poll from rolling back the newer input snapshot.
     const run=async()=>{
       for(let attempt=0;;attempt++) {
         const sentAt=performance.now();
@@ -57,6 +60,7 @@ export class Network extends EventTarget {
         return data;
       }
     };
+    if(path==='/api/message'&&extra.message?.type==='input')return run();
     const request=this.httpTail.then(run,run);
     this.httpTail=request.catch(()=>{});
     return request;
