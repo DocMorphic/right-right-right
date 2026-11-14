@@ -1,6 +1,9 @@
 // Planar port of the installed playtest's GoofyCarController (Unity 6000.3.16f1).
 // Keep this shared by authority and prediction. Distances are metres, speeds m/s.
 export const HANDLING = Object.freeze({maxSpeed:150/3.6,reverseSpeed:28/3.6,acceleration:14,brake:18,coast:1.8,wheelbase:2.8});
+// Suspension-point offsets from the native Rigidbody centre of mass. The
+// steering wheelbase is a separate tuning parameter, not the tyre spacing.
+export const AXLES=Object.freeze({front:1.24,rear:-1.28});
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const mix=(a,b,t)=>a+(b-a)*clamp(t);
 const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
@@ -43,6 +46,7 @@ export function stepHandling(car,input,dt){
   let desired=absForward<=1.2?-1.2*car.steer*clamp(absForward/1.2): -absForward/2.8*Math.tan(car.steer*mix(30,9,speedT)*Math.PI/180);
   desired*=direction*clamp((kmh-.15)/1.5)*mix(1,mix(1.04,.92,throttle),weight(kmh));
   const bicycle=desired;
+  if(hb&&low)desired=0;
   if(Math.abs(car.steer)<.12&&!hb)desired=catchT>0?car.yawRate*.55*smooth(catchT):0;
   if(hb&&!low&&Math.abs(car.steer)>.08&&kick>.02){const drift=-car.steer*1.48*1.3*kick*shape*direction;desired=(Math.sign(desired)||Math.sign(drift))*Math.max(Math.abs(desired),Math.abs(drift));}
   if(catchT>0&&Math.abs(car.steer)>=.12)desired=mix(desired,car.yawRate*.55,catchT*(.62-.5*counter));
@@ -59,7 +63,7 @@ export function stepHandling(car,input,dt){
   if(!hb)torque-=(car.yawRate-desired)*6.5*mix(.12,.02,smooth(catchT))*(1-Math.abs(car.steer));
   if(kmh<.15||(hb&&low))torque-=car.yawRate*6.5*.85;
   let yawRate=car.yawRate;
-  if(!(hb||catchT>0)&&Math.abs(yawRate)>maxYaw*1.08)yawRate=Math.sign(yawRate)*maxYaw;
+  if(catchT<=.001&&Math.abs(yawRate)>maxYaw*1.08)yawRate=Math.sign(yawRate)*maxYaw;
   yawRate=(yawRate+torque*dt)*Math.max(0,1-.25*dt);
   // Native tyre forces sample the old angular velocity and are queued alongside
   // drive/steering forces, then PhysX integrates the complete step.
@@ -69,7 +73,7 @@ export function stepHandling(car,input,dt){
   if(amount>.02){rear=mix(rear,Math.min(mix(.64*.9,.1,kick),throttle<-.01?.06:Infinity),shape*(.35+.65*kick));front*=mix(1,1.04,shape*kick);}
   else if(catchT>0){const carry=smooth(catchT)*(1-.7*counter);rear=mix(rear,.1,carry);front=mix(front,front*1.04,carry*.5);}
   let lateralDelta=0;
-  for(const [grip,z] of [[front,1.4],[rear,-1.4]]){
+  for(const [grip,z] of [[front,AXLES.front],[rear,AXLES.rear]]){
     const pointSide=lateral+car.yawRate*z;
     const slip=Math.abs(pointSide)/Math.max(.5,Math.hypot(forward,pointSide));
     const falloff=1/(1+(slip/.48)**1.15),floor=mix(.48,.26,high);

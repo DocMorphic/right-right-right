@@ -25,3 +25,21 @@ for(const scenario of new Set(traces.map(v=>v.scenario)))test(`native measured h
     assert.ok(Math.abs(car.handbrakeCatch-Math.max(0,expected.catchTime))<.021,`${label}: release carry`);
   }
 });
+
+test('long Space turn at 28.8km/h follows the measured native slide into a stop',()=>{
+  const rows=JSON.parse(readFileSync(new URL('./fixtures/native-handbrake-stop.json',import.meta.url)));
+  const car={vx:0,vz:8,yaw:0};let frame=0;
+  for(const row of rows){
+    while(frame*.02<row.t-.001){stepHandling(car,{throttle:1,steer:1,handbrake:frame*.02<2.4},.02);frame++;}
+    assert.ok(Math.abs(car.speed-row.forward)<.45,`speed at ${row.t}s`);
+    assert.ok(Math.abs(car.yawRate-row.yawRate)<.08,`yaw at ${row.t}s`);
+  }
+});
+
+test('holding Space at walking speed stops steering the body around a stationary car',()=>{
+  const car={vx:0,vz:3,yaw:0,yawRate:-.9,steer:1,handbrakeAmount:1,handbrakeHold:1,handbrakeWasHeld:true};
+  stepHandling(car,{throttle:1,steer:1,handbrake:true},.02);
+  assert.ok(Math.abs(car.yawRate)<.25,'native low-speed yaw limit also applies while Space is held');
+  for(let i=0;i<100;i++)stepHandling(car,{throttle:1,steer:1,handbrake:true},.02);
+  assert.ok(Math.hypot(car.vx,car.vz)<.001);assert.ok(Math.abs(car.yawRate)<.001);
+});
