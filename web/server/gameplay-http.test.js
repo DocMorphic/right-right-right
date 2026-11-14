@@ -58,7 +58,9 @@ test('real HTTP four-client race covers doors, tablets, collisions, fatal trees,
   for(let i=0;i<10;i++)state=await s.tick(.1,{0:{wipe:true},1:{throttle:1,steer:1},3:{wipe:true}});
   assert.ok(state.cars.every(car=>car.mud<.6));assert.equal(state.inputs[1].throttle,0);assert.equal(state.inputs[1].steer,0);assert.equal(state.cars[0].z,80);
   s.place(room=>{park(room.world.cars[0],0,80);Object.assign(room.world.cars[0],{speed:8,vz:8});});
-  for(let i=0;i<5;i++)state=await s.tick(.1,{0:{handbrake:true}});assert.ok(Math.abs(state.cars[0].speed)<4);
+  // Above 16km/h native Space preserves momentum for a slide, rather than
+  // halving speed like the former artificial drag brake.
+  for(let i=0;i<5;i++)state=await s.tick(.1,{0:{handbrake:true}});assert.ok(state.cars[0].speed>5&&state.cars[0].speed<8);
   const beforeReverse=state.cars[0].z;for(let i=0;i<15;i++)state=await s.tick(.1,{0:{throttle:-1}});assert.ok(state.cars[0].speed<0);assert.ok(state.cars[0].z<beforeReverse);
   // An actual sustained hard-turn input opens a scheduled door; G closes it.
   s.place(room=>{park(room.world.cars[0],0,80);park(room.world.cars[1],-2,80);Object.assign(room.world.cars[0],{speed:7,vz:7,nextDoor:0,turnHold:0});});
