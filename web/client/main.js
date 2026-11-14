@@ -1,5 +1,6 @@
 import './style.css';
 import {Network} from './network.js';
+import {CourseSelection,freshCourseSeed} from './course-selection.js';
 import {RallyView} from './view.js';
 import {RallyAudio} from './audio.js';
 import {generateCourse, STAGES} from '../shared/course.js';
@@ -17,11 +18,11 @@ function action(kind){if(inRace&&!menuOpen)actions.push({id:++actionId,kind});}
 function acknowledgeLobby(){if(room?.status==='lobby'&&network.connected&&room.seats[slot]&&!room.seats[slot].ready&&performance.now()-lastReady>250){lastReady=performance.now();send({type:'ready',ready:true});}}
 setInterval(acknowledgeLobby,300);
 function renderMenu(){
-  const count=room?.seats.filter(Boolean).length||0,canChoose=Boolean(host()&&count===required()&&room.seats.every(s=>s?.ready)&&!busy);
+  const count=room?.seats.filter(Boolean).length||0,canChoose=Boolean(host()&&count===required()&&room.seats.every(s=>s?.ready)&&!busy&&!pendingCourse);
   $('native-title').textContent=`RIGHT RIGHT RIGHT / ${modeName()}`;$('create-room').disabled=busy||Boolean(room);$('join-room').disabled=busy||Boolean(room);$('room-code').disabled=busy||Boolean(room);
   $('room-note').textContent=room?`ROOM CODE: ${room.code}`:'No accounts or extra apps needed. Everyone opens the same game version.';show('copy-invite',Boolean(room));
   $('native-status').textContent=`${count}/${required()} players — ${note}`;
-  $('mode-coop').textContent=mode==='coop'?'[ 2 PLAYER CO-OP ]':'2 PLAYER CO-OP';$('mode-race').textContent=mode==='race'?'[ 4 PLAYER RACE ]':'4 PLAYER RACE';$('mode-coop').disabled=busy||Boolean(room&&!host())||count>2;$('mode-race').disabled=busy||Boolean(room&&!host());
+  $('mode-coop').textContent=mode==='coop'?'[ 2 PLAYER CO-OP ]':'2 PLAYER CO-OP';$('mode-race').textContent=mode==='race'?'[ 4 PLAYER RACE ]':'4 PLAYER RACE';$('mode-coop').disabled=busy||Boolean(pendingCourse)||Boolean(room&&!host())||count>2;$('mode-race').disabled=busy||Boolean(pendingCourse)||Boolean(room&&!host());
   $('mode-description').textContent=mode==='coop'?'One car: host drives, friend navigates. Host can change mode in the lobby.':'Two cars. Join order: A driver, A navigator, B driver, B navigator.';
   $('course-status').textContent=canChoose?'Everyone connected. Host: choose a course.':`The host can choose a course when all ${required()} matching players are connected.`;
   document.querySelectorAll('[data-course]').forEach(button=>button.disabled=!canChoose);
@@ -34,16 +35,16 @@ function onLobby(message){
   room=message;mode=room.mode;slot=Math.max(0,room.seats.findIndex(s=>s?.id===id));
   if(room.status==='lobby'){
     if(inRace){inRace=false;snapshot=null;audio.active=false;view.setActive(false);releaseMouse();show('hud',false);show('touch-controls',false);show('map-panel',false);show('browser-menu',false);show('menu');menuOpen=false;mapOpen=false;}
-    note=host()?`Room open. Share the code with ${required()-1} friend(s).`:'Connected. Waiting for the host to choose a course.';
+    note=pendingCourse?`Waiting for all ${required()} players to confirm the course...`:host()?`Room open. Share the code with ${required()-1} friend(s).`:'Connected. Waiting for the host to choose a course.';
     // Native DirectSession acknowledges compatible peers automatically; no extra ready UI.
     acknowledgeLobby();
-    if(pendingCourse!==null&&host()&&room.profile===pendingCourse&&room.seats.filter(Boolean).length===required()&&room.seats.every(s=>s?.ready)){pendingCourse=null;send({type:'start'});}
+    if(pendingCourse?.startIfReady(room,id))send({type:'start'});
   }
   renderMenu();const url=new URL(location.href);url.searchParams.set('room',room.code);history.replaceState(null,'',url);
 }
 function startRace(message){
   if(inRace&&epoch===message.epoch){if(message.snapshot)onSnapshot(message.snapshot);return;}
-  epoch=message.epoch;inRace=true;snapshot=null;seq=0;actions=[];keys.clear();menuOpen=false;mapOpen=false;look.pitch=0;look.yaw=0;view.practice=Boolean(room?.practice);
+  pendingCourse=null;epoch=message.epoch;inRace=true;snapshot=null;seq=0;actions=[];keys.clear();menuOpen=false;mapOpen=false;look.pitch=0;look.yaw=0;view.practice=Boolean(room?.practice);
   const stage=STAGES[message.profile]||STAGES[0];view.buildCourse(generateCourse(message.seed,message.mode,stage.blocks,stage.seed));view.setActive(true);view.setSeat(slot);view.look=look;audio.active=true;
   show('menu',false);show('hud');show('touch-controls');show('map-panel',false);show('browser-menu',false);show('back-lobby',host());
   if(message.snapshot)onSnapshot(message.snapshot);lockMouse();
@@ -58,11 +59,11 @@ function onSnapshot(message){
 }
 function setBrowserMenu(value){menuOpen=value;keys.clear();show('browser-menu',value);if(value){releaseMouse();setMap(false);}else lockMouse();}
 function setMap(value){if(!inRace||!(slot%2===1||room?.practice))return;mapOpen=value;show('map-panel',value);if(value)releaseMouse();else if(!menuOpen)lockMouse();}
-network.addEventListener('welcome',event=>id=event.detail.id);network.addEventListener('joined',event=>{id=event.detail.id||id;slot=event.detail.slot;});network.addEventListener('lobby',event=>onLobby(event.detail));network.addEventListener('race',event=>startRace(event.detail));network.addEventListener('snapshot',event=>onSnapshot(event.detail));network.addEventListener('error',event=>{note=event.detail.message;pendingCourse=null;renderMenu();toast(note);});network.addEventListener('disconnected',()=>{keys.clear();note='Connection lost. Host a new room or rejoin from the menu.';toast(note);disconnect();});
+network.addEventListener('welcome',event=>id=event.detail.id);network.addEventListener('joined',event=>{id=event.detail.id||id;slot=event.detail.slot;});network.addEventListener('lobby',event=>onLobby(event.detail));network.addEventListener('race',event=>startRace(event.detail));network.addEventListener('snapshot',event=>onSnapshot(event.detail));network.addEventListener('error',event=>{const error=event.detail;if(pendingCourse&&['not_ready','busy'].includes(error.code)&&pendingCourse.matches(room)){pendingCourse.retry();note=`Waiting for all ${required()} players to confirm the course...`;renderMenu();return;}note=error.message;pendingCourse=null;renderMenu();toast(note);});network.addEventListener('disconnected',()=>{keys.clear();note='Connection lost. Host a new room or rejoin from the menu.';toast(note);disconnect();});
 $('create-room').onclick=()=>connect({type:'create',mode,name:'Player'});$('join-form').onsubmit=event=>{event.preventDefault();const code=$('room-code').value.trim().toUpperCase();if(code)connect({type:'join',code,name:'Player'});};$('disconnect').onclick=disconnect;
 $('copy-invite').onclick=async()=>{try{await navigator.clipboard.writeText(room.code);}catch{toast(`ROOM CODE: ${room.code}`);}};
 document.querySelectorAll('[data-mode]').forEach(button=>button.onclick=()=>{mode=button.dataset.mode;if(room)send({type:'configure',mode});else renderMenu();});
-STAGES.forEach((stage,index)=>{const button=document.createElement('button');button.textContent=stage.name;button.dataset.course=index;Object.assign(button.style,{left:`${20+index%2*335}px`,top:`${332+Math.floor(index/2)*40}px`,width:'320px',height:'34px'});button.onclick=()=>{pendingCourse=index;note=`Waiting for all ${required()} players to confirm the course...`;send({type:'configure',mode,profile:index,seed:Math.floor(Math.random()*2147483646)+1});};$('courses').append(button);});
+STAGES.forEach((stage,index)=>{const button=document.createElement('button');button.textContent=stage.name;button.dataset.course=index;Object.assign(button.style,{left:`${20+index%2*335}px`,top:`${332+Math.floor(index/2)*40}px`,width:'320px',height:'34px'});button.onclick=()=>{if(pendingCourse)return;pendingCourse=new CourseSelection({mode,profile:index,seed:freshCourseSeed(room?.seed)});note=`Waiting for all ${required()} players to confirm the course...`;renderMenu();send(pendingCourse.message());};$('courses').append(button);});
 $('advanced-toggle').onclick=()=>{advanced=!advanced;renderMenu();};$('back-lobby').onclick=()=>send({type:'lobby'});$('menu-lobby').onclick=()=>send({type:'lobby'});$('retry-game').onclick=()=>send({type:'retry'});$('exit-game').onclick=disconnect;$('resume-game').onclick=()=>setBrowserMenu(false);$('touch-menu').onclick=()=>setBrowserMenu(!menuOpen);$('map-close').onclick=()=>setMap(false);
 $('audio-setting').checked=localStorage.getItem('rrr-audio')!=='off';$('audio-setting').onchange=()=>{audio.setEnabled($('audio-setting').checked);localStorage.setItem('rrr-audio',$('audio-setting').checked?'on':'off');};$('quality-setting').value=localStorage.getItem('rrr-quality')||'auto';$('quality-setting').onchange=()=>{view.setQuality($('quality-setting').value);localStorage.setItem('rrr-quality',$('quality-setting').value);};
 window.addEventListener('keydown',event=>{if(['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName))return;if(inRace&&['Space','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','F8'].includes(event.code))event.preventDefault();if(event.repeat){keys.add(event.code);return;}if(event.code==='Escape'&&inRace){if(mapOpen)setMap(false);else setBrowserMenu(!menuOpen);return;}if(event.code==='Tab'&&inRace){setMap(!mapOpen);return;}if(event.code==='F8'&&inRace&&host()){send({type:'retry'});return;}if(event.code==='KeyE')action('grab');if(event.code==='KeyG')action('door');keys.add(event.code);});window.addEventListener('keyup',event=>keys.delete(event.code));window.addEventListener('blur',()=>keys.clear());
