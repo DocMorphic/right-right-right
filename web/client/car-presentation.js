@@ -35,8 +35,11 @@ export class CarPresentation {
       this.hold=Math.max(0,this.hold-step);
     }
     const correction=1-Math.exp(-dt*(p.dead||p.finish>=0?14:6));
-    for(const field of ['x','y','z','vx','vz','speed',...HANDLING_STATE])p[field]=mix(p[field]||0,t[field]||0,correction);
-    p.handbrakeWasHeld=t.handbrakeWasHeld;
+    // Local button edges own the engagement/release timers. Blending an older
+    // server's hold into them can repeatedly re-engage Space after key-up.
+    const handling=this.remote?HANDLING_STATE:['steer','steerVelocity','yawRate'];
+    for(const field of ['x','y','z','vx','vz','speed',...handling])p[field]=mix(p[field]||0,t[field]||0,correction);
+    if(this.remote)p.handbrakeWasHeld=t.handbrakeWasHeld;
     p.yaw=turn(p.yaw,t.yaw,correction);
     const visual=1-Math.exp(-dt*20),r=this.rendered;
     for(const field of ['x','y','z','speed'])r[field]=mix(r[field],p[field],visual);
