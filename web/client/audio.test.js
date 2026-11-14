@@ -29,7 +29,7 @@ test('original menu/music bypass gameplay trim, mute preserves values, gesture a
  audio.unlock();audio.update(null,0);const music=audio.loops.get('menu_music');assert.ok(music);audio.update(null,0);assert.equal(audio.loops.get('menu_music'),music);
  audio.play('hover',audio.getVolume('menu')*8,'ui');assert.ok(audio.context.voices.at(-1).started);assert.equal(audio.context.voices.at(-1).target.gain.value,4);audio.play('click',audio.getVolume('menu')*1.6,'ui');assert.equal(audio.context.voices.at(-1).target.gain.value,.8);
  audio.setEnabled(false);assert.equal(audio.master.gain.value,0);audio.setEnabled(true);assert.equal(audio.master.gain.value,1);assert.equal(audio.getVolume('game'),.5);
- audio.active=true;audio.update({epoch:1,phase:'running',cars:[car()],inputs:[{},{}],stats:{}},0,{});assert.equal(music.source.stopped,true);assert.equal(audio.loops.has('menu_music'),false);
+ audio.active=true;assert.equal(music.source.stopped,true,'music stops immediately on entering the level, before a render frame');assert.equal(audio.musicBus.gain.value,0);audio.setVolume('music',1);assert.equal(audio.musicBus.gain.value,0,'settings cannot enable music on the road');audio.update({epoch:1,phase:'running',cars:[car()],inputs:[{},{}],stats:{}},0,{});assert.equal(audio.loops.has('menu_music'),false);audio.context.currentTime+=.1;audio.update({epoch:1,phase:'running',cars:[car()],inputs:[{},{}],stats:{}},0,{});assert.ok(audio.loops.get('idle').gain.gain.value>0,'game sounds still play');
  audio.active=false;audio.update(null,0);assert.notEqual(audio.loops.get('menu_music'),music);
 });
 test('navigator keys do not rev engine and each retry plays original countdown/go exactly once again',()=>{

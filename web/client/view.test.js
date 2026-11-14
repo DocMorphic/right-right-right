@@ -58,6 +58,17 @@ test('native reflected passenger door opens away from the cabin and cannot swing
  state.doorAngle=-45;view.applyCar(car,state,state,1020,{});car.model.updateMatrixWorld(true);assert.ok(Math.abs(marker.getWorldPosition(new THREE.Vector3()).x-(-.7858))<.001,'negative angles clamp to the closed rest pose');
 });
 
+test('right driving input turns the visible wheel right and sends the same direction to both hands',()=>{
+ const {view,car,state}=fixture(0);car.wheel=new THREE.Object3D();car.wheel.position.set(.3761,.9175,.3226);car.wheel.rotation.x=.2513;car.wheelRest=car.wheel.quaternion.clone();car.model.add(car.wheel);
+ const top=new THREE.Object3D();top.position.y=.2;car.wheel.add(top);let handSteer;
+ car.hands={update(value){handSteer=value;}};car.presentation=null;
+ view.applyCar(car,state,state,1000,{});car.model.updateMatrixWorld(true);const rest=top.getWorldPosition(new THREE.Vector3());
+ state.steer=.2;view.applyCar(car,state,state,1020,{});car.model.updateMatrixWorld(true);const right=top.getWorldPosition(new THREE.Vector3());
+ // Camera looks along +Z: screen-right is the cabin's negative X.
+ assert.ok(right.x<rest.x,'D moves the top of the steering wheel toward screen-right');assert.equal(handSteer,-.2,'hands follow the corrected wheel direction');
+ state.steer=-.2;view.applyCar(car,state,state,1040,{});car.model.updateMatrixWorld(true);assert.ok(top.getWorldPosition(new THREE.Vector3()).x>rest.x,'A moves the wheel toward screen-left');assert.equal(handSteer,.2);
+});
+
 
 test('navigator spawn frames the physical tablet at16:9 while driver starts on the road',()=>{
   const {view,car}=fixture(1);view.look.pitch=initialLookPitch(1);

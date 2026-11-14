@@ -222,7 +222,10 @@ export class RallyView {
     const body=car.body||this.find(car.model,'BodyVisual');if(body){if(!car.bodyRest)car.bodyRest=body.quaternion.clone();body.quaternion.copy(car.bodyRest).multiply(q.setFromEuler(new THREE.Euler(motion.pitch,0,motion.roll,'YXZ')));}
     const doorAngle=THREE.MathUtils.clamp(team===ownTeam&&this.localDoorPreview!=null?this.localDoorPreview:authority.doorAngle||0,0,90);
     if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,doorAngle*Math.PI/180));
-    if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-(prediction?.predicted.steer??authority.steer??0)*NATIVE_CABIN.steeringWheelDegrees*Math.PI/180));
+    // The cockpit faces +Z, so the reflected wheel's local +X is screen-left.
+    // Invert driving steer once for BOTH the wheel and its hand IK targets.
+    const steer=-(prediction?.predicted.steer??authority.steer??0);
+    if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-steer*NATIVE_CABIN.steeringWheelDegrees*Math.PI/180));
     const wipe=(team===ownTeam&&input.wipe)||this.snapshot.inputs?.[team*2]?.wipe||this.snapshot.inputs?.[team*2+1]?.wipe;
     car.wiperMotion??=new NativeWipers();
     const displayedMud=smoothMud(car,authority.mud||0,dt),wiper=car.wiperMotion.update(Boolean(wipe),displayedMud,dt),axis=new THREE.Vector3(...NATIVE_WINDSHIELD.axis);
@@ -232,7 +235,7 @@ export class RallyView {
     const sweep=t=>t*t*(3-2*t)*95*Math.PI/180;
     car.mudUniforms.forEach(u=>{u.mud.value=displayedMud;u.mudAhead.value=wiper.ahead;u.wipeFrom.value=sweep(wiper.fromT);u.wipeTo.value=-wiper.angle;u.wipeRunning.value=Number(wiper.running);});
     car.heads.forEach((head,seat)=>{const state=this.snapshot.inputs?.[car===this.cars[0]?seat:seat+2];if(head&&state){if(head.skinned&&head.bone)head.bone.quaternion.copy(head.rest).multiply(q.setFromEuler(new THREE.Euler((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ')));else head.pivot?.rotation.set((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ');}});
-    const steer=prediction?.predicted.steer??authority.steer??0;car.hands?.update(steer,{steerDegrees:steer*NATIVE_CABIN.steeringWheelDegrees,handbrake:controls.handbrake===true,dt});
+    car.hands?.update(steer,{steerDegrees:steer*NATIVE_CABIN.steeringWheelDegrees,handbrake:controls.handbrake===true,dt});
     if(team===ownTeam&&authority.dead&&this.currentCrash?.hold)car.crashHold=true;
   }
   makeTimer(pad) {

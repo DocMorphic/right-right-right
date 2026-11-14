@@ -47,6 +47,8 @@ export class NativeEngineMix {
 }
 export class RallyAudio {
   constructor(){this.enabled=true;this.buffers=new Map();this.loops=new Map();this.active=false;this.ready=false;this.unlocked=false;this.volumes={game:.5,menu:.5,music:.5};this.engine=new NativeEngineMix();this.oneShots=new Set();this.loadErrors=[];this.lastPhase='';this.lastCountdown=-1;this.stats={};this.lastMud=0;this.epoch=null;this.lastTime=null;}
+  get active(){return this._active||false;}
+  set active(value){this._active=Boolean(value);if(this._active){this.stop('menu_music');if(this.musicBus)this.musicBus.gain.value=0;}else this.applyVolumes();}
   async init(manifest){
     this.manifest=manifest;this.context=new (window.AudioContext||window.webkitAudioContext)();this.master=this.context.createGain();this.master.gain.value=this.enabled?1:0;this.master.connect(this.context.destination);
     this.gameBus=this.context.createGain();this.gameBus.connect(this.master);this.uiBus=this.context.createGain();this.uiBus.connect(this.master);this.musicBus=this.context.createGain();this.musicBus.connect(this.master);
@@ -61,7 +63,7 @@ export class RallyAudio {
   setEnabled(value){this.enabled=Boolean(value);if(this.master)this.master.gain.value=this.enabled?1:0;}
   getVolume(bus){return this.volumes[bus]??.5;}
   setVolume(bus,value){if(!Object.hasOwn(this.volumes,bus)||!Number.isFinite(Number(value)))return;this.volumes[bus]=clamp(Number(value));try{localStorage.setItem(`rw.vol.${bus}`,String(this.volumes[bus]));}catch{}this.applyVolumes();}
-  applyVolumes(){if(this.gameBus)this.gameBus.gain.value=this.volumes.game*.35;if(this.uiBus)this.uiBus.gain.value=1;if(this.musicBus)this.musicBus.gain.value=this.volumes.music*.55;}
+  applyVolumes(){if(this.gameBus)this.gameBus.gain.value=this.volumes.game*.35;if(this.uiBus)this.uiBus.gain.value=1;if(this.musicBus)this.musicBus.gain.value=this.active?0:this.volumes.music*.55;}
   play(name,volume=1,bus='game'){if(!this.enabled||!this.unlocked||!this.context||!this.buffers.has(name))return;const source=this.context.createBufferSource(),gain=this.context.createGain();source.buffer=this.buffers.get(name);gain.gain.value=volume;source.connect(gain);gain.connect(bus==='ui'?this.uiBus:this.gameBus);const shot={source,gain,bus};this.oneShots.add(shot);source.onended=()=>{source.disconnect();gain.disconnect();this.oneShots.delete(shot);};source.start();}
   loop(name,highpass=0,bus='game'){if(this.loops.has(name))return this.loops.get(name);if(!this.unlocked||!this.context||!this.buffers.has(name))return null;const source=this.context.createBufferSource(),gain=this.context.createGain();source.buffer=this.buffers.get(name);source.loop=true;gain.gain.value=0;
     let panner=null;const extra=[];
