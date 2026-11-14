@@ -84,6 +84,9 @@ button:active:not(:disabled),button:focus-visible{background:transparent}
 #ready-status[data-ready="11"]{--ready-image:url('/assets/ui/ReadyStatus11.png');--ready-size:299.75px 19.9375px}
 
 /* Native GameUiColors .cctor, separate from the PauseCanvas tablet palette. */
-#stage-ready{background:#24211f}.ready-card{background:rgba(20,19,18,.96);color:#dbc794}.ready-anton{background:#ffb021}#ready-driver-controls,#ready-navigator-controls{color:#dbc794}#ready-status{background:#dbc794}
+#stage-ready{background:rgba(13,10,8,.62)}.ready-card{background:rgba(20,19,18,.96);color:#dbc794}.ready-anton{background:#ffb021}#ready-driver-controls,#ready-navigator-controls{color:#dbc794}#ready-status{background:#dbc794}
 #hud.result #race-status{background:#1f1412;color:#dbc794}#hud.result #result-title{background:#ffb021}#hud.result #result-time{color:#dbc794}#hud.result #result-subtitle{color:#857a66}
 #game{outline:none}
+#death-warm{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgb(140,15,10);opacity:0}
+#hud{z-index:3}#hud.result #race-status{transform:translate(-50%,-50%) rotate(-7deg) scale(var(--crash-scale,1))}
+#countdown{position:fixed;left:50%;top:50%;width:min(180px,24vmin);height:min(220px,30vmin);transform:translate(-50%,-50%);z-index:3;pointer-events:none;color:transparent;background:#ffb021;mask:var(--countdown-mask) center/contain no-repeat;-webkit-mask:var(--countdown-mask) center/contain no-repeat}

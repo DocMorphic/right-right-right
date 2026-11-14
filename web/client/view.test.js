@@ -43,11 +43,18 @@ test('actual wiper transforms respond to either crew member without wiping anoth
   assert.equal(car.wipers[0].quaternion.angleTo(car.wiperRests[0]),0,'crew B local input does not wipe crew A');
 });
 
-test('a frozen fatal-impact snapshot cannot keep shaking the camera after the run ends',()=>{
+test('native fatal shake finishes and the crashed camera ignores all later free look',()=>{
   const {view,state}=fixture(0);view.snapshot.phase='ended';state.dead=true;state.jolt=1;
   view.lastMap=1e9;
-  view.update(.02,1000,{});const first=view.camera.position.clone();
-  for(let i=1;i<=30;i++){view.update(.02,1000+i*20,{});assert.ok(view.camera.position.distanceTo(first)<1e-8);}
+  view.update(.02,1000,{});view.update(.02,1300,{});const first=view.camera.position.clone(),rotation=view.camera.quaternion.clone();
+  for(let i=1;i<=30;i++){view.look.yaw=i*3;view.look.pitch=-i;view.update(.02,1300+i*20,{});assert.ok(view.camera.position.distanceTo(first)<1e-8);assert.ok(view.camera.quaternion.angleTo(rotation)<1e-7);}
+});
+
+test('native reflected passenger door opens away from the cabin and cannot swing inward',()=>{
+ const {view,car,state}=fixture(0);car.door=new THREE.Object3D();car.door.position.set(-.828998,.666817,.751921);car.door.quaternion.set(0,-.99999994,.000000081,.000383214).normalize();car.door.scale.setScalar(100);car.model.add(car.door);car.doorRest=car.door.quaternion.clone();car.model.updateMatrixWorld(true);
+ const marker=new THREE.Object3D();marker.position.copy(car.door.worldToLocal(new THREE.Vector3(-.7858,.8455,.0612)));car.door.add(marker);
+ state.doorAngle=45;view.applyCar(car,state,state,1000,{});car.model.updateMatrixWorld(true);assert.ok(marker.getWorldPosition(new THREE.Vector3()).x< -1.25,'door centroid moves outside the cabin in reflected browser coordinates');
+ state.doorAngle=-45;view.applyCar(car,state,state,1020,{});car.model.updateMatrixWorld(true);assert.ok(Math.abs(marker.getWorldPosition(new THREE.Vector3()).x-(-.7858))<.001,'negative angles clamp to the closed rest pose');
 });
 
 

@@ -35,7 +35,7 @@ for(const options of [{mode:'coop'},{mode:'race'},{mode:'coop',practice:true}])t
  // independently cover collision and finish triggers without this shortcut.
  const record=s.fixture.sqlite.prepare('SELECT data FROM rooms WHERE code = ?').get(s.code),room=JSON.parse(record.data);room.world.phase='ended';room.world.cars[0].dead=true;
  s.fixture.sqlite.prepare('UPDATE rooms SET data = ? WHERE code = ?').run(JSON.stringify(room),s.code);
- const retry=find(await s.send(0,{type:'retry'}),'race');assert.equal(retry.epoch,2);assert.equal(retry.snapshot.phase,'waiting');assert.equal(retry.snapshot.cars[0].dead,false);assert.deepEqual(retry.snapshot.stageReady,Array(count).fill(false));
+ const retry=find(await s.send(0,{type:'retry'}),'race');assert.equal(retry.epoch,2);assert.equal(retry.snapshot.phase,'countdown');assert.equal(retry.snapshot.countdown,5);assert.equal(retry.snapshot.cars[0].dead,false);assert.equal(retry.snapshot.stageReady,undefined);
  const stale=await s.send(0,{type:'stageReady',epoch:1,ready:true},400);assert.equal(find(stale,'error').code,'epoch');
- t.diagnostic(JSON.stringify({clients:count,practice:options.practice===true,phaseSequence:['waiting','countdown','running','ended','waiting'],postCrashFixtureArrangements:1}));
+ t.diagnostic(JSON.stringify({clients:count,practice:options.practice===true,phaseSequence:['waiting','countdown','running','ended','countdown'],postCrashFixtureArrangements:1}));
 });

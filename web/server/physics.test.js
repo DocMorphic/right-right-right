@@ -6,6 +6,12 @@ import {newRoom,joinRoom,commandRoom,advanceRoom,courseFor,courseHash} from './r
 const course={seed:1,width:9.5,points:Array.from({length:120},(_,i)=>({x:0,y:20,z:i*2})),trees:[],mud:[]};
 function running(mode='coop'){const w=makeWorld(course,mode,1);w.phase='running';return w;}
 
+test('grass has no invented drag or grip penalty under identical driving controls',()=>{
+ const road=makeWorld(course,'coop',1).cars[0],grass=structuredClone(road);grass.x+=20;
+ for(let i=0;i<150;i++){stepCar(road,{throttle:.7,steer:.3},.02,course);stepCar(grass,{throttle:.7,steer:.3},.02,course);}
+ for(const property of ['speed','vx','vz','yaw'])assert.ok(Math.abs(road[property]-grass[property])<1e-10,property);
+});
+
 test('driver physics uses finite fixed-step movement and navigator cannot drive another seat',()=>{
   const a={id:'a'},b={id:'b'},room=newRoom('ABC123',a,{mode:'coop',seed:1},0);joinRoom(room,b,{},0);
   commandRoom(room,a,{type:'ready',ready:true},0);commandRoom(room,b,{type:'ready',ready:true},0);commandRoom(room,a,{type:'start'},0);

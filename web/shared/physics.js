@@ -62,7 +62,6 @@ export function stepCar(car, input, dt, course) {
   car.jolt=Math.max(0,car.jolt-dt*2);
   if(car.dead || car.finish >= 0) return;
   const near=nearestPoint(course,car.x,car.z,car.nearest); car.nearest=near.index;
-  const offroad = near.distance > (course.widths?.[near.index]??course.width)*.5;
   const throttle=clamp(input?.throttle||0,-1,1), steer=clamp(input?.steer||0,-1,1);
   const forwardX=Math.sin(car.yaw), forwardZ=Math.cos(car.yaw);
   let forward=car.vx*forwardX+car.vz*forwardZ;
@@ -70,7 +69,7 @@ export function stepCar(car, input, dt, course) {
   smoothSteering(car,steer,dt,.07+(.24-.07)*speedT);
   let lateral=car.vx*forwardZ-car.vz*forwardX;
   let acceleration=throttle*(forward*throttle < -1 ? 16 : 8.5);
-  const drag=(.38+Math.abs(forward)*.018)*(offroad?4:1);
+  const drag=.38+Math.abs(forward)*.018;
   forward += (acceleration-forward*drag)*dt;
   if(input?.handbrake) forward*=Math.max(0,1-dt*2.1);
   forward=clamp(forward,-CAR.reverseSpeed,CAR.maxSpeed);
@@ -81,7 +80,7 @@ export function stepCar(car, input, dt, course) {
   const desiredYaw=clamp(-forward/CAR.wheelbase*Math.tan(steeringAngle)*yawBias,-1.7,1.7);
   car.yawRate=(car.yawRate||0)+(desiredYaw-(car.yawRate||0))*(1-Math.exp(-5.4*dt));
   const yawStep=car.yawRate*dt;car.yaw+=yawStep;
-  const grip=input?.handbrake?2.5:offroad?5:11;
+  const grip=input?.handbrake?2.5:11;
   // Velocity keeps its previous world direction as the body turns. Project it
   // into the new heading before applying tyre grip, rather than rotating it
   // instantly with the chassis (which made even handbrake turns feel on rails).

@@ -82,12 +82,12 @@ export function advanceRoom(room,now=clockSeconds()){
   }
   world.seq++;
 }
-function startRoom(room,now){
+function startRoom(room,now,{stageReady=room.stageReadyRequired}={}){
   if(room.seats.filter(Boolean).length!==playerCount(room)||room.seats.slice(0,playerCount(room)).some(s=>!s?.ready))fail('not_ready',`All ${playerCount(room)} players must occupy a seat and be ready.`);
   if(STAGES[room.profile]?.nativeScene&&room.seats.some(seat=>(seat?.catalog??6)<STAGES.length))fail('content','An older game page is connected. Everyone refresh the page to play all nine stages.');
   room.epoch=(room.epoch+1)>>>0||1;room.status='race';room.inputs=[];room.lastAt=now;
   room.world=makeWorld(courseFor(room),room.mode,room.epoch);room.world.seed=room.seed;
-  if(room.stageReadyRequired){room.world.phase='waiting';room.world.stageReady=Array(playerCount(room)).fill(false);}
+  if(stageReady){room.world.phase='waiting';room.world.stageReady=Array(playerCount(room)).fill(false);}
   if(room.practice)room.world.tablets[0].holder=0;
 }
 /** All room mutations are transport independent and JSON serializable for the D1 adapter. */
@@ -128,7 +128,7 @@ export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5
       room.world.stageReady[slot]=message.ready===true;beginStageCountdown(room,now);return {broadcast:true};
     case 'retry':
       if(!host)fail('host','Only the host can retry.');if(!room.world)fail('lobby','Start a run first.');
-      if(message.newSeed===true)room.seed=randomSeed();for(const s of room.seats)if(s)s.ready=true;startRoom(room,now);return {broadcast:true,race:true};
+      if(message.newSeed===true)room.seed=randomSeed();for(const s of room.seats)if(s)s.ready=true;startRoom(room,now,{stageReady:false});return {broadcast:true,race:true};
     case 'lobby':
       if(!host)fail('host','Only the host can return everyone to the lobby.');room.status='lobby';room.world=null;room.inputs=[];resetReady(room);return {broadcast:true};
     case 'input':{

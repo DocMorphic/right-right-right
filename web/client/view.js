@@ -8,6 +8,8 @@ import {ImpactShake} from './impact-shake.js';
 import {RenderBudget} from './render-budget.js';
 import {loadNativeScenery,addNativeScenery} from './native-scenery.js';
 import {loadNativeDetails,NativeDetails} from './native-details.js';
+import {CrashSequence,CrashCamera} from './crash-presentation.js';
+import {DriverHands} from './hand-rig.js';
 import {CabinFeel,NATIVE_CABIN,roadPitchAt} from './cabin-feel.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
@@ -31,9 +33,10 @@ export class RallyView {
   async load(progress=()=>{}) {
     const response=await fetch('/assets/manifest.json');if(!response.ok)throw new Error('The original game assets could not be loaded.');this.manifest=await response.json();
     const loader=new GLTFLoader();let loaded=0;
-    const entries=[['car',this.manifest.models.car],['tablet',this.manifest.models.tablet],['start',this.manifest.models.StageStart],['finish',this.manifest.models.StageFinish],...this.manifest.models.trees.map((m,i)=>[`tree${i}`,m])];
+    const entries=[['car',this.manifest.models.car],['driverRig',{url:'/assets/driver-rig.glb'}],['tablet',this.manifest.models.tablet],['start',this.manifest.models.StageStart],['finish',this.manifest.models.StageFinish],...this.manifest.models.trees.map((m,i)=>[`tree${i}`,m])];
     this.assets={};
     await Promise.all(entries.map(async([name,asset])=>{this.assets[name]=(await loader.loadAsync(asset.url)).scene;progress(`Loading original models… ${++loaded}/${entries.length}`);}));
+    const handResponse=await fetch('/assets/DriverWheelHandIk.json');if(!handResponse.ok)throw new Error('The original driver hand settings could not be loaded.');this.handConfig=await handResponse.json();
     const textures=new THREE.TextureLoader();
     const tex=async(name,linear=false)=>{const t=await textures.loadAsync(this.manifest.textures[name].url);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=linear?THREE.NoColorSpace:THREE.SRGBColorSpace;t.anisotropy=Math.min(8,this.renderer.capabilities.getMaxAnisotropy());return t;};
     const [road,roadNormal,ground]=await Promise.all([tex('dirtRoad_A'),tex('road_N_gltf_normal',true),tex('RW_Grass_MatchTrees')]);
@@ -72,9 +75,9 @@ export class RallyView {
   disposeCourse() {
     this.details?.dispose();this.details=null;
     const courseMaterials=new Set();
-    for(const car of this.cars)for(const material of car.dynamicMaterials||[])material.dispose();for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
+    for(const car of this.cars){car.hands?.dispose();car.driverRig?.traverse(node=>{if(node.isSkinnedMesh)node.skeleton.dispose();});for(const material of car.dynamicMaterials||[])material.dispose();}for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
     for(const child of [...this.world.children]) {this.world.remove(child);if(child.userData.courseMaterial)courseMaterials.add(child.userData.courseMaterial);if(child.isInstancedMesh)child.dispose();if(child.userData.disposable)child.traverse(n=>{n.geometry?.dispose();});}
-    for(const material of courseMaterials)material.dispose();
+    for(const material of courseMaterials){for(const texture of material.userData.ownedTextures||[])texture.dispose();material.dispose();}
     this.cars=[];this.tablets=[];this.snapshots=[];this.predicted=null;this.presentation=null;
   }
   buildCourse(course) {
@@ -86,7 +89,7 @@ export class RallyView {
       geometry.setAttribute('uv',new THREE.Float32BufferAttribute(data.uvs,2));geometry.setIndex(data.indices);
       const mesh=new THREE.Mesh(geometry,this.roadMaterial);mesh.receiveShadow=true;mesh.userData.disposable=true;this.world.add(mesh);
     }else this.ribbon(course.width,this.roadMaterial,.015);
-    if(course.nativeScene){addNativeScenery(this.world,course.nativeScene,this.nativeScenery,this.assets);this.details=new NativeDetails(this.world,this.nativeScenery.scenes.get(String(course.nativeScene)),this.nativeDetails.get(String(course.nativeScene)));}
+    if(course.nativeScene){addNativeScenery(this.world,course.nativeScene,this.nativeScenery,this.assets,course.roadMesh);this.details=new NativeDetails(this.world,this.nativeScenery.scenes.get(String(course.nativeScene)),this.nativeDetails.get(String(course.nativeScene)));}
     else this.ribbon(110,this.groundMaterial,-.25,true);
     for(let type=0;type<this.manifest.models.trees.length;type++) {
       const source=this.assets[`tree${type}`];source.updateMatrixWorld(true);const placements=course.trees.filter(t=>t.variant===type);
@@ -123,15 +126,18 @@ export class RallyView {
   makeCars(count) {
     for(let team=0;team<count;team++) {
       const model=clone(this.assets.car);this.world.add(model);
-      const driver=model.getObjectByName('character_fat')||this.find(model,'character fat');
+      const bakedDriver=model.getObjectByName('character_fat')||this.find(model,'character fat');if(bakedDriver)bakedDriver.visible=false;
+      const driverRig=clone(this.assets.driverRig);(this.find(model,'BodyVisual')||model).add(driverRig);const driver=driverRig.getObjectByName('character_fat')||this.find(driverRig,'character fat')||driverRig;
       const nav=model.getObjectByName('character_skiny')||this.find(model,'character skiny');
-      const car={model,driver,nav,body:this.find(model,'BodyVisual'),motion:new CabinFeel(),door:this.find(model,'door_rf_ok'),wheel:this.find(model,'WheelRotationHelper'),wipers:[this.find(model,'wiper_L'),this.find(model,'wiper_R')],mudUniforms:[],heads:[],dynamicMaterials:[]};
+      const car={model,driver,driverRig,nav,body:this.find(model,'BodyVisual'),motion:new CabinFeel(),door:this.find(model,'door_rf_ok'),wheel:this.find(model,'WheelRotationHelper'),wipers:[this.find(model,'wiper_L'),this.find(model,'wiper_R')],mudUniforms:[],heads:[],dynamicMaterials:[]};
       car.bodyRest=car.body?.quaternion.clone();
       for(const [body,key] of [[driver,'driverHead'],[nav,'navigatorHead']]) {
         const head=this.find(body,'Casual2_Head');
-        if(head){const pivot=new THREE.Group();pivot.position.fromArray(this.manifest.anchors[key].position);(car.body||model).add(pivot);model.updateMatrixWorld(true);pivot.attach(head);const bone=this.find(body,'Head');if(bone&&bone!==head)pivot.attach(bone);car.heads.push({mesh:head,bone,pivot});}else car.heads.push(null);
+        if(head?.isSkinnedMesh){const bone=this.find(body,'Head');car.heads.push({mesh:head,bone,skinned:true,rest:bone?.quaternion.clone()});}
+        else if(head){const pivot=new THREE.Group();pivot.position.fromArray(this.manifest.anchors[key].position);(car.body||model).add(pivot);model.updateMatrixWorld(true);pivot.attach(head);const bone=this.find(body,'Head');if(bone&&bone!==head)pivot.attach(bone);car.heads.push({mesh:head,bone,pivot});}else car.heads.push(null);
       }
       car.doorRest=car.door?.quaternion.clone();car.wheelRest=car.wheel?.quaternion.clone();car.wiperRests=car.wipers.map(w=>w?.quaternion.clone());
+      car.hands=new DriverHands(model,this.handConfig);if(!car.hands.ready)throw new Error(car.hands.reason||'The original driver rig could not be initialized.');
       model.traverse(mesh=>{if(!mesh.isMesh||!mesh.name.toLowerCase().includes('windscreen'))return;
         const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(material=>{
           const m=material.clone();car.dynamicMaterials.push(m);mesh.geometry.computeBoundingBox();const bounds=mesh.geometry.boundingBox,size=bounds.getSize(new THREE.Vector3());const heightAxis=size.y>=size.z?'y':'z';
@@ -154,8 +160,10 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
     this.setSeat(this.slot);
   }
   find(parent,name) {if(!parent)return null;let found=null;parent.traverse(n=>{if(!found&&(n.name===name||n.name.startsWith(name.replaceAll(' ','_'))))found=n;});return found;}
-  setSeat(slot) {this.slot=Math.max(0,slot);this.cars.forEach((car,team)=>car.heads.forEach((head,seat)=>{if(head)head.pivot.visible=!(this.active&&team===Math.floor(this.slot/2)&&seat===this.slot%2);}));}
-  setActive(active) {this.active=active;this.predicted=null;this.impactShake=new ImpactShake();this.setSeat(this.slot);}
+  setSeat(slot) {this.slot=Math.max(0,slot);this.cars.forEach((car,team)=>car.heads.forEach((head,seat)=>{if(head)(head.skinned?head.mesh:head.pivot).visible=!(this.active&&team===Math.floor(this.slot/2)&&seat===this.slot%2);}));}
+  setActive(active) {this.active=active;this.predicted=null;this.impactShake=new ImpactShake();this.crashSequence=new CrashSequence();this.crashCamera=null;this.camera.near=.01;this.camera.updateProjectionMatrix();this.setSeat(this.slot);}
+  crashStateAt(now=performance.now()){if(!this.crashSequence)this.crashSequence=new CrashSequence();return this.crashSequence.sample(this.snapshot,this.slot,now);}
+  resetPresentation(){if(!this.snapshot)return;for(const car of this.cars)car.presentation=null;this.setSnapshot(this.snapshot);}
   setSnapshot(snapshot,{latencySeconds=0}={}) {
     if(!snapshot)return;const now=performance.now();this.snapshots.push({snapshot,received:now});if(this.snapshots.length>12)this.snapshots.shift();this.snapshot=snapshot;
     this.cars.forEach((car,team)=>{
@@ -169,6 +177,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
     if(this.active&&this.quality==='auto'){const ratio=this.renderBudget?.sample(dt);if(ratio!==null&&ratio!==undefined)this.renderer.setPixelRatio(Math.min(devicePixelRatio,ratio));}
     if(!this.active){const previous=this.scene.background;this.scene.background=new THREE.Color('#24211f');this.world.visible=false;this.renderer.render(this.scene,this.camera);this.world.visible=true;this.scene.background=previous;return;}if(!this.course)return;const snapshot=this.snapshot;
     if(this.active&&snapshot) {
+      const crash=this.crashStateAt(now);this.currentCrash=crash;
       this.cars.forEach((car,team)=>{
         const b=snapshot.cars[team];if(!b)return;
         const state=car.presentation?.advance(dt,input,snapshot.phase)||b;
@@ -181,6 +190,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
       });
       const own=this.cars[Math.floor(this.slot/2)],state=snapshot.cars[Math.floor(this.slot/2)];
       if(own&&state){const seat=this.manifest.anchors[this.slot%2===0?'Main Camera':'EyeAnchor'];
+        if(crash.active){if(!this.crashCamera)this.crashCamera=new CrashCamera(this.camera,own.body||own.model,this.slot);this.crashCamera.apply(this.camera,crash.elapsed);}else{
         const cabin=own.body||own.model;v.fromArray(seat.position);v.z+=own.motion?.lean||0;cabin.localToWorld(v);this.camera.position.copy(v);
         if(!this.impactShake)this.impactShake=new ImpactShake();const shake=this.impactShake.update(state,dt);
         if(snapshot.phase==='running'&&!state.dead&&state.finish<0)this.camera.position.add(v.set(shake.x,shake.y,shake.z));
@@ -197,6 +207,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
         cabin.getWorldQuaternion(this.camera.quaternion);
         this.camera.quaternion.multiply(q.setFromEuler(new THREE.Euler(this.look.pitch*Math.PI/180,-this.look.yaw*Math.PI/180,0,'YXZ'))).multiply(own.seatRests.get(this.slot%2)).multiply(q.setFromAxisAngle(UP,Math.PI));
         const fov=own.motion?.fov||NATIVE_CABIN.idleFov;if(Math.abs(this.camera.fov-fov)>.005){this.camera.fov=fov;this.camera.updateProjectionMatrix();}
+        }
         for(const mesh of this.world.children)if(mesh.isInstancedMesh||mesh.userData.terrainChunk){const sphere=mesh.boundingSphere||mesh.geometry?.boundingSphere,center=sphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=sphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=mesh.isInstancedMesh&&mesh.userData.castShadowAllowed!==false&&distance<(65+radius)**2;}}
         this.details?.update(state.x,state.z,now);
         this.sun.position.set(state.x-40,state.y+80,state.z+20);this.sun.target.position.set(state.x,state.y,state.z);this.sun.target.updateMatrixWorld();
@@ -210,18 +221,21 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
   }
   applyCar(car,state,authority,now,input,dt=1/60) {
     const team=this.cars.indexOf(car),ownTeam=Math.floor(this.slot/2),prediction=car.presentation;
+    if(car.crashHold)return;
     if(!car.motion)car.motion=new CabinFeel();
     const controls=team===ownTeam&&this.slot%2===0?input:prediction?(prediction.hold>0?prediction.input:{}):this.snapshot.inputs?.[team*2]||{};
     const motion=car.motion.update({...authority,...state,vx:prediction?.predicted.vx??authority.vx,vz:prediction?.predicted.vz??authority.vz},controls,dt,this.snapshot.phase,roadPitchAt(this.course,prediction?.predicted.nearest??authority.nearest??authority.progress));
     car.model.position.set(state.x,state.y-CAR.height,state.z);car.model.rotation.set(motion.roadPitch,state.yaw,0,'YXZ');
     const body=car.body||this.find(car.model,'BodyVisual');if(body){if(!car.bodyRest)car.bodyRest=body.quaternion.clone();body.quaternion.copy(car.bodyRest).multiply(q.setFromEuler(new THREE.Euler(motion.pitch,0,motion.roll,'YXZ')));}
-    const doorAngle=team===ownTeam&&this.localDoorPreview!=null?this.localDoorPreview:authority.doorAngle||0;
-    if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,-doorAngle*Math.PI/180));
+    const doorAngle=THREE.MathUtils.clamp(team===ownTeam&&this.localDoorPreview!=null?this.localDoorPreview:authority.doorAngle||0,0,90);
+    if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,doorAngle*Math.PI/180));
     if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-(prediction?.predicted.steer??authority.steer??0)*NATIVE_CABIN.steeringWheelDegrees*Math.PI/180));
     const wipe=(team===ownTeam&&input.wipe)||this.snapshot.inputs?.[team*2]?.wipe||this.snapshot.inputs?.[team*2+1]?.wipe;
     car.wipers.forEach((w,i)=>{if(w&&car.wiperRests[i])w.quaternion.copy(car.wiperRests[i]).multiply(q.setFromAxisAngle(UP,wipe?Math.sin(now*.008)*.75:0));});
     car.mudUniforms.forEach(u=>u.mud.value=authority.mud||0);
-    car.heads.forEach((head,seat)=>{const state=this.snapshot.inputs?.[car===this.cars[0]?seat:seat+2];if(head&&state){head.pivot.rotation.set((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ');}});
+    car.heads.forEach((head,seat)=>{const state=this.snapshot.inputs?.[car===this.cars[0]?seat:seat+2];if(head&&state){if(head.skinned&&head.bone)head.bone.quaternion.copy(head.rest).multiply(q.setFromEuler(new THREE.Euler((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ')));else head.pivot?.rotation.set((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ');}});
+    const steer=prediction?.predicted.steer??authority.steer??0;car.hands?.update(steer,{steerDegrees:steer*NATIVE_CABIN.steeringWheelDegrees,handbrake:controls.handbrake===true,dt});
+    if(team===ownTeam&&authority.dead&&this.currentCrash?.hold)car.crashHold=true;
   }
   makeTimer(pad) {
     const native=this.manifest.ui.tablet.timer,root=pad.model.getObjectByName('Tablet')||pad.model,window=new THREE.Group();window.name='TimerWindow';window.position.fromArray(native.window.position);root.add(window);pad.timerWindow=window;

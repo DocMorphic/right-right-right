@@ -20,9 +20,17 @@ export function terrainChunks(spec,buffer,chunkSize=32){
   return chunks;
 }
 
-function terrainMaterial(spec,textures){
+export function roadFootprint(spec,roadMesh,resolution=2048){
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=resolution;const c=canvas.getContext('2d');c.fillStyle='#000';c.fillRect(0,0,resolution,resolution);c.fillStyle='#fff';
+  const inverse=new THREE.Matrix4().fromArray(spec.matrix).invert(),point=new THREE.Vector3(),projected=[];
+  for(let i=0;i<roadMesh.positions.length;i+=3){point.fromArray(roadMesh.positions,i).applyMatrix4(inverse);projected.push([-point.x/spec.size[0]*resolution,point.z/spec.size[2]*resolution]);}
+  c.beginPath();for(let i=0;i<roadMesh.indices.length;i+=3){const a=projected[roadMesh.indices[i]],b=projected[roadMesh.indices[i+1]],d=projected[roadMesh.indices[i+2]];c.moveTo(...a);c.lineTo(...b);c.lineTo(...d);c.closePath();}c.fill();
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.NoColorSpace;texture.flipY=true;texture.generateMipmaps=false;texture.minFilter=texture.magFilter=THREE.LinearFilter;return texture;
+}
+function terrainMaterial(spec,textures,roadMask){
   const material=new THREE.MeshStandardMaterial({roughness:1,normalMap:textures.get(spec.layers.find(layer=>layer.normal)?.normal)||null});
-  const uniforms={nativeSplat:{value:textures.get(spec.splats[0].url)},nativeSize:{value:new THREE.Vector2(spec.size[0],spec.size[2])}};
+  const uniforms={nativeSplat:{value:textures.get(spec.splats[0].url)},nativeSize:{value:new THREE.Vector2(spec.size[0],spec.size[2])},nativeRoadMask:{value:roadMask}};
+  material.userData.ownedTextures=roadMask?[roadMask]:[];
   for(let i=0;i<3;i++){
     const layer=spec.layers[i];uniforms[`nativeLayer${i}`]={value:textures.get(layer.diffuse)};uniforms[`nativeNormal${i}`]={value:layer.normal?textures.get(layer.normal):null};
     uniforms[`nativeTile${i}`]={value:new THREE.Vector2(...layer.tileSize)};uniforms[`nativeOffset${i}`]={value:new THREE.Vector2(...layer.tileOffset)};uniforms[`nativeTint${i}`]={value:new THREE.Color().setRGB(...layer.tint.slice(0,3),THREE.SRGBColorSpace)};
@@ -31,9 +39,9 @@ function terrainMaterial(spec,textures){
     Object.assign(shader.uniforms,uniforms);
     shader.vertexShader='varying vec2 vNativeTerrainUv;\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>','#include <uv_vertex>\nvNativeTerrainUv=uv;');
-    shader.fragmentShader=`varying vec2 vNativeTerrainUv;uniform sampler2D nativeSplat;uniform vec2 nativeSize;\n${[0,1,2].map(i=>`uniform sampler2D nativeLayer${i};uniform sampler2D nativeNormal${i};uniform vec2 nativeTile${i};uniform vec2 nativeOffset${i};uniform vec3 nativeTint${i};`).join('\n')}\n`+shader.fragmentShader;
+    shader.fragmentShader=`varying vec2 vNativeTerrainUv;uniform sampler2D nativeSplat;uniform sampler2D nativeRoadMask;uniform vec2 nativeSize;\n${[0,1,2].map(i=>`uniform sampler2D nativeLayer${i};uniform sampler2D nativeNormal${i};uniform vec2 nativeTile${i};uniform vec2 nativeOffset${i};uniform vec3 nativeTint${i};`).join('\n')}\n`+shader.fragmentShader;
     const coords='vec2 nativeLocal=vec2(vNativeTerrainUv.x,1.-vNativeTerrainUv.y)*nativeSize;vec3 nativeWeights=texture2D(nativeSplat,vNativeTerrainUv).rgb;nativeWeights/=max(dot(nativeWeights,vec3(1.)),.00001);';
-    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`${coords}\ndiffuseColor.rgb*=${[0,1,2].map(i=>`texture2D(nativeLayer${i},(nativeLocal+nativeOffset${i})/nativeTile${i}).rgb*nativeTint${i}*nativeWeights.${'rgb'[i]}`).join('+')};`);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`${roadMask?'if(texture2D(nativeRoadMask,vNativeTerrainUv).r>.5)discard;':''}${coords}\ndiffuseColor.rgb*=${[0,1,2].map(i=>`texture2D(nativeLayer${i},(nativeLocal+nativeOffset${i})/nativeTile${i}).rgb*nativeTint${i}*nativeWeights.${'rgb'[i]}`).join('+')};`);
     if(material.normalMap)shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`vec3 nativeMapNormal=${[0,1,2].map(i=>`${spec.layers[i].normal?`(texture2D(nativeNormal${i},(nativeLocal+nativeOffset${i})/nativeTile${i}).xyz*2.-1.)`:'vec3(0.,0.,1.)'}*nativeWeights.${'rgb'[i]}`).join('+')};normal=normalize(tbn*normalize(nativeMapNormal));`);
   };
   material.customProgramCacheKey=()=>`native-terrain-${spec.layers.map(x=>!!x.normal).join('-')}`;
@@ -54,9 +62,9 @@ export async function loadNativeScenery(loader,progress=()=>{}){
   return {scenes:new Map(scenes.map(s=>[String(s.data.scene),s])),textures,models};
 }
 
-export function addNativeScenery(world,sceneNumber,catalog,treeModels){
+export function addNativeScenery(world,sceneNumber,catalog,treeModels,roadMesh){
   const source=catalog.scenes.get(String(sceneNumber));if(!source)throw new Error('Original stage scenery is unavailable.');
-  const {data,heights}=source,ground=terrainMaterial(data.terrain,catalog.textures);
+  const {data,heights}=source,ground=terrainMaterial(data.terrain,catalog.textures,roadMesh?roadFootprint(data.terrain,roadMesh):null);
   for(const geometry of terrainChunks(data.terrain,heights)){const mesh=new THREE.Mesh(geometry,ground);mesh.receiveShadow=true;mesh.userData.disposable=true;mesh.userData.courseMaterial=ground;mesh.userData.terrainChunk=true;mesh.matrixAutoUpdate=false;world.add(mesh);}
   const materials=new Map(),groups=new Map(),matrix=new THREE.Matrix4(),placement=new THREE.Matrix4(),position=new THREE.Vector3(),rotation=new THREE.Quaternion(),scale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
   const instances=[...data.backgroundTrees.map(entry=>({...entry,tree:true})),...data.props];
