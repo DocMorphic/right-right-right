@@ -1,6 +1,6 @@
 /** Same room protocol over a local WebSocket or hosted HTTP session transport. */
 export class Network extends EventTarget {
-  constructor() { super();this.socket=null;this.session=null;this.connected=false;this.connecting=null;this.closed=false;this.transport='';this.pending=[];this.lastPoll=0;this.epoch=0;this.roomCode=null;this.roomRevision=-1;this.httpTail=Promise.resolve(); }
+  constructor({storage=typeof sessionStorage==='undefined'?null:sessionStorage}={}) { super();this.storage=storage;this.socket=null;this.session=null;this.connected=false;this.connecting=null;this.closed=false;this.transport='';this.pending=[];this.lastPoll=0;this.epoch=0;this.roomCode=null;this.roomRevision=-1;this.httpTail=Promise.resolve(); }
   emit(type,detail) { this.dispatchEvent(new CustomEvent(type,{detail})); }
   async connect() {
     if(this.connected) return;
@@ -13,10 +13,18 @@ export class Network extends EventTarget {
     if(forced!=='http') {
       try { await this.openSocket();return; } catch { this.socket?.close();this.socket=null; }
     }
-    const response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    let saved=this.savedSession();
+    let response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(saved||{})});
+    if(response.status===401&&saved){this.saveSession(null);response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});}
     if(!response.ok) throw new Error('The rally server is unavailable. Please try again.');
-    const data=await response.json();this.session={id:data.id,token:data.token};this.transport='http';this.connected=true;
+    const data=await response.json();this.session={id:data.id,token:data.token};this.saveSession(this.session);this.transport='http';this.connected=true;
     this.deliver(data.messages||[data.welcome||{type:'welcome',id:data.id,version:1}]);this.emit('connected',{transport:this.transport});this.poll();
+  }
+  savedSession() {
+    try{const saved=JSON.parse(this.storage?.getItem('rrr-browser-session-v1')||'null');return typeof saved?.id==='string'&&typeof saved?.token==='string'?saved:null;}catch{return null;}
+  }
+  saveSession(session) {
+    try{if(session)this.storage?.setItem('rrr-browser-session-v1',JSON.stringify(session));else this.storage?.removeItem('rrr-browser-session-v1');}catch{}
   }
   openSocket() {
     return new Promise((resolve,reject)=>{
@@ -40,8 +48,9 @@ export class Network extends EventTarget {
     // Polls and commands share a queue: an older poll cannot overtake a course change.
     const run=async()=>{
       for(let attempt=0;;attempt++) {
+        const sentAt=performance.now();
         const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...this.session,epoch:this.epoch,...extra})});
-        const data=await response.json();
+        const data=await response.json();const elapsed=performance.now()-sentAt;this.roundTripMs=this.roundTripMs===undefined?elapsed:this.roundTripMs*.8+elapsed*.2;
         if(response.status===409&&data.messages?.some(message=>message.code==='busy')&&attempt<4){await new Promise(resolve=>setTimeout(resolve,50*(attempt+1)));continue;}
         if(response.status===401)throw new Error('Your session expired. Rejoin the room.');
         if(!response.ok&&response.status>=500)throw new Error(`Server connection failed (${response.status}).`);

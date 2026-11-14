@@ -11,8 +11,9 @@ async function until(predicate,label,timeout=5000){
   throw new Error(`Timed out: ${label}`);
 }
 
-async function connectPlayer(){
-  const network=new Network(),player={network,id:null,lobby:null,race:null,selection:null,errors:[]};
+function memoryStorage(){const values=new Map();return {getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)};}
+async function connectPlayer(storage=memoryStorage()){
+  const network=new Network({storage}),player={network,storage,id:null,lobby:null,race:null,selection:null,errors:[]};
   network.addEventListener('welcome',event=>player.id=event.detail.id);
   network.addEventListener('lobby',event=>{
     player.lobby=event.detail;
@@ -101,4 +102,10 @@ test('two real HTTP clients survive an in-flight old poll and repeated same-prof
   assert.deepEqual(host.errors,[]);assert.deepEqual(friend.errors,[]);
   const starts=commands.filter(command=>command.message.type==='start');
   assert.equal(starts.length,4,'one start request per selected course');
+  friend.network.close();
+  const resumed=await connectPlayer(friend.storage);players.push(resumed);
+  await until(()=>resumed.race?.epoch===host.race.epoch,'reloaded HTTP tab resumes its current run');
+  assert.equal(resumed.id,friend.id,'reload keeps the existing seat instead of creating a ghost player');
+  assert.equal(resumed.lobby.seats.filter(Boolean).length,2);
+  assert.deepEqual(resumed.errors,[]);
 });

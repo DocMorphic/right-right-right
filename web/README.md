@@ -6,7 +6,7 @@ This is a browser adaptation using the authorized original game models, textures
 
 Open the [deployed browser game](https://right-right-right-play.andustry-0633.chatgpt.site) and share that link with friends. Browser room codes belong to this service and cannot join the downloadable Windows game's rooms.
 
-The menu and HUD are a source-based reconstruction of the native mod UI, using extracted original fonts, skin textures and serialized settings. Driving, networking, procedural mud and dynamic tablet rendering run in browser/server JavaScript. Exact native rendering and physics parity remain subject to comparison with the compiled game.
+The menu uses the original tablet palette, Share Tech Mono, title lettering and car artwork with clear host/join and Start Game controls. The race HUD reconstructs the native mod UI using its original fonts and skin textures. Driving, networking, procedural mud and dynamic tablet rendering run in browser/server JavaScript. Exact native rendering and physics parity remain subject to comparison with the compiled game.
 
 ## Run locally
 
@@ -24,9 +24,9 @@ Open `http://localhost:8787`. For development, run `npm run dev:server` and `npm
 
 ## Play
 
-Use **HOST GAME** or enter a friend's room code and select **JOIN CODE**. Choose **2 PLAYER CO-OP** or **4 PLAYER RACE**. Seats follow join order: A driver, A navigator, B driver, B navigator. When everyone connects, the host selects a course. Compatible browser peers acknowledge readiness automatically, as the downloadable game's menu does.
+Use **HOST GAME** or enter a friend's room code and select **JOIN CODE**. Choose **2 PLAYER CO-OP** or **4 PLAYER RACE**. Seats follow join order: A driver, A navigator, B driver, B navigator. When everyone connects, the host selects a course and presses **START GAME**. Compatible browser peers acknowledge readiness automatically, as the downloadable game's menu does.
 
-The menu and HUD reproduce the downloadable mod's `DirectSession.Gui`, `RelaySession.Gui`, and `RaceRuntime.Gui` rectangle positions and text, using the original embedded Liberation Sans font and GameSkin textures. Native UDP/LAN and Porthole are unavailable in a browser; their advanced controls remain visibly disabled. A browser-only solo practice room can be opened with `?practice=1`.
+Play on a laptop or desktop with a keyboard and mouse. Phones and tablets display **Only available on laptop for now** before loading 3D assets or connecting. Touchscreen Windows laptops remain supported. Native UDP/LAN and Porthole controls are omitted. A browser-only solo practice room can be opened with `?practice=1`.
 
 - Driver: WASD / arrow keys; Space handbrake.
 - Both seats: mouse look; E grab/drop a tablet; G close the passenger door; hold C wipe mud.
@@ -43,7 +43,7 @@ npm test
 node server/verify-host.mjs https://DEPLOYED_URL
 ```
 
-The 15 automated tests use real two- and four-client WebSocket connections on one machine and a real SQLite database behind a D1 interface adapter. They cover permissions, all six native course profiles, input validation and ownership, stale input, collisions, mud, doors, tablet stealing and action deduplication, finish crossing, HTTP authentication, concurrent updates, and session resumption. These tests do not run against the deployed Cloudflare database. The deployment verifier requires access to the deployed site's API; it creates temporary browser rooms and cleans up its own seats.
+Automated tests use real two- and four-client WebSocket connections, actual HTTP clients, and a real SQLite database behind a D1 interface adapter. Client regressions cover stale course responses, session resumption, delayed camera reconciliation, navigator input isolation and crew wiper visibility. Full-course HTTP driving tests cross the finish using normal inputs without state placement, including a 650 ms request cadence. They cover permissions, all six native course profiles, input validation and ownership, stale input, collisions, mud, doors, tablet stealing and action deduplication, finish crossing, HTTP authentication, concurrent updates, and session resumption. These tests do not run against the deployed Cloudflare database. The deployment verifier requires access to the deployed site's API; it creates temporary browser rooms and cleans up its own seats.
 
 The [asset verification report](../docs/web-asset-verification.json) records glTF validation and local asset preview observations. Full-course gameplay across separate devices and final screenshot parity with the native game remain manual verification work. A successful private deployment establishes hosting, not those gameplay results.
 
