@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-14",
+  "userReportedUrl": "https://right-right-right.vercel.app",
+  "liveBundle": "/assets/index-BF9pFIwD.js",
+  "bundleSha256": "ddf56baf56db3a5c852759228fa65c25b8e37d1b97a705225e443219471474d3",
+  "method": "Freshly exported the installed original level1/level2/level3. Parsed the actual Vercel JavaScript native-course literals without executing the bundle. Compared every road vertex, normal, UV, triangle index, route point, width, start/finish pose, gate, colliding tree placement and mud trigger.",
+  "routeComparisons": [
+    {
+      "stage": "1",
+      "sourceHashMatches": true,
+      "maximumNumericDifference": 0,
+      "components": {
+        "points": 0,
+        "width": 0,
+        "widths": 0,
+        "distances": 0,
+        "startIndex": 0,
+        "finishIndex": 0,
+        "startPose": 0,
+        "finishPose": 0,
+        "gates": 0,
+        "roadMesh": 0,
+        "trees": 0,
+        "mud": 0
+      }
+    },
+    {
+      "stage": "2",
+      "sourceHashMatches": true,
+      "maximumNumericDifference": 0,
+      "components": {
+        "points": 0,
+        "width": 0,
+        "widths": 0,
+        "distances": 0,
+        "startIndex": 0,
+        "finishIndex": 0,
+        "startPose": 0,
+        "finishPose": 0,
+        "gates": 0,
+        "roadMesh": 0,
+        "trees": 0,
+        "mud": 0
+      }
+    },
+    {
+      "stage": "3",
+      "sourceHashMatches": true,
+      "maximumNumericDifference": 0,
+      "components": {
+        "points": 0,
+        "width": 0,
+        "widths": 0,
+        "distances": 0,
+        "startIndex": 0,
+        "finishIndex": 0,
+        "startPose": 0,
+        "finishPose": 0,
+        "gates": 0,
+        "roadMesh": 0,
+        "trees": 0,
+        "mud": 0
+      }
+    }
+  ],
+  "liveStageSelection": [
+    {
+      "stage": "1",
+      "menuProfile": 6,
+      "liveCourseHash": "a80375b7-1024-1720",
+      "originalCourseHash": "a80375b7-1024-1720",
+      "guestMatches": true,
+      "startX": -79.594998,
+      "startZ": 144.970001
+    },
+    {
+      "stage": "2",
+      "menuProfile": 7,
+      "liveCourseHash": "652fc621-3633-6104",
+      "originalCourseHash": "652fc621-3633-6104",
+      "guestMatches": true,
+      "startX": -143.220001,
+      "startZ": 776.780029
+    },
+    {
+      "stage": "3",
+      "menuProfile": 8,
+      "liveCourseHash": "9c57ad79-1710-2863",
+      "originalCourseHash": "9c57ad79-1710-2863",
+      "guestMatches": true,
+      "startX": -375.839994,
+      "startZ": 435.02
+    }
+  ],
+  "regressions": {
+    "tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "checks": "Original file identity and road fingerprints across three seeds and both modes; default Stage01."
+  },
+  "findings": [
+    "The inspected Vercel and Sites JavaScript bundles are byte-identical.",
+    "All three original road layouts match the fresh installed-game export exactly at its six-decimal storage precision.",
+    "Live Vercel rooms select the correct native routes for profiles6/7/8 and both clients agree.",
+    "Earlier builds selected procedural Stage04 by default. Current source and live build default to original Stage01. Existing sessions can resume their previous selected route."
+  ],
+  "limits": [
+    "This does not establish which cached build, saved room or local LAN checkout was on the user device during the reported run.",
+    "A complete native-rendering or manual driving parity claim is outside this route-data comparison."
+  ],
+  "coordination": "No LAN, networking, audio, renderer or game route data changed by this audit."
+}
