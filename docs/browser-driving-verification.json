@@ -45,10 +45,15 @@
     "additionalChecks": ["Four real HTTP clients and WebSocket clients", "All nine course profiles", "Actual 650ms wall-time delayed responses", "Frozen terminal crash snapshots", "Navigator controls isolated from driver prediction", "20fps versus 60fps prediction", "Held input expiry", "Concurrent request ordering"]
   },
   "integration": "Mac audio, original pause UI and original-course commits were merged and preserved. No audio source or audio tests were changed by this work.",
+  "visualSmoke": {
+    "browser": "Brave on Windows, live version 7",
+    "observed": ["Nine-stage crew lobby loaded", "Practice room started through the visible Start Game button", "Original cockpit and forest rendered with the narrower added-course road"],
+    "scope": "Visual smoke only. Keyboard driving and settings interaction could not be completed reliably through computer-use input; handling feel and the two-computer experience remain unverified by this check. The temporary playtest tab was closed afterward."
+  },
   "limits": [
     "This ports serialized handling parameters into the browser bicycle model; it is not the native Unity suspension, tyre solver or a claim of identical feel.",
     "Automated HTTP routes use the internal fixture clock; the delayed-response check uses wall time.",
-    "No new manual visual playtest, measured GPU frame-rate comparison or two-computer internet test has been completed by these checks.",
+    "The visual smoke does not establish a full manual driving playtest, a measured GPU frame-rate improvement or a two-computer internet result.",
     "Everyone should refresh the browser page and create a new room after deployment so client and server handling match."
   ]
 }

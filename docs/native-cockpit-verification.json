@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-14",
+  "purpose": "Restore the original first-person sense of speed and body movement in the browser.",
+  "publication": {"version": 8, "url": "https://right-right-right-play.andustry-0633.chatgpt.site", "status": "succeeded", "bundle": "/assets/index-CMi84gla.js", "liveBundleMatchesValidatedBuild": true, "liveMultiplayerSmoke": "passed: four-player race, concurrent inputs, ownership, action acknowledgments, retry, mode change and two-player co-op; 31 requests, zero retries"},
+  "source": {
+    "game": "Installed Left! Left! LEFT! Playtest",
+    "level1Sha256": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
+    "verification": "UnityPy raw serialized bytes were read directly from the installed level1 and checked against recovered component field layouts.",
+    "DriverCameraFeel": {"pathId": 40341, "floatOffset": 80, "idleFov": 90, "maxFov": 104, "fovFullKmh": 130, "throttlePunchFov": 2.2, "fovSmooth": 8, "throttleSmooth": 3.5},
+    "DriverCabinInertia": {"pathId": 40344, "floatOffset": 44, "forwardLeanPerDecel": 0.004, "maxForwardLean": 0.035, "backLeanPerAccel": 0.0025, "maxBackLean": 0.02, "smoothTime": 0.22, "accelSmooth": 0.08, "deadzoneAccel": 1.5},
+    "GoofyCarController": {"pathId": 40316, "floatOffset": 472, "maxRollDeg": 3.5, "maxPitchDeg": 1.6, "rollPerLatVel": 0.55, "pitchPerAccel": 0.12, "tiltSmoothTime": 0.16, "steeringWheelDegreesOffset": 504, "steeringWheelDegrees": 110},
+    "eyes": "The full original Main Camera and EyeAnchor matrices from the authorized car export are retained. Driver rest pitch is about11.2913 degrees; navigator rest pitch is about8.1134 degrees."
+  },
+  "changes": [
+    "Smooth speed/throttle FOV replaces fixed90-degree FOV for both occupants, bounded to90–104 degrees.",
+    "Small native-scale acceleration/braking head slide, body pitch and lateral body roll replace the almost motionless cabin.",
+    "The camera, occupants and cabin follow the same body transform and road grade, with the complete original seat rest orientation.",
+    "Original steering-wheel110-degree range follows continuous predicted steering rather than jumping at snapshot frequency.",
+    "Velocity retains directional inertia as the chassis rotates, then tyre grip settles lateral movement. Handbrake reduces lateral grip instead of preserving instantaneous direction changes.",
+    "The acceptance controller accounts for slip and brakes for peak upcoming native-road curvature. Its changes do not steer player cars."
+  ],
+  "validation": {
+    "command": "npm test",
+    "passed": 54,
+    "failed": 0,
+    "newChecks": ["Bounded speed/throttle FOV and return to idle", "Native centimetre-scale head inertia", "Pitch/roll bounds", "30fps versus120fps camera response", "Both real view seats use driver FOV and original eye matrices", "Handbrake versus normal slip angle"],
+    "httpRoutesWithoutPlacement": {"addedStage04FinishSeconds": 450.7, "addedStage04With650msInputsFinishSeconds": 570.82, "nativeScene1FinishSeconds": 295.88, "nativeScene2FinishSeconds": 988.96, "nativeScene3FinishSeconds": 505.7},
+    "otherCoverage": "Existing four-player collisions, fatal trees, tablet interactions, retry, mode selection, ownership, input expiry, stale responses and original sound tests pass."
+  },
+  "scopeLimits": [
+    "These are native serialized parameters implemented in a browser model; the native IL2CPP function bodies were not recovered by this check.",
+    "Native Unity suspension, exact tyre force model, physical roll, hand/arm IK and URP motion-blur/chromatic-aberration rendering are not reproduced by this change.",
+    "Existing browser acceleration, speed limits, camera look limits and user sensitivity controls are retained.",
+    "A fresh manual keyboard and separate-device multiplayer comparison remains necessary to judge identical feel."
+  ]
+}
