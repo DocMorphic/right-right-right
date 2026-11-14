@@ -5,7 +5,9 @@ import {newRoom,joinRoom,commandRoom,removePlayer,roomMessages,seatOf,ProtocolEr
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 const token=()=>{const bytes=crypto.getRandomValues(new Uint8Array(32));return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');};
 const errorMessage=error=>({type:'error',code:error.code||'server',message:error instanceof ProtocolError?error.message:'The multiplayer server is busy. Please try again.'});
-const now=()=>clockSeconds();
+// Production uses wall time; integration fixtures inject a clock without exposing a request override.
+export function createWorker({clock=clockSeconds}={}){
+const now=clock;
 async function loadSession(db,body){
   if(typeof body.id!=='string'||typeof body.token!=='string'||body.id.length>64||body.token.length!==64)throw new ProtocolError('auth','Session expired. Reconnect to the server.');
   const session=await db.prepare('SELECT id, token, code, name FROM sessions WHERE id = ? AND token = ?').bind(body.id,body.token).first();
@@ -66,7 +68,7 @@ async function receive(db,session,message,seenEpoch=0){
   const {room,result}=await mutateRoom(db,session.code,room=>{let race=false;for(const command of batch){const result=commandRoom(room,session,command,at);race||=result.race===true;}return {race};});
   return roomMessages(room,at,result.race||Boolean(room.world&&seenEpoch!==room.epoch));
 }
-export default {
+return {
   async fetch(request,env,context){
     const url=new URL(request.url);
     if(url.pathname==='/health'){
@@ -97,3 +99,5 @@ export default {
     }catch(error){if(!(error instanceof ProtocolError))console.error('multiplayer request failed',error);return json({messages:[errorMessage(error)],retryAfterMs:200},error.code==='auth'?401:error.code==='busy'?409:400);}
   }
 };
+}
+export default createWorker();

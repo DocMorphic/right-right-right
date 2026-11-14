@@ -2,7 +2,7 @@
 import http from 'node:http';
 import {DatabaseSync} from 'node:sqlite';
 import {readFile} from 'node:fs/promises';
-import worker from './worker.js';
+import worker,{createWorker} from './worker.js';
 
 export function createD1Adapter(sqlite){
   return {
@@ -10,7 +10,8 @@ export function createD1Adapter(sqlite){
     async batch(queries){return Promise.all(queries.map(query=>query.run()));}
   };
 }
-export async function createHttpFixture({port=0,host='127.0.0.1',beforeRequest,afterResponse}={}){
+export async function createHttpFixture({port=0,host='127.0.0.1',beforeRequest,afterResponse,clock}={}){
+  const handler=clock?createWorker({clock}):worker;
   const sqlite=new DatabaseSync(':memory:');sqlite.exec(await readFile(new URL('../drizzle/0000_browser_rooms.sql',import.meta.url),'utf8'));
   const env={DB:createD1Adapter(sqlite),ASSETS:{fetch:()=>new Response('Fixture assets are not enabled.',{status:404})}},background=new Set();
   const server=http.createServer(async(req,res)=>{
@@ -20,7 +21,7 @@ export async function createHttpFixture({port=0,host='127.0.0.1',beforeRequest,a
       let parsed;try{parsed=body.length?JSON.parse(body):null;}catch{}
       await beforeRequest?.({url,body:parsed,request:req});
       const request=new Request(url,{method:req.method,headers:req.headers,...(!['GET','HEAD'].includes(req.method)?{body}: {})});
-      const response=await worker.fetch(request,env,{waitUntil(promise){background.add(promise);promise.finally(()=>background.delete(promise));}});
+      const response=await handler.fetch(request,env,{waitUntil(promise){background.add(promise);promise.finally(()=>background.delete(promise));}});
       const bytes=await response.arrayBuffer();
       await afterResponse?.({url,body:parsed,response,bytes});
       res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(bytes));
