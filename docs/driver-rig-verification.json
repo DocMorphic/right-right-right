@@ -1,0 +1,54 @@
+{
+  "status": "Local candidate only; not integrated into or published with current playable release.",
+  "model": {
+    "url": "/assets/driver-rig.glb",
+    "sha256": "c1a6c9e2ff838a7e808cec514956dfca8c7136313fc1c2e4db08f6cfb1edf454",
+    "bytes": 6174468,
+    "skins": 4,
+    "nodes": 114,
+    "replaceOriginalNode": "character fat",
+    "attachParent": "BodyVisual",
+    "rootTransformAlreadyIncluded": true
+  },
+  "metadataSha256": "091c222b039db9d2746d9f1eae5d9211994203173bd391e1f3c13ecd9cd57b8f",
+  "sourceHashes": {
+    "level1": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
+    "sharedassets1.assets": "8a71b3448d3f974af50b3bd3cc026b9560cb2b4220192f18ea56f121df62e82e"
+  },
+  "serializedComponentSha256": "5db43ab061aea671cdb10b8a6d18b31fc40c8587acbdec1953b604c63bae501a",
+  "restPoseComparison": [
+    {
+      "mesh": "Casual2_Body",
+      "vertices": 4925,
+      "maxRestPositionErrorMeters": 2.723495876487683e-07,
+      "joints": 62
+    },
+    {
+      "mesh": "Casual2_Feet",
+      "vertices": 978,
+      "maxRestPositionErrorMeters": 1.0337204835256702e-07,
+      "joints": 62
+    },
+    {
+      "mesh": "Casual2_Head",
+      "vertices": 2998,
+      "maxRestPositionErrorMeters": 1.437039071321833e-07,
+      "joints": 62
+    },
+    {
+      "mesh": "Casual2_Legs",
+      "vertices": 1294,
+      "maxRestPositionErrorMeters": 1.3800462419842357e-07,
+      "joints": 62
+    }
+  ],
+  "gltfValidation": {
+    "errors": 0,
+    "warnings": 8,
+    "warningCodes": [
+      "NODE_SKINNED_MESH_LOCAL_TRANSFORMS",
+      "NODE_SKINNED_MESH_NON_ROOT"
+    ]
+  },
+  "scope": "CPU rest-skin geometry and GLB schema integrity only; not proof of animated hand alignment or runtime visual parity."
+}
