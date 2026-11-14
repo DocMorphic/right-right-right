@@ -1,16 +1,17 @@
 import * as THREE from 'three';
+import {assetUrl} from './asset-url.js';
 
 // Native coverage and prototypes are exact. Unity's runtime scatter and grass
 // shader are not serialized: positions below use deterministic per-cell scatter.
 export async function loadNativeDetails(sceneNumber,textureLoader=new THREE.TextureLoader()){
  const number=Number(sceneNumber);if(![1,2,3].includes(number))throw new Error('Unknown original grass scene.');
- const response=await fetch(`/assets/scenery/native-0${number}.details.json`);if(!response.ok)throw new Error('Original grass metadata could not be loaded.');
+ const response=await fetch(assetUrl(`/assets/scenery/native-0${number}.details.json`));if(!response.ok)throw new Error('Original grass metadata could not be loaded.');
  const data=await response.json(),textures=new Map(),textureJobs=new Map();
  const coverages=await Promise.all(data.layers.map(async layer=>{
-  const response=await fetch(layer.coverageUrl);if(!response.ok)throw new Error('Original grass coverage could not be loaded.');
+  const response=await fetch(assetUrl(layer.coverageUrl));if(!response.ok)throw new Error('Original grass coverage could not be loaded.');
   const coverage=new Uint8Array(await response.arrayBuffer());if(coverage.length!==data.resolution**2)throw new Error('Original grass coverage is incomplete.');
   const key=layer.textureSha256||layer.textureUrl;
-  if(!textureJobs.has(key))textureJobs.set(key,textureLoader.loadAsync(layer.textureUrl).then(texture=>{texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.ClampToEdgeWrapping;return texture;}));
+  if(!textureJobs.has(key))textureJobs.set(key,textureLoader.loadAsync(assetUrl(layer.textureUrl)).then(texture=>{texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.ClampToEdgeWrapping;return texture;}));
   textures.set(layer.textureUrl,await textureJobs.get(key));return coverage;
  }));
  return{data,coverages,textures};

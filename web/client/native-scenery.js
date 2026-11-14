@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {assetUrl} from './asset-url.js';
 
 // Original terrain samples are signed-height-range values stored in uint16s.
 // Keep every authored vertex; chunking only allows distant geometry to be culled.
@@ -51,11 +52,11 @@ function terrainMaterial(spec,textures,roadMask){
 export async function loadNativeScenery(loader,progress=()=>{}){
   const textures=new Map(),models=new Map(),textureLoader=new THREE.TextureLoader();
   const textureJobs=new Map(),modelJobs=new Map();
-  const texture=(url,data=false)=>{if(!url)return Promise.resolve();if(!textureJobs.has(url))textureJobs.set(url,textureLoader.loadAsync(url).then(t=>{t.colorSpace=data?THREE.NoColorSpace:THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;if(data&&url.includes('.splat-')){t.flipY=false;t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;}textures.set(url,t);}));return textureJobs.get(url);};
-  const model=url=>{if(!modelJobs.has(url))modelJobs.set(url,loader.loadAsync(url).then(g=>models.set(url,g.scene)));return modelJobs.get(url);};
+  const texture=(url,data=false)=>{if(!url)return Promise.resolve();if(!textureJobs.has(url))textureJobs.set(url,textureLoader.loadAsync(assetUrl(url)).then(t=>{t.colorSpace=data?THREE.NoColorSpace:THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;if(data&&url.includes('.splat-')){t.flipY=false;t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;}textures.set(url,t);}));return textureJobs.get(url);};
+  const model=url=>{if(!modelJobs.has(url))modelJobs.set(url,loader.loadAsync(assetUrl(url)).then(g=>models.set(url,g.scene)));return modelJobs.get(url);};
   const scenes=await Promise.all([1,2,3].map(async number=>{
-    const response=await fetch(`/assets/scenery/native-0${number}.json`);if(!response.ok)throw new Error(`Original Stage 0${number} scenery could not be loaded.`);const data=await response.json();
-    const heights=fetch(data.terrain.heightUrl).then(r=>{if(!r.ok)throw new Error('Original terrain could not be loaded.');return r.arrayBuffer();});
+    const response=await fetch(assetUrl(`/assets/scenery/native-0${number}.json`));if(!response.ok)throw new Error(`Original Stage 0${number} scenery could not be loaded.`);const data=await response.json();
+    const heights=fetch(assetUrl(data.terrain.heightUrl)).then(r=>{if(!r.ok)throw new Error('Original terrain could not be loaded.');return r.arrayBuffer();});
     await Promise.all([...data.terrain.layers.flatMap(layer=>[texture(layer.diffuse),texture(layer.normal,true)]),...data.terrain.splats.map(s=>texture(s.url,true)),...Object.values(data.propModels).map(m=>model(m.url))]);
     progress(`Loading original Stage 0${number} terrain and forest…`);return {data,heights:await heights};
   }));

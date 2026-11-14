@@ -3,6 +3,7 @@
  * MixLimiter 0x530E60, CabinDoor.UpdateWind 0x4E8180, GameAudioSettings.Apply 0x538120.
  * Web Audio and Unity DSP are different renderers; this ports source parameters, not a bit-exact output claim.
  */
+import {assetUrl} from './asset-url.js';
 const clamp=(value,lo=0,hi=1)=>Math.max(lo,Math.min(hi,value));
 const move=(value,target,amount)=>value+Math.sign(target-value)*Math.min(Math.abs(target-value),Math.max(0,amount));
 const smooth=value=>{value=clamp(value);return value*value*(3-2*value);};
@@ -53,7 +54,7 @@ export class RallyAudio {
     this.manifest=manifest;this.context=new (window.AudioContext||window.webkitAudioContext)();this.master=this.context.createGain();this.master.gain.value=this.enabled?1:0;this.master.connect(this.context.destination);
     this.gameBus=this.context.createGain();this.gameBus.connect(this.master);this.uiBus=this.context.createGain();this.uiBus.connect(this.master);this.musicBus=this.context.createGain();this.musicBus.connect(this.master);
     for(const bus of ['game','menu','music']){try{const stored=localStorage.getItem(`rw.vol.${bus}`);if(stored!==null&&Number.isFinite(Number(stored)))this.volumes[bus]=clamp(Number(stored));}catch{}}this.applyVolumes();this.bindGestures();
-    await Promise.all(Object.entries(manifest.sounds||{}).map(async([name,asset])=>{try{const response=await fetch(asset.url);if(!response.ok)throw new Error(`HTTP ${response.status}`);this.buffers.set(name,await this.context.decodeAudioData(await response.arrayBuffer()));}catch(error){this.loadErrors.push({name,message:error.message});}}));this.ready=true;if(this.unlocked)this.unlock();
+    await Promise.all(Object.entries(manifest.sounds||{}).map(async([name,asset])=>{try{const response=await fetch(assetUrl(asset.url));if(!response.ok)throw new Error(`HTTP ${response.status}`);this.buffers.set(name,await this.context.decodeAudioData(await response.arrayBuffer()));}catch(error){this.loadErrors.push({name,message:error.message});}}));this.ready=true;if(this.unlocked)this.unlock();
   }
   bindGestures(){if(typeof document==='undefined'||this.bound)return;this.bound=true;const gesture=()=>this.unlock();document.addEventListener('pointerdown',gesture,true);document.addEventListener('keydown',gesture,true);
     document.addEventListener('pointerover',event=>{const button=event.target?.closest?.('button');if(button&&!button.disabled&&!button.contains(event.relatedTarget))this.play('hover',this.getVolume('menu')*8,'ui');});
