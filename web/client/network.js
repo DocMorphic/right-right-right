@@ -44,7 +44,7 @@ export class Network extends EventTarget {
     if(message.type==='input') { const existing=this.pending.findIndex(m=>m.type==='input');if(existing>=0){const previous=this.pending[existing];message.actions=[...new Map([...(previous.actions||[]),...(message.actions||[])].map(action=>[action.id,action])).values()].slice(0,4);this.pending.splice(existing,1);} }
     if(message.actions?.length>4)message.actions=message.actions.slice(-4);this.pending.push(message);this.flush();return true;
   }
-  request(path,extra={}) {
+  request(path,extra={}, {continuousInput=false}={}) {
     // Lobby commands and polls stay ordered. During a run, a continuous input
     // must not wait for an already in-flight poll to return over a slow link.
     // flush() still permits only one command at a time, and revision filtering
@@ -63,14 +63,14 @@ export class Network extends EventTarget {
         return data;
       }
     };
-    if(path==='/api/message'&&extra.message?.type==='input')return run();
+    if(continuousInput)return run();
     const request=this.httpTail.then(run,run);
     this.httpTail=request.catch(()=>{});
     return request;
   }
   async flush() {
     if(this.flushing||!this.pending.length||!this.connected)return;this.flushing=true;
-    try {while(this.pending.length&&this.connected){const data=await this.request('/api/message',()=>({message:this.pending.shift()}));this.deliver(data.messages||[]);this.lastSend=performance.now();}}
+    try {while(this.pending.length&&this.connected){const data=await this.request('/api/message',()=>({message:this.pending.shift()}),{continuousInput:this.pending[0]?.type==='input'});this.deliver(data.messages||[]);this.lastSend=performance.now();}}
     catch(error){this.failed(error);}finally{this.flushing=false;}
   }
   async poll() {

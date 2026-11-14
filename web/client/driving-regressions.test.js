@@ -70,19 +70,23 @@ test('invalid stored sensitivity is ignored and auto quality remains bounded',()
   assert.equal(budget.scale,1.25);
 });
 
-test('a turn queued behind a delayed poll sends the latest input and keeps discrete actions',async t=>{
-  const previousFetch=globalThis.fetch,packets=[];let finishPoll;
+test('inputs bypass a delayed poll and queued turns coalesce behind an in-flight input without losing actions',async t=>{
+  const previousFetch=globalThis.fetch,packets=[];let finishPoll,finishInput;
   globalThis.fetch=async(path,options)=>{
     if(path==='/api/poll')await new Promise(resolve=>finishPoll=resolve);
-    else packets.push(JSON.parse(options.body).message);
+    else {packets.push(JSON.parse(options.body).message);if(packets.length===1)await new Promise(resolve=>finishInput=resolve);}
     return new Response(JSON.stringify({messages:[]}));
   };
   const network=new Network({storage:null});network.connected=true;network.transport='http';network.session={id:'test',token:'test'};
   t.after(()=>{network.close();globalThis.fetch=previousFetch;});
   const poll=network.request('/api/poll');await Promise.resolve();
   network.send({type:'input',seq:1,steer:1,actions:[{id:1,kind:'grab'}]});
-  network.send({type:'input',seq:2,steer:-1,actions:[]});
-  finishPoll();await poll;
+  assert.equal(packets.length,1,'the first input starts before the old poll returns');
+  network.send({type:'input',seq:2,steer:.5,actions:[{id:2,kind:'grab'}]});
+  network.send({type:'input',seq:3,steer:-1,actions:[]});
+  assert.equal(packets.length,1,'only one input is in flight');
+  finishInput();
   while(network.flushing)await new Promise(resolve=>setTimeout(resolve,1));
-  assert.equal(packets.length,1);assert.equal(packets[0].seq,2);assert.equal(packets[0].steer,-1);assert.deepEqual(packets[0].actions,[{id:1,kind:'grab'}]);
+  assert.equal(packets.length,2);assert.equal(packets[1].seq,3);assert.equal(packets[1].steer,-1);assert.deepEqual(packets[1].actions,[{id:2,kind:'grab'}]);
+  assert.deepEqual(packets[0].actions,[{id:1,kind:'grab'}]);finishPoll();await poll;
 });
