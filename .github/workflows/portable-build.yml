@@ -1,0 +1,50 @@
+name: Build Windows package on Mac
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/portable-build.yml'
+      - 'src/**'
+      - 'standalone/**'
+      - 'levels/stages.json'
+      - 'tools/build_from_release.py'
+      - 'tools/verify_portable.py'
+      - 'tools/portable-base.json'
+      - 'tools/portable-requirements.txt'
+      - 'tools/package_portable.py'
+      - 'tests/test_portable_builder.py'
+      - 'tests/RaceProtocol/**'
+      - 'tests/Distribution/**'
+
+permissions:
+  contents: read
+
+jobs:
+  mac-build:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install packaging dependencies
+        run: python -m pip install -r tools/portable-requirements.txt
+      - name: Check bootstrap integrity rules
+        run: python -m unittest discover -s tests -p test_portable_builder.py -v
+      - name: Build and verify Windows package from macOS
+        run: python tools/build_from_release.py --output local/ci-windows
+      - name: Check mode and protocol rules
+        run: dotnet run --project tests/RaceProtocol/RaceProtocol.Tests.csproj -c Release
+      - name: Check distribution settings
+        run: dotnet run --project tests/Distribution/Distribution.Tests.csproj -c Release
+      - name: Upload small build report
+        uses: actions/upload-artifact@v7
+        with:
+          name: mac-build-verification
+          path: local/ci-windows.build.json
+          retention-days: 7

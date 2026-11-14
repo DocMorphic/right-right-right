@@ -1,6 +1,7 @@
 local/
 __pycache__/
 .venv/
+.venv-build/
 *.pyc
 src/bin/
 src/obj/

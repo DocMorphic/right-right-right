@@ -1,0 +1,69 @@
+# Build on a Mac; test Windows compatibility separately
+
+The published game is **Windows x64**. There is no native macOS `.app` in the repository or releases. The repository contains our C# extension and packaging tools, not the original editable Unity project. `GameAssembly.dll`, `UnityPlayer.dll` and the original platform assets remain Windows binaries. Publishing the small launcher for `osx-arm64` would not port the game underneath it.
+
+You can still edit and build the extension, launcher and complete Windows package on an Apple Silicon or Intel Mac. The cross-platform builder downloads a SHA256-pinned published release for the original runtime and managed build references. Your Windows laptop can remain offline.
+
+## Get the current source
+
+The multiplayer work is on **standalone/portable-steam**, not the repository's default main branch. In your cloned repository:
+
+```sh
+git fetch origin
+git switch standalone/portable-steam
+git pull --ff-only
+```
+
+Keep any local work committed before switching branches. Do not reset it to match these instructions.
+
+## One-time Mac developer setup
+
+Install **Python 3.12** and a **.NET SDK, version 8 or newer**. On an M1 Max, choose the **Arm64** Mac SDK; the target game still uses Windows x64. A .NET runtime alone cannot compile the projects. See [Microsoft's Mac installation guide](https://learn.microsoft.com/en-us/dotnet/core/install/macos).
+
+```sh
+python3.12 -m venv .venv-build
+source .venv-build/bin/activate
+python -m pip install -r tools/portable-requirements.txt
+```
+
+## Build without the home Windows laptop
+
+```sh
+python tools/build_from_release.py
+```
+
+The first run downloads the pinned alpha.4 ZIP (about 185 MiB), checks its SHA256, extracts it under ignored `local/portable-base/`, and verifies its manifest. Later runs reuse and verify that cache. The builder supplies the extracted player as `GameDir`, compiles the C# mod on the Mac, cross-publishes the Windows launcher, and invokes the existing packager with the public production Relay settings. There is no Steam lookup or Windows interop-generation step on the Mac.
+
+Each run creates a fresh `local/builds/windows-<timestamp>/player/RightRightRight.exe`, a complete sibling ZIP and a small `.build.json` report. **The output is a Windows game, not a Mac app.** Existing output directories are never overwritten.
+
+For a chosen destination, or an already extracted unmodified release:
+
+```sh
+python tools/build_from_release.py --output local/my-build
+python tools/build_from_release.py --base-player /path/to/RightRightRight/player --output local/another-build
+python tools/verify_portable.py local/my-build/player
+```
+
+Edit source, rebuild, test, then commit/push the authored changes. Do not commit `local/`, game binaries, cached bindings, SDK downloads or ZIPs. Both multiplayer players must run compatible builds. Existing Windows-only `Build-Portable.ps1` and native gameplay verification scripts remain available on Windows.
+
+The **Build Windows package on Mac** GitHub Actions workflow also builds and verifies from a standard Apple Silicon macOS 26 runner when relevant source/build files are pushed. It uploads a small build report, not a native Mac game or a playable build. The local command above keeps the full ZIP on your own Mac.
+
+## Playing on an M1 Max with macOS Tahoe
+
+Use the published [Windows alpha.4 ZIP](https://github.com/DocMorphic/right-right-right/releases/download/v0.3.0-alpha.4/RightRightRight-Standalone-0.3.0-alpha.4.zip), or a Windows package you rebuilt. **This game has not been verified under CrossOver on the M1 Max.** A successful Mac compile does not establish graphics, loader, input or multiplayer runtime compatibility.
+
+CrossOver supports Apple Silicon; CodeWeavers lists macOS Tahoe support starting with CrossOver 25.1.1. Use its current [free trial](https://www.codeweavers.com/crossover) for a compatibility test before buying anything. This is a Windows compatibility test, not a native port.
+
+1. Install the current CrossOver Mac trial and create a **64-bit Windows 10 or 11 bottle** named RightRightRight.
+2. Extract the entire game ZIP. Keep its `player` directory and all the files inside together.
+3. In the bottle's **Wine Configuration → Libraries**, add an override for **version** and set it to **Native, then Builtin**. The bundled MelonLoader bootstrap is `version.dll`; its official Wine instructions specify `WINEDLLOVERRIDES="version=n,b"`.
+4. Use **Run Command** in that bottle to launch **player/RightRightRight.exe**. If available, use D3DMetal for the DirectX graphics backend. Do not run the bundled Windows `dotnet.exe` as the Mac's SDK.
+5. If it reaches the modded mode/room-code menu, check a two-player session with a Windows friend. The same Relay project and protocol are used, but CrossOver networking/input compatibility still needs this test.
+
+If startup fails, keep `player/Logs/launcher.log` and `player/MelonLoader/Latest.log`, plus a CrossOver run log. Report the last error. The .NET runtime is already bundled; adding unrelated runtime/loader versions can introduce another variable.
+
+Sources: [CrossOver system requirements and trial](https://www.codeweavers.com/crossover), [CrossOver portable-program/Run Command guide](https://support.codeweavers.com/en_US/crossover-mac-user-guide), [MelonLoader's official Wine instructions](https://github.com/LavaGang/MelonWiki/blob/master/docs/gettingstarted.md).
+
+## A native Mac release
+
+A reliable native port needs the developers' Unity project/source and a macOS export, or a suitable developer-provided native Mac build plus compatible mod-loader bindings. This repository cannot reconstruct a signed Apple Silicon game from the Windows executable alone. That is a separate porting project; the cross-platform developer workflow here does not claim to perform it.

@@ -40,6 +40,8 @@ This remains a licensed distribution of the original compiled runtime and assets
 
 ## Developer build
 
+**Developing on a Mac:** [Mac setup and cross-platform build guide](docs/MAC-DEVELOPMENT.md). Use `python tools/build_from_release.py` to fetch a pinned published runtime and build the Windows package on macOS without the home Windows laptop. A native Mac game is not available; CrossOver play remains an unverified compatibility test. Check out `standalone/portable-steam` for the current multiplayer source.
+
 On Windows x64, a prepared pinned player and the local Python 3.12/.NET toolchain build the portable release:
 
 ```powershell
