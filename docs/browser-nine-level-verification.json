@@ -1,0 +1,67 @@
+{
+  "url": "https://right-right-right-play.andustry-0633.chatgpt.site",
+  "checkedAt": "2026-11-14T14:22:48.786Z",
+  "siteVersion": 6,
+  "sourceCommit": "35df01596d57df4539ee0209f1be0cb20b9c8a5a",
+  "publishedSourceCommit": "6f417916fbc738a7b90dd7642b4d3b20c4f72edb",
+  "liveBundle": "/assets/index-BIPaE7Wk.js",
+  "liveBundleMatchesLocal": true,
+  "outcomes": [
+    {
+      "profile": 0,
+      "name": "04 / PINE NEEDLE",
+      "guestHashMatches": true,
+      "nativeScene": null
+    },
+    {
+      "profile": 1,
+      "name": "05 / SWITCHBACK",
+      "guestHashMatches": true,
+      "nativeScene": null
+    },
+    {
+      "profile": 2,
+      "name": "06 / RIDGELINE",
+      "guestHashMatches": true,
+      "nativeScene": null
+    },
+    {
+      "profile": 3,
+      "name": "07 / SERPENT",
+      "guestHashMatches": true,
+      "nativeScene": null
+    },
+    {
+      "profile": 4,
+      "name": "08 / LONG WAY HOME",
+      "guestHashMatches": true,
+      "nativeScene": null
+    },
+    {
+      "profile": 5,
+      "name": "09 / RIGHT RIGHT RIGHT",
+      "guestHashMatches": true,
+      "nativeScene": null
+    },
+    {
+      "profile": 6,
+      "name": "01 / STAGE 01",
+      "guestHashMatches": true,
+      "nativeScene": "1"
+    },
+    {
+      "profile": 7,
+      "name": "02 / STAGE 02",
+      "guestHashMatches": true,
+      "nativeScene": "2"
+    },
+    {
+      "profile": 8,
+      "name": "03 / STAGE 03",
+      "guestHashMatches": true,
+      "nativeScene": "3"
+    }
+  ],
+  "requests": 58,
+  "verificationLimit": "Public check starts each profile with two real HTTP clients; full authored routes were driven in accelerated-clock local HTTP tests. No new GUI or audio listening comparison."
+}
