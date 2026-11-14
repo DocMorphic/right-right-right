@@ -67,12 +67,13 @@ test('D steering turns right from the original GLB forward-facing cabin',()=>{
   assert.ok(car.x<0);assert.ok(car.yaw<0);
 });
 
-test('all six native course profiles use identical server/client stages and reject unknown profiles',()=>{
+test('all nine course profiles use identical server/client stages and reject unknown profiles',()=>{
   const a={id:'a'},room=newRoom('ABC123',a,{mode:'race',seed:43210},0);
   for(let index=0;index<STAGES.length;index++){
     commandRoom(room,a,{type:'configure',profile:index},0);
     const stage=STAGES[index],authority=courseFor(room),client=generateCourse(room.seed,room.mode,stage.blocks,stage.seed);
     assert.equal(authority.blocks,stage.blocks);assert.equal(authority.profile,stage.seed);assert.equal(courseHash(authority),courseHash(client));
   }
-  assert.throws(()=>commandRoom(room,a,{type:'configure',profile:6},0),/Invalid course profile/);
+  assert.equal(STAGES.length,9);
+  assert.throws(()=>commandRoom(room,a,{type:'configure',profile:9},0),/Invalid course profile/);
 });

@@ -72,7 +72,13 @@ export class RallyView {
   }
   buildCourse(course) {
     this.disposeCourse();this.course=course;
-    this.ribbon(course.width,this.roadMaterial,.015);
+    if(course.roadMesh){
+      const data=course.roadMesh,geometry=new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.Float32BufferAttribute(data.positions,3));
+      geometry.setAttribute('normal',new THREE.Float32BufferAttribute(data.normals,3));
+      geometry.setAttribute('uv',new THREE.Float32BufferAttribute(data.uvs,2));geometry.setIndex(data.indices);
+      const mesh=new THREE.Mesh(geometry,this.roadMaterial);mesh.receiveShadow=true;mesh.userData.disposable=true;this.world.add(mesh);
+    }else this.ribbon(course.width,this.roadMaterial,.015);
     this.ribbon(110,this.groundMaterial,-.25,true);
     for(let type=0;type<this.manifest.models.trees.length;type++) {
       const source=this.assets[`tree${type}`];source.updateMatrixWorld(true);const placements=course.trees.filter(t=>t.variant===type);
@@ -85,13 +91,15 @@ export class RallyView {
         instanced.computeBoundingSphere();this.world.add(instanced);
       }});
     }
-    for(const [name,index] of [['start',8],['finish',course.points.length-9]]) {
-      const gate=clone(this.assets[name]),p=course.points[index],d=direction(course.points,index);gate.position.set(p.x,p.y,p.z);gate.rotation.y=Math.atan2(d.x,d.z);gate.scale.x=course.width/7;gate.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});this.world.add(gate);
+    for(const [name,index] of [['start',course.startIndex??8],['finish',course.finishIndex??course.points.length-9]]) {
+      const gate=clone(this.assets[name]),pose=course.gates?.[name],p=course.points[index],d=direction(course.points,index);
+      if(pose){gate.position.fromArray(pose.position);gate.quaternion.fromArray(pose.rotation);}else{gate.position.set(p.x,p.y,p.z);gate.rotation.y=Math.atan2(d.x,d.z);gate.scale.x=course.width/7;}
+      gate.traverse(n=>{if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}});this.world.add(gate);
     }
     // Mud uses the same original road texture with native mud color, no additional scenery.
     const mudMaterial=this.roadMaterial.clone();mudMaterial.color.setRGB(.3,.2,.11);mudMaterial.roughness=.55;
     const mudGeometry=new THREE.PlaneGeometry(course.width-.2,4);mudGeometry.rotateX(-Math.PI/2);
-    for(const mud of course.mud){const m=new THREE.Mesh(mudGeometry,mudMaterial),d=direction(course.points,mud.index);m.position.set(mud.x,mud.y+.026,mud.z);m.rotation.y=Math.atan2(d.x,d.z);m.receiveShadow=true;this.world.add(m);}
+    for(const mud of course.mud){const m=new THREE.Mesh(mudGeometry,mudMaterial),d=direction(course.points,mud.index);m.position.set(mud.x,course.points[mud.index].y+.026,mud.z);m.rotation.y=Math.atan2(d.x,d.z);m.receiveShadow=true;this.world.add(m);}
     this.makeCars(course.mode==='race'?2:1);
   }
   ribbon(width,material,offset,ground=false) {
@@ -164,7 +172,8 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
       });
       const own=this.cars[Math.floor(this.slot/2)],state=snapshot.cars[Math.floor(this.slot/2)];
       if(own&&state){const eye=this.manifest.anchors[this.slot%2===0?'Main Camera':'EyeAnchor'].position;v.fromArray(eye);own.model.localToWorld(v);this.camera.position.copy(v);
-        if(!this.impactShake)this.impactShake=new ImpactShake();const shake=this.impactShake.update(state,dt);this.camera.position.add(v.set(shake.x,shake.y,shake.z));
+        if(!this.impactShake)this.impactShake=new ImpactShake();const shake=this.impactShake.update(state,dt);
+        if(snapshot.phase==='running'&&!state.dead&&state.finish<0)this.camera.position.add(v.set(shake.x,shake.y,shake.z));
         
         // A Three.js camera looks down -Z: yaw + PI faces the native +Z car forward.
         this.camera.quaternion.setFromEuler(new THREE.Euler(-(this.look.pitch+(this.slot%2===0?11.29:8.1))*Math.PI/180,own.model.rotation.y+Math.PI-this.look.yaw*Math.PI/180,0,'YXZ'));

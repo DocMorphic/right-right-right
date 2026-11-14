@@ -17,5 +17,16 @@
   </div></div><div class="tablet-bottom"><span>RIGHT RIGHT RIGHT</span><i></i></div></section>
 </main>
 <div id="hud" class="hidden"><div id="race-status" class="native-box" role="status" aria-live="polite"><span id="result-title"></span><span id="result-time"></span><span id="result-subtitle"></span></div></div>
-<div id="browser-menu" class="native-box hidden"><div>RIGHT RIGHT RIGHT</div><p>WASD drive | Space handbrake | Mouse look<br>E grab/drop tablet | G close door | hold C wipe<br>F8 host retry | Esc menu</p><button id="resume-game">BACK TO GAME</button><button id="retry-game">RETRY COURSE</button><button id="menu-lobby">RETURN TO LOBBY</button><button id="exit-game">DISCONNECT</button><label><input id="audio-setting" type="checkbox" checked> Audio</label><select id="quality-setting" aria-label="Graphics"><option value="auto">Automatic graphics</option><option value="high">High graphics</option><option value="low">Low graphics</option></select></div>
+<div id="browser-menu" class="hidden" role="dialog" aria-modal="true" aria-label="Pause menu">
+  <section class="pause-shell"><div class="pause-lip"></div><div class="pause-screen"></div><div class="pause-route-marker"></div><div class="pause-timer-rim"></div><div class="pause-timer">PAUSED</div>
+    <div data-pause-page="home"><div id="pause-role">DRIVER</div><button id="resume-game" class="pause-resume">RESUME</button><button id="retry-game" class="pause-restart">RESTART</button><button id="exit-game" class="pause-leave">LEAVE SESSION</button><button id="pause-settings" class="pause-settings-button">SETTINGS</button><button id="menu-lobby" class="pause-main-menu">BACK TO MENU</button><div class="pause-footer">ESC  BACK TO THE ROAD</div></div>
+    <div data-pause-page="settings" class="hidden"><div class="pause-heading">SETTINGS</div><label class="pause-quality-label" for="quality-setting">GRAPHICS</label><select id="quality-setting" aria-label="Graphics quality"><option value="auto">AUTO</option><option value="high">HIGH</option><option value="low">LOW</option></select><button id="pause-volume" class="pause-volume-button">VOLUME</button><button id="pause-settings-back" class="pause-back">BACK</button></div>
+    <div data-pause-page="volume" class="hidden"><div class="pause-heading">VOLUME</div>
+      <label class="pause-volume-row" style="--row-y:170px" for="volume-game"><span>GAME</span><output id="volume-game-percent">50%</output><input id="volume-game" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Game volume"></label>
+      <label class="pause-volume-row" style="--row-y:250px" for="volume-menu"><span>MENU</span><output id="volume-menu-percent">50%</output><input id="volume-menu" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Menu volume"></label>
+      <label class="pause-volume-row" style="--row-y:330px" for="volume-music"><span>MUSIC</span><output id="volume-music-percent">50%</output><input id="volume-music" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Music volume"></label>
+      <button id="pause-volume-back" class="pause-back">BACK</button>
+    </div><div class="pause-brand">NAV-1350</div>
+  </section>
+</div>
 <div id="toast" class="native-box hidden" role="status" aria-live="polite"></div><script type="module" src="/client/main.js"></script></body></html>

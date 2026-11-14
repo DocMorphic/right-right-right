@@ -1,4 +1,16 @@
-export const STAGES = Object.freeze([{name:'04 / PINE NEEDLE',seed:404,blocks:7},{name:'05 / SWITCHBACK',seed:505,blocks:8},{name:'06 / RIDGELINE',seed:606,blocks:8},{name:'07 / SERPENT',seed:707,blocks:9},{name:'08 / LONG WAY HOME',seed:808,blocks:10},{name:'09 / RIGHT RIGHT RIGHT',seed:909,blocks:10}]);
+import nativeCatalog from './native-courses.generated.json' with {type:'json'};
+
+// Keep existing protocol indices stable. The menu sorts these by their native number.
+export const STAGES = Object.freeze([{name:'04 / PINE NEEDLE',seed:404,blocks:7},{name:'05 / SWITCHBACK',seed:505,blocks:8},{name:'06 / RIDGELINE',seed:606,blocks:8},{name:'07 / SERPENT',seed:707,blocks:9},{name:'08 / LONG WAY HOME',seed:808,blocks:10},{name:'09 / RIGHT RIGHT RIGHT',seed:909,blocks:10},
+  ...nativeCatalog.courses.map(course=>({name:course.name,seed:1000+Number(course.id),blocks:0,nativeScene:course.id}))]);
+
+function authoredCourse(source,seed,mode,profile){
+  const points=source.points.map(([x,y,z])=>({x,y,z}));
+  return {seed:seed|0,mode,profile,blocks:0,nativeScene:source.id,points,width:source.width,widths:source.widths,
+    length:source.length,distances:source.distances,hairpins:0,hardCorners:0,
+    startIndex:source.startIndex,finishIndex:source.finishIndex,startPose:source.startPose,finishPose:source.finishPose,
+    gates:source.gates,roadMesh:source.roadMesh,trees:source.trees,mud:source.mud,source:source.source};
+}
 /** Browser port of src/CourseGeometry.cs, using the same xorshift seed and turns. */
 export class Rng {
   constructor(seed) { this.state = seed >>> 0 || 0x9e3779b9; }
@@ -26,6 +38,8 @@ export function nearestPoint(course, x, z, hint = -1, radius = 150) {
   return { index, t, x: px, z: pz, y: a.y + (b.y - a.y) * t, distance: Math.sqrt(best), direction: direction(points, index) };
 }
 export function generateCourse(seed = 84183, mode = 'coop', blocks = 4, profile = 0) {
+  const authored=nativeCatalog.courses.find(course=>1000+Number(course.id)===profile);
+  if(authored)return authoredCourse(authored,seed,mode,profile);
   blocks = Math.max(4, Math.min(12, blocks | 0));
   const rng = new Rng((seed ^ Math.imul(profile, 16777619)) | 0), points = [{ x: 0, y: 20, z: 0 }];
   let position = points[0], heading = 0, hairpins = 0, hardCorners = 0;

@@ -48,8 +48,9 @@ test('driving prediction at 20fps covers the same distance as 60fps',()=>{
 test('all original-sized co-op roads stay 5m while race roads retain two-car clearance',()=>{
   for(const stage of STAGES){
     const coop=generateCourse(12345,'coop',stage.blocks,stage.seed),race=generateCourse(12345,'race',stage.blocks,stage.seed);
-    assert.equal(coop.width,5);assert.equal(race.width,9.5);assert.deepEqual(coop.points,race.points);
-    assert.ok(Math.abs(Math.hypot(coop.trees[0].x-coop.points[1].x,coop.trees[0].z-coop.points[1].z)-4.3)<.01,'matching boundary trees move in with the road');
+    assert.deepEqual(coop.points,race.points);
+    if(stage.nativeScene){assert.ok(Math.abs(coop.width-5)<.1);assert.deepEqual(coop.roadMesh,race.roadMesh,'authored native strips remain unchanged');}
+    else{assert.equal(coop.width,5);assert.equal(race.width,9.5);assert.ok(Math.abs(Math.hypot(coop.trees[0].x-coop.points[1].x,coop.trees[0].z-coop.points[1].z)-4.3)<.01,'matching boundary trees move in with the road');}
   }
 });
 

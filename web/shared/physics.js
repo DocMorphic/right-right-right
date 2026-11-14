@@ -40,11 +40,15 @@ export function nearestPoint(course, x, z, previous) {
   return {index, distance:Math.sqrt(best), point:points[index]};
 }
 export function makeCar(course, team = 0, mode = 'coop') {
-  const index = Math.min(8, course.points.length-1), p = course.points[index], f = direction(course.points,index);
-  const offset = mode === 'race' ? (team===0 ? -2.3 : 2.3) : 0;
-  return {team,x:p.x+f.z*offset,y:p.y+CAR.height,z:p.z-f.x*offset,yaw:Math.atan2(f.x,f.z),
+  const index = course.startIndex ?? Math.min(8, course.points.length-1), p = course.points[index], f = course.startPose?{x:course.startPose.forward[0],z:course.startPose.forward[2]}:direction(course.points,index);
+  const spawn=course.startPose?{x:course.startPose.position[0],z:course.startPose.position[2]}:p;
+  // Both cars fit the authored five-metre start without altering the road or backing into its trees.
+  const gridOffset=course.width<6.4?1.05:2.3;
+  const offset = mode==='race' ? (team===0 ? -gridOffset : gridOffset) : 0;
+  const x=spawn.x+f.z*offset,z=spawn.z-f.x*offset;
+  return {team,x,y:p.y+CAR.height,z,yaw:Math.atan2(f.x,f.z),
     vx:0,vz:0,speed:0,steer:0,door:false,doorAngle:0,doorVelocity:0,nextDoor:14+team*3,turnHold:0,
-    mud:0,dead:false,finish:-1,stoppedAt:-1,progress:index,nearest:index,jolt:0,mudHits:[],lastX:p.x+f.z*offset,lastZ:p.z-f.x*offset};
+    mud:0,dead:false,finish:-1,stoppedAt:-1,progress:index,nearest:index,jolt:0,mudHits:[],lastX:x,lastZ:z};
 }
 export function carAnchor(car, slot) {
   const side = slot % 2 === 0 ? .369 : -.333;
@@ -58,7 +62,7 @@ export function stepCar(car, input, dt, course) {
   car.jolt=Math.max(0,car.jolt-dt*2);
   if(car.dead || car.finish >= 0) return;
   const near=nearestPoint(course,car.x,car.z,car.nearest); car.nearest=near.index;
-  const offroad = near.distance > course.width*.5;
+  const offroad = near.distance > (course.widths?.[near.index]??course.width)*.5;
   const throttle=clamp(input?.throttle||0,-1,1), steer=clamp(input?.steer||0,-1,1);
   const forwardX=Math.sin(car.yaw), forwardZ=Math.cos(car.yaw);
   let forward=car.vx*forwardX+car.vz*forwardZ;
@@ -181,9 +185,9 @@ export function stepWorld(world,inputs,dt,course){
     resolveTrees(world,car,course);
     const near=nearestPoint(course,car.x,car.z,car.nearest);car.nearest=near.index;car.progress=Math.max(car.progress,near.index);
     for(let i=0;i<(course.mud||[]).length;i++){const mud=course.mud[i];if(!car.mudHits.includes(i)&&Math.hypot(car.x-mud.x,car.z-mud.z)<(mud.radius||course.width*.5)){car.mudHits.push(i);car.mud=clamp(car.mud+(mud.amount||.55),0,1);world.stats.mud++;}}
-    const finishIndex=course.points.length-9,p=course.points[finishIndex],f=direction(course.points,finishIndex);
+    const finishIndex=course.finishIndex??course.points.length-9,p=course.finishPose?{x:course.finishPose.position[0],z:course.finishPose.position[2]}:course.points[finishIndex],f=direction(course.points,finishIndex);
     const before=(car.lastX-p.x)*f.x+(car.lastZ-p.z)*f.z,after=(car.x-p.x)*f.x+(car.z-p.z)*f.z;
-    if(!car.dead&&world.elapsed>3&&car.progress>course.points.length-60&&before<0&&after>=0&&Math.abs((car.x-p.x)*f.z-(car.z-p.z)*f.x)<course.width*.5){car.finish=world.elapsed;car.vx=car.vz=car.speed=0;}
+    if(!car.dead&&world.elapsed>3&&car.progress>Math.max(course.startIndex??0,finishIndex-60)&&before<0&&after>=0&&Math.abs((car.x-p.x)*f.z-(car.z-p.z)*f.x)<(course.widths?.[finishIndex]??course.width)*.5){car.finish=world.elapsed;car.vx=car.vz=car.speed=0;}
   }
   resolveCarCollision(world);stepTablets(world,dt,course);
   if(world.cars.every(c=>c.dead||c.finish>=0)){world.phase='ended';const winners=world.cars.filter(c=>c.finish>=0).sort((a,b)=>a.finish-b.finish);world.winner=winners[0]?.team??null;}

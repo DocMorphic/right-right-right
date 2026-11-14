@@ -43,6 +43,13 @@ test('actual wiper transforms respond to either crew member without wiping anoth
   assert.equal(car.wipers[0].quaternion.angleTo(car.wiperRests[0]),0,'crew B local input does not wipe crew A');
 });
 
+test('a frozen fatal-impact snapshot cannot keep shaking the camera after the run ends',()=>{
+  const {view,state}=fixture(0);view.snapshot.phase='ended';state.dead=true;state.jolt=1;
+  view.lastMap=1e9;
+  view.update(.02,1000,{});const first=view.camera.position.clone();
+  for(let i=1;i<=30;i++){view.update(.02,1000+i*20,{});assert.ok(view.camera.position.distanceTo(first)<1e-8);}
+});
+
 
 test('navigator spawn frames the physical tablet at16:9 while driver starts on the road',()=>{
   const {view,car}=fixture(1);view.look.pitch=initialLookPitch(1);

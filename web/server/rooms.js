@@ -76,6 +76,7 @@ export function advanceRoom(room,now=clockSeconds()){
 }
 function startRoom(room,now){
   if(room.seats.filter(Boolean).length!==playerCount(room)||room.seats.slice(0,playerCount(room)).some(s=>!s?.ready))fail('not_ready',`All ${playerCount(room)} players must occupy a seat and be ready.`);
+  if(STAGES[room.profile]?.nativeScene&&room.seats.some(seat=>(seat?.catalog??6)<STAGES.length))fail('content','An older game page is connected. Everyone refresh the page to play all nine stages.');
   room.epoch=(room.epoch+1)>>>0||1;room.status='race';room.inputs=[];room.lastAt=now;
   room.world=makeWorld(courseFor(room),room.mode,room.epoch);room.world.seed=room.seed;
   if(room.practice)room.world.tablets[0].holder=0;
@@ -93,7 +94,7 @@ export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5
     case 'poll':return {broadcast:false};
     case 'ready':
       if(room.status!=='lobby')fail('started','Ready can only change in the lobby.');
-      room.seats[slot].ready=message.ready===true;return {broadcast:true};
+      room.seats[slot].ready=message.ready===true;room.seats[slot].catalog=Number.isInteger(message.catalog)&&message.catalog>=0&&message.catalog<=100?message.catalog:6;return {broadcast:true};
     case 'seat':{
       if(room.status!=='lobby')fail('started','Seats can only change in the lobby.');
       if(!Number.isInteger(message.slot)||message.slot<0||message.slot>=playerCount(room))fail('seat','Choose an available seat.');
