@@ -1,9 +1,11 @@
-import {MODES} from './protocol.js';
+import {MODES,START_COUNTDOWN_SECONDS} from './protocol.js';
 
 export {steeringLimit} from './native-handling.js';
 import {HANDLING,stepHandling} from './native-handling.js';
 export const CAR=Object.freeze({wheelbase:2.8,radius:.85,halfLength:.95,height:.68,maxSpeed:HANDLING.maxSpeed,reverseSpeed:HANDLING.reverseSpeed});
 export const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
+// Give the navigator time to retrieve a loose tablet or slam the door.
+const TABLET_DOOR=Object.freeze({exitAngle:55,slideSpeed:.65,exitX:-1.05,dropLift:.7});
 const treeGrids = new WeakMap();
 const cellSize = 8;
 const key = (x, z) => `${Math.floor(x / cellSize)},${Math.floor(z / cellSize)}`;
@@ -60,7 +62,7 @@ export function stepCar(car, input, dt, course) {
 export function openDoor(world, team) {
   const car=world.cars[team]; if(car.door||car.dead||car.finish>=0)return false;
   car.door=true;car.doorAngle=10;car.doorVelocity=100;world.stats.doors++;
-  for(const tablet of world.tablets)if(tablet.carrier===team&&tablet.holder<0) {tablet.vx=car.vx-Math.cos(car.yaw)*2.5;tablet.vy=3.5;tablet.vz=car.vz+Math.sin(car.yaw)*2.5;}
+  for(const tablet of world.tablets)if(tablet.carrier===team&&tablet.holder<0) {tablet.vx=car.vx-Math.cos(car.yaw)*TABLET_DOOR.slideSpeed;tablet.vy=TABLET_DOOR.dropLift;tablet.vz=car.vz+Math.sin(car.yaw)*TABLET_DOOR.slideSpeed;}
   return true;
 }
 export function toggleTablet(world, slot, input) {
@@ -68,7 +70,7 @@ export function toggleTablet(world, slot, input) {
   const held=world.tablets.find(p=>p.holder===slot);
   if(held) {
     held.holder=-1;held.vx=car.vx;held.vz=car.vz;held.vy=.5;
-    if(car.door){held.vx-=Math.cos(car.yaw)*2.5;held.vz+=Math.sin(car.yaw)*2.5;held.vy=3.5;}
+    if(car.door){held.vx-=Math.cos(car.yaw)*TABLET_DOOR.slideSpeed;held.vz+=Math.sin(car.yaw)*TABLET_DOOR.slideSpeed;held.vy=TABLET_DOOR.dropLift;}
     return true;
   }
   const eye=carAnchor(car,slot);eye.y+=.5;
@@ -128,11 +130,12 @@ function stepTablets(world,dt,course){
     if(p.inCabin){
       const dx=p.x-car.lastX,dz=p.z-car.lastZ;
       let lx=dx*Math.cos(car.yaw)-dz*Math.sin(car.yaw),lz=dx*Math.sin(car.yaw)+dz*Math.cos(car.yaw);
-      if(car.door&&car.doorAngle>30){lx-=dt*2.8;if(lx<-.95)p.inCabin=false;}
+      const slide=car.door&&car.doorAngle>TABLET_DOOR.exitAngle?TABLET_DOOR.slideSpeed:0;
+      if(slide){lx-=dt*slide;if(lx<TABLET_DOOR.exitX)p.inCabin=false;}
       else lx=clamp(lx,-.61,.61);
       lz=clamp(lz,-.8,.8);
       p.x=car.x+Math.cos(car.yaw)*lx+Math.sin(car.yaw)*lz;p.z=car.z-Math.sin(car.yaw)*lx+Math.cos(car.yaw)*lz;
-      p.y=car.y+.18;p.vx=car.vx-Math.cos(car.yaw)*2.8;p.vz=car.vz+Math.sin(car.yaw)*2.8;p.vy=1;
+      p.y=car.y+.18;p.vx=car.vx-Math.cos(car.yaw)*slide;p.vz=car.vz+Math.sin(car.yaw)*slide;p.vy=TABLET_DOOR.dropLift;
     }else{
       p.vy-=9.81*dt;p.x+=p.vx*dt;p.z+=p.vz*dt;p.y+=p.vy*dt;
       const near=nearestPoint(course,p.x,p.z);if(p.y<near.point.y+.12){p.y=near.point.y+.12;p.vy=Math.abs(p.vy)*.2;p.vx*=Math.exp(-dt*3);p.vz*=Math.exp(-dt*3);}
@@ -160,7 +163,7 @@ export function stepWorld(world,inputs,dt,course){
   resolveCarCollision(world);stepTablets(world,dt,course);
   if(world.cars.every(c=>c.dead||c.finish>=0)){world.phase='ended';const winners=world.cars.filter(c=>c.finish>=0).sort((a,b)=>a.finish-b.finish);world.winner=winners[0]?.team??null;}
 }
-export function makeWorld(course,mode,epoch,countdown=5){
+export function makeWorld(course,mode,epoch,countdown=START_COUNTDOWN_SECONDS){
   const cars=Array.from({length:MODES[mode].cars},(_,team)=>makeCar(course,team,mode));
   return {epoch,seed:course.seed,seq:0,time:0,phase:'countdown',countdown,elapsed:0,cars,tablets:makeTablets(cars),winner:null,lastImpact:-1,
     stats:{impacts:0,steals:0,doors:0,treeDeaths:0,mud:0}};

@@ -1,5 +1,5 @@
 import {generateCourse, STAGES} from '../shared/course.js';
-import {PROTOCOL_VERSION, MODES, validMode, playerCount, safeName, validSeed, validInput, newer} from '../shared/protocol.js';
+import {PROTOCOL_VERSION, MODES, validMode, playerCount, safeName, validSeed, validInput, newer, START_COUNTDOWN_SECONDS} from '../shared/protocol.js';
 import {makeWorld, stepWorld, applyActions} from '../shared/physics.js';
 
 const courses = new Map();
@@ -59,7 +59,7 @@ export function removePlayer(room,id,now=clockSeconds()){
 function beginStageCountdown(room,now){
   const world=room.world,count=playerCount(room);
   if(world?.phase==='waiting'&&room.seats.filter(Boolean).length===count&&room.seats.slice(0,count).every((seat,slot)=>seat&&now-seat.lastSeen<=10&&world.stageReady?.[slot])){
-    world.phase='countdown';world.countdown=5;room.lastAt=now;
+    world.phase='countdown';world.countdown=START_COUNTDOWN_SECONDS;room.lastAt=now;
   }
 }
 export function advanceRoom(room,now=clockSeconds()){

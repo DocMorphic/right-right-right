@@ -89,4 +89,4 @@ button:active:not(:disabled),button:focus-visible{background:transparent}
 #game{outline:none}
 #death-warm{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgb(140,15,10);opacity:0}
 #hud{z-index:3}#hud.result #race-status{transform:translate(-50%,-50%) rotate(-7deg) scale(var(--crash-scale,1))}
-#countdown{position:fixed;left:50%;top:50%;width:min(180px,24vmin);height:min(220px,30vmin);transform:translate(-50%,-50%);z-index:3;pointer-events:none;color:transparent;background:#ffb021;mask:var(--countdown-mask) center/contain no-repeat;-webkit-mask:var(--countdown-mask) center/contain no-repeat}
+#countdown{position:fixed;left:50%;top:50%;width:min(84px,12vmin);height:min(104px,16vmin);transform:translate(-50%,-50%);z-index:3;pointer-events:none;color:transparent;background:#ffb021;mask:var(--countdown-mask) center/contain no-repeat;-webkit-mask:var(--countdown-mask) center/contain no-repeat}

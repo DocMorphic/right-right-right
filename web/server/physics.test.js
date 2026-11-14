@@ -38,10 +38,22 @@ test('tablet drop, closed-door theft rejection, open-door stealing, duplicate ac
   assert.equal(toggleTablet(w,0,{pitch:0,yaw:90}),true);assert.equal(p.holder,0);assert.equal(p.carrier,0);assert.equal(w.stats.steals,1);
   assert.equal(toggleTablet(w,0,{}),true);assert.equal(p.holder,-1);
 });
-test('open passenger door ejects a loose tablet on original negative X side',()=>{
+test('loose tablet gives time to react before it slides through a fully open passenger door',()=>{
   const w=running();w.tablets[0].holder=-1;openDoor(w,0);w.cars[0].doorAngle=70;
   for(let i=0;i<40;i++)stepWorld(w,[],.02,course);
+  assert.equal(w.tablets[0].inCabin,true,'tablet remains retrievable after .8 seconds');
+  for(let i=0;i<100;i++)stepWorld(w,[],.02,course);
   assert.equal(w.tablets[0].inCabin,false);assert.ok(w.tablets[0].x<w.cars[0].x);
+});
+test('closing the door during the grace period retains the tablet and held tablets never eject',()=>{
+ const w=running(),p=w.tablets[0];p.holder=-1;openDoor(w,0);w.cars[0].doorAngle=70;
+ for(let i=0;i<30;i++)stepWorld(w,[],.02,course);
+ w.cars[0].door=false;w.cars[0].doorAngle=0;
+ for(let i=0;i<100;i++)stepWorld(w,[],.02,course);
+ assert.equal(p.inCabin,true);
+ p.holder=1;openDoor(w,0);w.cars[0].doorAngle=90;
+ for(let i=0;i<150;i++)stepWorld(w,[],.02,course);
+ assert.equal(p.inCabin,true);assert.equal(p.holder,1);
 });
 test('both seats can wipe mud, stale input expires, finish crossing ranks crew',()=>{
   const w=running();const car=w.cars[0];car.mud=1;stepWorld(w,[{}, {wipe:true}],.1,course);assert.ok(car.mud<1);

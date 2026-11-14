@@ -2,6 +2,7 @@
 export const PROTOCOL_VERSION = 1;
 export const PHYSICS_HZ = 50;
 export const SNAPSHOT_HZ = 20;
+export const START_COUNTDOWN_SECONDS = 3;
 export const MAX_MESSAGE_BYTES = 8192;
 export const MODES = Object.freeze({coop: {players: 2, cars: 1}, race: {players: 4, cars: 2}});
 export const BUTTONS = Object.freeze({HAND_BRAKE: 1, GRAB: 2, DOOR: 4, WIPE: 8});

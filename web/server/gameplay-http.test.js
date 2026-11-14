@@ -76,7 +76,8 @@ test('real HTTP four-client race covers doors, tablets, collisions, fatal trees,
   for(let i=0;i<8;i++)state=await s.tick(.1,{2:{throttle:.8,steer:.9}});
   assert.equal(state.cars[1].door,true);assert.ok(state.cars[1].doorAngle>30);
   s.place(room=>{park(room.world.cars[0],0,80);park(room.world.cars[1],-1.9,80);const p=room.world.tablets[1];Object.assign(p,{holder:-1,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
-  for(let i=0;i<5;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,false);
+  for(let i=0;i<5;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,true,'loose tablet no longer drops out almost immediately');
+  for(let i=0;i<15;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,false);
   s.place(room=>{const p=room.world.tablets[1];Object.assign(p,{holder:3,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
   state=find(await s.action(0,'grab',{yaw:90}),'snapshot');assert.equal(state.tablets[1].holder,3);assert.equal(state.stats.steals,0,'held tablets remain protected even through an open door');
   state=find(await s.action(3,'grab'),'snapshot');assert.equal(state.tablets[1].holder,-1);

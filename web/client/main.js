@@ -9,6 +9,7 @@ import {crashedSeat} from './crash-presentation.js';
 import {RallyView,initialLookPitch} from './view.js';
 import {RallyAudio} from './audio.js';
 import {generateCourse, STAGES,DEFAULT_STAGE} from '../shared/course.js';
+import {START_COUNTDOWN_SECONDS} from '../shared/protocol.js';
 const $=id=>document.getElementById(id),show=(id,value=true)=>$(id).classList.toggle('hidden',!value);
 const network=new Network(),audio=new RallyAudio(),keys=new Set(),look={pitch:0,yaw:0},nativeInteractions=new NativeInteractions();
 let leftHeld=false,cabinInteraction={wipe:false,actions:[],target:null};
@@ -79,7 +80,7 @@ function renderRunEffects(now){
   const crash=view.crashStateAt(now);show('death-warm',inRace&&crash.active&&crash.stamp);$('death-warm').style.opacity=String(crash.tintAlpha);$('hud').style.setProperty('--crash-scale',String(crash.active?crash.scale:1));
   if(inRace&&crash.active){keys.clear();leftHeld=false;actions=[];show('hud',crash.stamp);const hint=restartHint(snapshot,slot,host());show('race-hint',!menuOpen&&crash.stamp&&Boolean(hint));}
   const counting=inRace&&!menuOpen&&snapshot?.phase==='countdown';show('countdown',counting);
-  if(counting){const digit=String(Math.max(1,Math.min(5,Math.ceil(snapshot.countdown))));if($('countdown').dataset.digit!==digit){$('countdown').dataset.digit=digit;$('countdown').textContent=digit;$('countdown').style.setProperty('--countdown-mask',`url('/assets/ui/Countdown${digit}.png')`);}}
+  if(counting){const digit=String(Math.max(1,Math.min(START_COUNTDOWN_SECONDS,Math.ceil(snapshot.countdown))));if($('countdown').dataset.digit!==digit){$('countdown').dataset.digit=digit;$('countdown').textContent=digit;$('countdown').style.setProperty('--countdown-mask',`url('/assets/ui/Countdown${digit}.png')`);}}
 }
 function setPausePage(page){document.querySelectorAll('[data-pause-page]').forEach(panel=>panel.classList.toggle('hidden',panel.dataset.pausePage!==page));}
 function syncPauseVolumes(){for(const bus of ['game','menu','music']){const value=audio.getVolume?.(bus)??Number(localStorage.getItem(`rw.vol.${bus}`)??.5);$(`volume-${bus}`).value=value;$(`volume-${bus}-percent`).textContent=`${Math.round(value*100)}%`;$(`volume-${bus}`).style.setProperty('--volume',`${value*100}%`);}}
