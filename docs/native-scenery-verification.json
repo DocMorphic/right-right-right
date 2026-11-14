@@ -1,0 +1,237 @@
+{
+  "scope": "Export validation only; no browser/native screenshot parity claim.",
+  "scenes": [
+    {
+      "scene": "1",
+      "source": {
+        "levelFile": "level1",
+        "levelSha256": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
+        "terrainFile": "sharedassets1.assets",
+        "terrainPathId": 339,
+        "terrainFileSha256": "8a71b3448d3f974af50b3bd3cc026b9560cb2b4220192f18ea56f121df62e82e"
+      },
+      "scenerySha256": "5005c268edcaf1bf9a5182a998d77c25eca1838aa12b7dbcdcac521d8525835b",
+      "sceneryBytes": 857569,
+      "backgroundTrees": 6494,
+      "originalProps": 558,
+      "heightResolution": 513,
+      "heightBytes": 526338,
+      "heightSha256": "41b19686ee9067e7c495dca3c024ebba47782d76db70bd94e706357fc60e1b6a",
+      "splatModes": [
+        "RGB"
+      ],
+      "detailsSha256": "5627cd4e8c5e4808069da8942453908afb5f656c71b943b5673f938e2df33e44",
+      "detailResolution": 1024,
+      "detailLayers": [
+        {
+          "prototype": 0,
+          "totalCells": 1048576,
+          "nonzeroCells": 761617,
+          "coverageSum": 1762302,
+          "coverageMaximum": 7,
+          "coverageSha256": "1854aeea4cff6d9d5d9a31e8b22df921ad0985d2d63f02264d848564562de2a2",
+          "textureSha256": "76f25717444d171acc462fe6fb2d84246eab9e660b2be796235d382fe86631a4"
+        },
+        {
+          "prototype": 1,
+          "totalCells": 1048576,
+          "nonzeroCells": 475277,
+          "coverageSum": 892698,
+          "coverageMaximum": 5,
+          "coverageSha256": "1102ecec2300f0b8875f876c139b44a7bf430ab4dbc6d4d38e4e27ebe40384df",
+          "textureSha256": "76f25717444d171acc462fe6fb2d84246eab9e660b2be796235d382fe86631a4"
+        }
+      ],
+      "detailRoadCenterNonzeroFraction": [
+        0.0,
+        0.0
+      ],
+      "finitePlacementsAndValidReferences": true
+    },
+    {
+      "scene": "2",
+      "source": {
+        "levelFile": "level2",
+        "levelSha256": "5d71b272375fa0ffd624740bacd948d9509c40a9d3fea39d4f51aad24611135a",
+        "terrainFile": "sharedassets2.assets",
+        "terrainPathId": 4,
+        "terrainFileSha256": "998633713ecd2ee048864d6502e5741326c268a7ec1872d9d39b870df9472e88"
+      },
+      "scenerySha256": "8ae7ea3f860fa043aa4f950465b80f217fee87bb7b920582869c80eabf546cdb",
+      "sceneryBytes": 3011407,
+      "backgroundTrees": 22968,
+      "originalProps": 1982,
+      "heightResolution": 1025,
+      "heightBytes": 2101250,
+      "heightSha256": "9eae55fea780e90e400beed6c2248bd71e5003356d3e7a5661b5c6ff94d124ea",
+      "splatModes": [
+        "RGB"
+      ],
+      "detailsSha256": "bed34be48d3f711a443ff23715dfa1ddfe2955ccb81034458c816402a8543748",
+      "detailResolution": 2048,
+      "detailLayers": [
+        {
+          "prototype": 0,
+          "totalCells": 4194304,
+          "nonzeroCells": 3084042,
+          "coverageSum": 7172652,
+          "coverageMaximum": 7,
+          "coverageSha256": "7eaccc956bc346c303d849d5270523a5e987dba66f11699259826de39f73601f",
+          "textureSha256": "76f25717444d171acc462fe6fb2d84246eab9e660b2be796235d382fe86631a4"
+        },
+        {
+          "prototype": 1,
+          "totalCells": 4194304,
+          "nonzeroCells": 1926980,
+          "coverageSum": 3641315,
+          "coverageMaximum": 5,
+          "coverageSha256": "05b82452f771f859e4d846bb5f2fd0da92706ef9d6196ff78fa880e7b6f03a64",
+          "textureSha256": "76f25717444d171acc462fe6fb2d84246eab9e660b2be796235d382fe86631a4"
+        }
+      ],
+      "detailRoadCenterNonzeroFraction": [
+        0.0,
+        0.0
+      ],
+      "finitePlacementsAndValidReferences": true
+    },
+    {
+      "scene": "3",
+      "source": {
+        "levelFile": "level3",
+        "levelSha256": "3bc2af506ee0124f8385e62021e17956cf60f7c4ec470bffb1421d0d08e2e89c",
+        "terrainFile": "sharedassets3.assets",
+        "terrainPathId": 3,
+        "terrainFileSha256": "5da7ceb95a27d1f933e9d79767593dd7ac66c69da8f83986ab767a7f8bf49e31"
+      },
+      "scenerySha256": "460f83f4b076ee1f7c0a1c42965bbfc36322d74650230fdc42c56bc6dd636f19",
+      "sceneryBytes": 1375365,
+      "backgroundTrees": 10434,
+      "originalProps": 890,
+      "heightResolution": 1025,
+      "heightBytes": 2101250,
+      "heightSha256": "0226e43cf663ff0162b6033dc927787080791c8ac70571a54fad2c0eae38cde4",
+      "splatModes": [
+        "RGB"
+      ],
+      "detailsSha256": "fa6b9e6799d03f9e2d6d0388d41cec333b2e984d544a845963ee68138792666c",
+      "detailResolution": 2048,
+      "detailLayers": [
+        {
+          "prototype": 0,
+          "totalCells": 4194304,
+          "nonzeroCells": 3175936,
+          "coverageSum": 7363155,
+          "coverageMaximum": 7,
+          "coverageSha256": "bfcf269be1ed3a66b9d15dd8e2a75036ac6cc8eb047eff9dedaf2a8da1b70d71",
+          "textureSha256": "76f25717444d171acc462fe6fb2d84246eab9e660b2be796235d382fe86631a4"
+        },
+        {
+          "prototype": 1,
+          "totalCells": 4194304,
+          "nonzeroCells": 1977880,
+          "coverageSum": 3730520,
+          "coverageMaximum": 5,
+          "coverageSha256": "d240335e14d83496f3964b748b014686b0ae29c55b34d7383e3aac6446a1c9f8",
+          "textureSha256": "76f25717444d171acc462fe6fb2d84246eab9e660b2be796235d382fe86631a4"
+        }
+      ],
+      "detailRoadCenterNonzeroFraction": [
+        0.0,
+        0.0
+      ],
+      "finitePlacementsAndValidReferences": true
+    }
+  ],
+  "propGlbValidation": [
+    {
+      "file": "BushBerries_1.glb",
+      "bytes": 83312,
+      "sha256": "e43e9fb1d24993c7a5386ce9362237cebc40875cdc71a45abe0da9ab46b144af",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "BushBerries_2.glb",
+      "bytes": 75080,
+      "sha256": "2b18831f57d1cb7672cd75216239626c62504f179a290a23beb759d271106dd2",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Bush_1.glb",
+      "bytes": 34416,
+      "sha256": "4790a40dc024927ed0a047daa1634d5f3d973ea42ff320168c56c8422512180d",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Bush_2.glb",
+      "bytes": 26024,
+      "sha256": "38ba992297ac7dbbf4815126d01df1e0f17f98ca14eb79c0607a2b07d7103f4b",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_1.glb",
+      "bytes": 8628,
+      "sha256": "28a019dd2b1cb695fc4836d56dce59a50d188b938af85c712e5a07eae0223b51",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_2.glb",
+      "bytes": 9604,
+      "sha256": "a95f3553c8c8c6df8bd31b75191bc10c67ad9b8e125330be6b7fdca8326beefc",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_3.glb",
+      "bytes": 7804,
+      "sha256": "075c183e475585cdf9cfb1fb56b8ce5270c086727d08b4753e37a2aa3a53591e",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_4.glb",
+      "bytes": 13684,
+      "sha256": "da81ab829c6127e0dc254c0b0601f11c3ed0335bae00d65a3876f4e6f171c305",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_5.glb",
+      "bytes": 10204,
+      "sha256": "fb17cbb4daa92b9ec39acc376dcd05252da5c4420fa3f029aa161e3ad9d1464a",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_6.glb",
+      "bytes": 11940,
+      "sha256": "57df0081bb46b1bbbed5e05479cfb966e1cd45c9f0f608afbb83e2d5f3d66dcc",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "Rock_Moss_7.glb",
+      "bytes": 9884,
+      "sha256": "8a997a0dc39a76b4d6907bcf8978d5fa835a6beecd87630a7be1b40781abc189",
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "file": "TreeStump.glb",
+      "bytes": 22992,
+      "sha256": "2554bb5f7f3a42e2780027a21e04269150c0b7634b2fdc5f84ec5ed5fa78cf25",
+      "errors": 0,
+      "warnings": 0
+    }
+  ],
+  "readyTitleMasks": 8,
+  "limitations": [
+    "Unity terrain-detail random instance positions and native grass shader behavior not serialized/reproduced.",
+    "Native lighting/postprocessing and browser physics require separate runtime comparison."
+  ]
+}
