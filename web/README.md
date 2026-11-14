@@ -6,7 +6,7 @@ This is a browser adaptation using the authorized original game models, textures
 
 Open the [deployed browser game](https://right-right-right-play.andustry-0633.chatgpt.site) and share that link with friends. Browser room codes belong to this service and cannot join the downloadable Windows game's rooms.
 
-The menu uses the original tablet palette, Share Tech Mono, title lettering and car artwork with clear host/join and Start Game controls. The race HUD reconstructs the native mod UI using its original fonts and skin textures. Driving, networking, procedural mud and dynamic tablet rendering run in browser/server JavaScript. Exact native rendering and physics parity remain subject to comparison with the compiled game.
+The menu uses the original tablet palette, Share Tech Mono, title lettering and car artwork with clear host/join and Start Game controls. Normal driving uses the original in-world tablet route and clock, with contextual results/disconnect feedback. Help, retry and lobby controls live in the Esc menu. Driving, networking, procedural mud and dynamic tablet rendering run in browser/server JavaScript. Exact native rendering and physics parity remain subject to comparison with the compiled game.
 
 ## Run locally
 
@@ -30,8 +30,8 @@ Play on a laptop or desktop with a keyboard and mouse. Phones and tablets displa
 
 - Driver: WASD / arrow keys; Space handbrake.
 - Both seats: mouse look; E grab/drop a tablet; G close the passenger door; hold C wipe mud.
-- Navigator: the original tablet displays the private route. Tab optionally enlarges it for readability.
-- Host: F8 retries; **RETURN TO LOBBY** returns the entire room.
+- Navigator: the original in-world tablet displays the private route. The initial view faces the lap-held tablet; mouse look remains free.
+- Host: F8 retries; **RETURN TO LOBBY** in the Esc menu returns the entire room.
 - Esc releases the mouse; a second Esc opens browser controls.
 
 Trees have solid trunk collision and hard hits end a run. Car collisions jolt both crews without eliminating them. Open doors can eject dropped tablets; another crew can grab them. The server decides driving, hazards, ownership, progress, and results.

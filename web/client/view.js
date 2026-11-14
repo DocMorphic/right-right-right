@@ -7,6 +7,8 @@ import {CarPresentation} from './car-presentation.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
 const angle=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
+// Start the navigator looking at the native lap-held tablet; mouse look stays free.
+export const initialLookPitch=slot=>slot%2===1?46.6:0;
 export class RallyView {
   constructor(canvas) {
     this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
@@ -18,8 +20,7 @@ export class RallyView {
     this.hemi=new THREE.HemisphereLight('#eff4da','#78816b',1.7);this.scene.add(this.hemi);
     this.sun=new THREE.DirectionalLight('#fff2cf',3);this.sun.position.set(-50,100,30);this.sun.castShadow=true;this.sun.shadow.mapSize.set(1024,1024);Object.assign(this.sun.shadow.camera,{left:-35,right:35,top:35,bottom:-35,near:1,far:200});this.sun.shadow.bias=-.0003;this.sun.shadow.normalBias=.025;this.scene.add(this.sun,this.sun.target);
     this.world=new THREE.Group();this.scene.add(this.world);this.cars=[];this.tablets=[];this.snapshots=[];this.slot=0;this.active=false;this.look={pitch:0,yaw:0};this.lastMap=0;
-    this.tabletCanvas=document.createElement('canvas');this.tabletCanvas.width=600;this.tabletCanvas.height=600;this.tabletTexture=new THREE.CanvasTexture(this.tabletCanvas);this.tabletTexture.colorSpace=THREE.SRGBColorSpace;
-    this.privateCanvas=document.createElement('canvas');this.privateCanvas.width=600;this.privateCanvas.height=600;this.privacyTexture=new THREE.CanvasTexture(this.privateCanvas);this.privacyTexture.colorSpace=THREE.SRGBColorSpace;this.drawPrivate();
+    this.privateCanvas=document.createElement('canvas');this.privateCanvas.width=600;this.privateCanvas.height=600;this.privacyTexture=new THREE.CanvasTexture(this.privateCanvas);this.privacyTexture.colorSpace=THREE.SRGBColorSpace;this.privacyTexture.flipY=false;this.drawPrivate();
     window.addEventListener('resize',()=>{this.camera.aspect=innerWidth/innerHeight;this.camera.updateProjectionMatrix();this.renderer.setSize(innerWidth,innerHeight);});
     canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();document.dispatchEvent(new CustomEvent('rallyerror',{detail:'Graphics were interrupted. Reload this page to return to the rally.'}));});
   }
@@ -35,7 +36,7 @@ export class RallyView {
     const atmosphere=this.manifest.atmosphere;if(atmosphere){const f=atmosphere.fog;this.scene.fog=new THREE.Fog(new THREE.Color().setRGB(...f.color,THREE.SRGBColorSpace),f.near,f.far);this.sun.color.setRGB(...atmosphere.sun.color,THREE.SRGBColorSpace);this.sun.intensity=atmosphere.sun.intensity;this.hemi.color.setRGB(...atmosphere.ambient.sky,THREE.SRGBColorSpace);this.hemi.groundColor.setRGB(...atmosphere.ambient.ground,THREE.SRGBColorSpace);const sky=atmosphere.skybox;try{const cube=await new THREE.CubeTextureLoader().loadAsync([sky.px,sky.nx,sky.py,sky.ny,sky.pz,sky.nz]);cube.colorSpace=THREE.SRGBColorSpace;this.scene.background=cube;}catch{}}
     this.roadMaterial=new THREE.MeshStandardMaterial({map:road,normalMap:roadNormal,normalScale:new THREE.Vector2(.32,.32),roughness:.97,color:'#ffffff'});
     this.groundMaterial=new THREE.MeshStandardMaterial({map:ground,roughness:1,color:new THREE.Color().setRGB(...this.manifest.surfaces.ground.tint.slice(0,3),THREE.SRGBColorSpace),side:THREE.DoubleSide});
-    const rtSize=this.manifest.ui.tablet.rtSize;this.tabletCanvas.width=this.tabletCanvas.height=rtSize;this.privateCanvas.width=this.privateCanvas.height=rtSize;this.drawPrivate();
+    const rtSize=this.manifest.ui.tablet.rtSize;this.privateCanvas.width=this.privateCanvas.height=rtSize;this.drawPrivate();
     this.timerFont=new Font(await fetch(this.manifest.fonts.ShareTechMono.typefaceUrl).then(response=>{if(!response.ok)throw new Error('The original timer font could not be loaded.');return response.json();}));
     const nativeCamera=this.manifest.ui.cabinCamera;this.camera.fov=nativeCamera?.fieldOfView||90;this.camera.near=.01;this.camera.far=1000;this.camera.updateProjectionMatrix();
     this.prepareCar();
@@ -129,7 +130,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
         });mesh.material=Array.isArray(mesh.material)?materials:materials[0];
       });
       this.cars.push(car);
-      const tablet=clone(this.assets.tablet);let screen=null;tablet.traverse(n=>{if(n.isMesh&&n.name.toLowerCase().includes('screen')){screen=n;n.material=new THREE.MeshBasicMaterial({map:this.privacyTexture,side:THREE.DoubleSide});const native=this.manifest.ui.tablet.screenRuntimeTransform;n.position.fromArray(native.position);n.rotation.set(-Math.PI/2,0,0);n.scale.fromArray(native.scale);}});this.world.add(tablet);const mapCanvas=document.createElement('canvas');mapCanvas.width=mapCanvas.height=this.manifest.ui.tablet.rtSize;const mapTexture=new THREE.CanvasTexture(mapCanvas);mapTexture.colorSpace=THREE.SRGBColorSpace;const pad={model:tablet,screen,mapCanvas,mapTexture};this.makeTimer(pad);this.tablets.push(pad);
+      const tablet=clone(this.assets.tablet);let screen=null;tablet.traverse(n=>{if(n.isMesh&&n.name.toLowerCase().includes('screen')){screen=n;n.material=new THREE.MeshBasicMaterial({map:this.privacyTexture,side:THREE.DoubleSide});const native=this.manifest.ui.tablet.screenRuntimeTransform;n.position.fromArray(native.position);n.rotation.set(-Math.PI/2,0,0);n.scale.fromArray(native.scale);}});this.world.add(tablet);const mapCanvas=document.createElement('canvas');mapCanvas.width=mapCanvas.height=this.manifest.ui.tablet.rtSize;const mapTexture=new THREE.CanvasTexture(mapCanvas);mapTexture.colorSpace=THREE.SRGBColorSpace;mapTexture.flipY=false;const pad={model:tablet,screen,mapCanvas,mapTexture};this.makeTimer(pad);this.tablets.push(pad);
     }
     this.setSeat(this.slot);
   }
@@ -207,7 +208,6 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
     const c=this.privateCanvas.getContext('2d');c.fillStyle='#1a1712';c.fillRect(0,0,this.privateCanvas.width,this.privateCanvas.height);this.privacyTexture.needsUpdate=true;
   }
   drawMap(snapshot) {
-    const display=document.getElementById('tablet-map'),displayContext=display?.getContext('2d');if(displayContext){displayContext.fillStyle='#1a1712';displayContext.fillRect(0,0,display.width,display.height);}
     this.tablets.forEach((pad,index)=>{
       const state=snapshot.tablets[index],car=snapshot.cars[state?.carrier];if(!car)return;
       const canvas=pad.mapCanvas,c=canvas.getContext('2d'),resolution=canvas.width,center=resolution/2;
@@ -219,8 +219,6 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
       c.strokeStyle='#fff';c.lineWidth=this.course.width*spec.roadWidthMul*scale;c.stroke();c.restore();
       c.save();c.translate(center,center+lookAhead*scale);c.fillStyle='#595959';c.strokeStyle='#000';c.lineWidth=2.35;const size=spec.markerSize*scale;c.beginPath();for(let i=0;i<spec.markerTriangleFactors.length;i++){const p=spec.markerTriangleFactors[i];c[i?'lineTo':'moveTo'](-p[0]*size,-p[2]*size);}c.closePath();c.fill();c.stroke();c.restore();
       pad.mapTexture.needsUpdate=true;
-      // The optional enlarged view follows a tablet actually in this player's hands.
-      if(state.holder===this.slot||this.practice&&state.carrier===Math.floor(this.slot/2))displayContext?.drawImage(canvas,0,0,display.width,display.height);
     });
   }
 }
