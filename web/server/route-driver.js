@@ -24,7 +24,7 @@ export function routeInput(course,snapshot,team=0,{maxSpeed=13.2,responseSeconds
   let curvature=.001,previous=direction(course.points,near.index),distance=0;
   for(const look of [4,8,12,18,22]){const next=direction(course.points,ahead(course,near.index,look));curvature=Math.max(curvature,Math.abs(wrap(Math.atan2(next.x,next.z)-Math.atan2(previous.x,previous.z)))/(look-distance));previous=next;distance=look;}
   const desired=clamp(Math.sqrt(3.4/curvature),4,maxSpeed);
-  const throttleGain=Math.min(.7,.6/(8.5*Math.max(.1,responseSeconds)));
-  const throttle=clamp((desired-speed)*throttleGain+desired*.065,-1,1);
+  const throttleGain=Math.min(.7,.6/(14*Math.max(.1,responseSeconds)));
+  const throttle=clamp((desired-speed)*throttleGain,-1,1);
   return {throttle,steer,handbrake:false,wipe:car.mud>.05,pitch:0,yaw:0,actions:[]};
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {makeWorld,stepWorld,toggleTablet,openDoor,resolveCarCollision,carAnchor,stepCar} from '../shared/physics.js';
+import {makeWorld,stepWorld,toggleTablet,openDoor,resolveCarCollision,carAnchor,stepCar,CAR} from '../shared/physics.js';
 import {STAGES,generateCourse} from '../shared/course.js';
 import {newRoom,joinRoom,commandRoom,advanceRoom,courseFor,courseHash} from './rooms.js';
 const course={seed:1,width:9.5,points:Array.from({length:120},(_,i)=>({x:0,y:20,z:i*2})),trees:[],mud:[]};
@@ -50,7 +50,7 @@ test('both seats can wipe mud, stale input expires, finish crossing ranks crew',
 });
 test('full steering at speed remains controllable and finite for extended simulation',()=>{
   const car=makeWorld(course,'coop',1).cars[0];for(let i=0;i<3000;i++)stepCar(car,{throttle:1,steer:Math.sin(i*.003),handbrake:i%200<5},.02,course);
-  for(const value of [car.x,car.y,car.z,car.yaw,car.speed])assert.ok(Number.isFinite(value));assert.ok(Math.abs(car.speed)<=24);
+  for(const value of [car.x,car.y,car.z,car.yaw,car.speed])assert.ok(Number.isFinite(value));assert.ok(Math.abs(car.speed)<=CAR.maxSpeed);
 });
 test('action IDs execute at most once, including duplicate actions in the same input packet',()=>{
   const a={id:'a'},room=newRoom('ABC123',a,{mode:'coop',practice:true,seed:1},0);

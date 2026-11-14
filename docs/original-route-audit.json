@@ -108,5 +108,35 @@
     "This does not establish which cached build, saved room or local LAN checkout was on the user device during the reported run.",
     "A complete native-rendering or manual driving parity claim is outside this route-data comparison."
   ],
-  "coordination": "No LAN, networking, audio, renderer or game route data changed by this audit."
+  "coordination": "No LAN, networking, audio, renderer or game route data changed by this audit.",
+  "tunnelVerification": {
+    "url": "https://click-circular-wagner-cio.trycloudflare.com",
+    "transport": "websocket",
+    "frontendByteIdenticalToAuditedVercel": true,
+    "frontendSha256": "ddf56baf56db3a5c852759228fa65c25b8e37d1b97a705225e443219471474d3",
+    "routes": [
+      {
+        "stage": "1",
+        "profile": 6,
+        "routeHash": "a80375b7-1024-1720",
+        "originalRouteHash": "a80375b7-1024-1720",
+        "bothClientsMatch": true
+      },
+      {
+        "stage": "2",
+        "profile": 7,
+        "routeHash": "652fc621-3633-6104",
+        "originalRouteHash": "652fc621-3633-6104",
+        "bothClientsMatch": true
+      },
+      {
+        "stage": "3",
+        "profile": 8,
+        "routeHash": "9c57ad79-1710-2863",
+        "originalRouteHash": "9c57ad79-1710-2863",
+        "bothClientsMatch": true
+      }
+    ],
+    "scope": "Two temporary test clients in a separate room; both left and sockets closed after verifying each stage. Existing players and LAN configuration were not modified."
+  }
 }

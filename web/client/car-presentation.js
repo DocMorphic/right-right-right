@@ -1,4 +1,5 @@
 import {stepCar} from '../shared/physics.js';
+import {HANDLING_STATE} from '../shared/native-handling.js';
 const mix=(a,b,t)=>a+(b-a)*t;
 const turn=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
 const pose=car=>({x:car.x,y:car.y,z:car.z,yaw:car.yaw,speed:car.speed});
@@ -34,7 +35,8 @@ export class CarPresentation {
       this.hold=Math.max(0,this.hold-step);
     }
     const correction=1-Math.exp(-dt*(p.dead||p.finish>=0?14:6));
-    for(const field of ['x','y','z','vx','vz','speed','steer','steerVelocity','yawRate'])p[field]=mix(p[field]||0,t[field]||0,correction);
+    for(const field of ['x','y','z','vx','vz','speed',...HANDLING_STATE])p[field]=mix(p[field]||0,t[field]||0,correction);
+    p.handbrakeWasHeld=t.handbrakeWasHeld;
     p.yaw=turn(p.yaw,t.yaw,correction);
     const visual=1-Math.exp(-dt*20),r=this.rendered;
     for(const field of ['x','y','z','speed'])r[field]=mix(r[field],p[field],visual);

@@ -1,19 +1,9 @@
 import {MODES} from './protocol.js';
 
-export const CAR = Object.freeze({wheelbase: 2.8, radius: .85, halfLength: .95, height: .68, maxSpeed: 24, reverseSpeed: 7});
-export const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-// Serialized GoofyCarController settings in the original playtest's level1:
-// 30° below 20 km/h, 9° at 80 km/h, SmoothDamp .07–.24 s, yaw response 5.4.
-export function steeringLimit(speed) {
-  const t=clamp((Math.abs(speed)*3.6-20)/60,0,1);
-  return (30+(9-30)*t)*Math.PI/180;
-}
-function smoothSteering(car,target,dt,smoothTime) {
-  const omega=2/smoothTime,x=omega*dt,decay=1/(1+x+.48*x*x+.235*x*x*x);
-  const change=car.steer-target,velocity=car.steerVelocity||0,temp=(velocity+omega*change)*dt;
-  car.steerVelocity=(velocity-omega*temp)*decay;
-  car.steer=target+(change+temp)*decay;
-}
+export {steeringLimit} from './native-handling.js';
+import {HANDLING,stepHandling} from './native-handling.js';
+export const CAR=Object.freeze({wheelbase:2.8,radius:.85,halfLength:.95,height:.68,maxSpeed:HANDLING.maxSpeed,reverseSpeed:HANDLING.reverseSpeed});
+export const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 const treeGrids = new WeakMap();
 const cellSize = 8;
 const key = (x, z) => `${Math.floor(x / cellSize)},${Math.floor(z / cellSize)}`;
@@ -62,33 +52,9 @@ export function stepCar(car, input, dt, course) {
   car.jolt=Math.max(0,car.jolt-dt*2);
   if(car.dead || car.finish >= 0) return;
   const near=nearestPoint(course,car.x,car.z,car.nearest); car.nearest=near.index;
-  const throttle=clamp(input?.throttle||0,-1,1), steer=clamp(input?.steer||0,-1,1);
-  const forwardX=Math.sin(car.yaw), forwardZ=Math.cos(car.yaw);
-  let forward=car.vx*forwardX+car.vz*forwardZ;
-  const speedT=clamp((Math.abs(forward)*3.6-20)/60,0,1);
-  smoothSteering(car,steer,dt,.07+(.24-.07)*speedT);
-  let lateral=car.vx*forwardZ-car.vz*forwardX;
-  let acceleration=throttle*(forward*throttle < -1 ? 16 : 8.5);
-  const drag=.38+Math.abs(forward)*.018;
-  forward += (acceleration-forward*drag)*dt;
-  if(input?.handbrake) forward*=Math.max(0,1-dt*2.1);
-  forward=clamp(forward,-CAR.reverseSpeed,CAR.maxSpeed);
-  if(Math.abs(forward)<.03 && throttle===0)forward=0;
-  const steeringAngle=car.steer*steeringLimit(forward);
-  const weight=clamp((Math.abs(forward)*3.6-14)/18,0,1);
-  const yawBias=1+((Math.abs(throttle)>.1?.92:1.04)-1)*weight;
-  const desiredYaw=clamp(-forward/CAR.wheelbase*Math.tan(steeringAngle)*yawBias,-1.7,1.7);
-  car.yawRate=(car.yawRate||0)+(desiredYaw-(car.yawRate||0))*(1-Math.exp(-5.4*dt));
-  const yawStep=car.yawRate*dt;car.yaw+=yawStep;
-  const grip=input?.handbrake?2.5:11;
-  // Velocity keeps its previous world direction as the body turns. Project it
-  // into the new heading before applying tyre grip, rather than rotating it
-  // instantly with the chassis (which made even handbrake turns feel on rails).
-  lateral=(lateral*Math.cos(yawStep)-forward*Math.sin(yawStep))*Math.exp(-grip*dt);
-  car.vx=Math.sin(car.yaw)*forward+Math.cos(car.yaw)*lateral;
-  car.vz=Math.cos(car.yaw)*forward-Math.sin(car.yaw)*lateral;
+  stepHandling(car,input,dt);
   car.lastX=car.x;car.lastZ=car.z;
-  car.x+=car.vx*dt;car.z+=car.vz*dt;car.speed=forward;
+  car.x+=car.vx*dt;car.z+=car.vz*dt;
   car.y += (near.point.y+CAR.height-car.y)*Math.min(1,dt*12);
 }
 export function openDoor(world, team) {
