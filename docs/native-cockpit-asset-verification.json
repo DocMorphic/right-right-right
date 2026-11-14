@@ -1,0 +1,24 @@
+{
+  "scope": "Source export integrity only; not runtime screenshot parity.",
+  "cockpitSha256": "b5125da0750641abd60c27b08a57f6fd2a151dc4da49bc6d97d724f5b456725e",
+  "fontSha256": "2c731b40044c8bacb0cb210d7568fc8c329dc0dfdfc234cdaa03b4179ccb1e0e",
+  "sourceTtfSha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
+  "sourceHashes": {
+    "level1": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
+    "sharedassets1.assets": "8a71b3448d3f974af50b3bd3cc026b9560cb2b4220192f18ea56f121df62e82e",
+    "resources.assets": "ad1a1f2eb2294c54c18dc84209c256b09e90dd741d9f70c0069b208eec7967bb"
+  },
+  "originalCarGlbSha256": "70863449ea47accd11a268c5707a1bad96159b92114fc4796b990651125e673c",
+  "textMeshCount": 8,
+  "fontGlyphCount": 267,
+  "allLabelGlyphsAvailable": true,
+  "correctedPackedColor32Order": true,
+  "maxWheelDegrees": 110.0,
+  "settings": {
+    "startAngle": 120.0,
+    "endAngle": -120.0,
+    "maxSpeedKmh": 160.0,
+    "maxRpm": 9000.0,
+    "needleFollow": 14.0
+  }
+}
