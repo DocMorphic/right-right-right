@@ -6,6 +6,7 @@ export const CAR=Object.freeze({wheelbase:2.8,radius:.85,halfLength:.95,height:.
 export const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 // Give the navigator time to retrieve a loose tablet or slam the door.
 const TABLET_DOOR=Object.freeze({exitAngle:55,slideSpeed:.65,exitX:-1.05,dropLift:.7});
+const HANDLING_TUNING=Object.freeze({gripMultiplier:1.2});
 const treeGrids = new WeakMap();
 const cellSize = 8;
 const key = (x, z) => `${Math.floor(x / cellSize)},${Math.floor(z / cellSize)}`;
@@ -54,7 +55,7 @@ export function stepCar(car, input, dt, course) {
   car.jolt=Math.max(0,car.jolt-dt*2);
   if(car.dead || car.finish >= 0) return;
   const near=nearestPoint(course,car.x,car.z,car.nearest); car.nearest=near.index;
-  stepHandling(car,input,dt);
+  stepHandling(car,input,dt,HANDLING_TUNING);
   car.lastX=car.x;car.lastZ=car.z;
   car.x+=car.vx*dt;car.z+=car.vz*dt;
   car.y += (near.point.y+CAR.height-car.y)*Math.min(1,dt*12);

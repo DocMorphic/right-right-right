@@ -14,7 +14,7 @@ function smoothSteering(car,target,dt,t){
   car.steerVelocity=((car.steerVelocity||0)-omega*temp)*decay;
   car.steer=target+(change+temp)*decay;
 }
-export function stepHandling(car,input,dt){
+export function stepHandling(car,input,dt,{gripMultiplier=1}={}){
   const throttle=clamp(input?.throttle||0,-1,1),steer=clamp(input?.steer||0,-1,1),held=!!input?.handbrake;
   for(const field of HANDLING_STATE)car[field]??=0;
   if(held){car.handbrakeHold+=dt;car.handbrakeAmount=clamp(car.handbrakeAmount+dt/.42);}
@@ -73,7 +73,8 @@ export function stepHandling(car,input,dt){
     const pointSide=lateral+car.yawRate*z;
     const slip=Math.abs(pointSide)/Math.max(.5,Math.hypot(forward,pointSide));
     const falloff=1/(1+(slip/.48)**1.15),floor=mix(.48,.26,high);
-    const kill=clamp(grip*mix(floor,1,falloff)*.48,0,mix(.5,.3,high));
+    const boost=1+(clamp(gripMultiplier,1,2)-1)*(1-shape);
+    const kill=clamp(grip*boost*mix(floor,1,falloff)*.48,0,mix(.5,.3,high));
     lateralDelta-=pointSide*kill*.5*dt/.02;
   }
   const planarScale=speed>0?Math.max(0,1-planarBrake*dt/speed):1;

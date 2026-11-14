@@ -3,8 +3,18 @@ import assert from 'node:assert/strict';
 import {makeWorld,stepWorld,toggleTablet,openDoor,resolveCarCollision,carAnchor,stepCar,CAR} from '../shared/physics.js';
 import {STAGES,generateCourse} from '../shared/course.js';
 import {newRoom,joinRoom,commandRoom,advanceRoom,courseFor,courseHash} from './rooms.js';
+import {stepHandling} from '../shared/native-handling.js';
 const course={seed:1,width:9.5,points:Array.from({length:120},(_,i)=>({x:0,y:20,z:i*2})),trees:[],mud:[]};
 function running(mode='coop'){const w=makeWorld(course,mode,1);w.phase='running';return w;}
+
+test('browser grip tuning settles a sideways slide sooner while full handbrake still drifts',()=>{
+ const tuned=makeWorld(course,'coop',1).cars[0];Object.assign(tuned,{vx:4,vz:15,speed:15});const original=structuredClone(tuned);
+ for(let i=0;i<25;i++){stepCar(tuned,{throttle:1},.02,course);stepHandling(original,{throttle:1},.02);}
+ assert.ok(Math.abs(tuned.vx)<Math.abs(original.vx)*.7,'normal driving recovers lateral traction sooner');
+ const a={vx:4,vz:15,yaw:0,handbrakeAmount:1},b=structuredClone(a);
+ for(let i=0;i<25;i++){stepHandling(a,{throttle:1,steer:.5,handbrake:true},.02);stepHandling(b,{throttle:1,steer:.5,handbrake:true},.02,{gripMultiplier:1.2});}
+ for(const key of ['vx','vz','yaw'])assert.ok(Math.abs(a[key]-b[key])<1e-12,'fully engaged handbrake keeps its deliberate slide');
+});
 
 test('grass has no invented drag or grip penalty under identical driving controls',()=>{
  const road=makeWorld(course,'coop',1).cars[0],grass=structuredClone(road);grass.x+=20;

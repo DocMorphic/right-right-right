@@ -1,6 +1,11 @@
 The browser authority and local prediction now share a planar port of the installed
 playtest's GoofyCarController. Maps, scenery, sound and network transports are unchanged.
 
+The current browser game applies a requested 20% increase in normal tyre grip
+to reduce excessive sliding. The increase blends out as the handbrake engages.
+Authority and prediction use the same tuning. The measured native reference
+below remains tested without this deliberate gameplay adjustment.
+
 Reference: Steam playtest build 26172243, Unity 6000.3.16f1, GameAssembly SHA256
 `b81c064eabebbc0b30af66f9684df3ffbae5e8a515e76a813c95a5ca95158f2e`.
 Native method analysis established the force equations and serialized parameters.
