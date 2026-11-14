@@ -86,3 +86,4 @@ button:active:not(:disabled),button:focus-visible{background:transparent}
 /* Native GameUiColors .cctor, separate from the PauseCanvas tablet palette. */
 #stage-ready{background:#24211f}.ready-card{background:rgba(20,19,18,.96);color:#dbc794}.ready-anton{background:#ffb021}#ready-driver-controls,#ready-navigator-controls{color:#dbc794}#ready-status{background:#dbc794}
 #hud.result #race-status{background:#1f1412;color:#dbc794}#hud.result #result-title{background:#ffb021}#hud.result #result-time{color:#dbc794}#hud.result #result-subtitle{color:#857a66}
+#game{outline:none}

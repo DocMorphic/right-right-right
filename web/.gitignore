@@ -2,3 +2,5 @@ node_modules/
 dist/
 .wrangler/
 shared/native-courses.generated.json
+.vercel
+.env*

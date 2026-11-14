@@ -6,6 +6,7 @@ import { direction } from '../shared/course.js';
 import {CarPresentation} from './car-presentation.js';
 import {ImpactShake} from './impact-shake.js';
 import {RenderBudget} from './render-budget.js';
+import {loadNativeScenery,addNativeScenery} from './native-scenery.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
 // Start the navigator looking at the native lap-held tablet; mouse look stays free.
@@ -41,6 +42,7 @@ export class RallyView {
     this.timerFont=new Font(await fetch(this.manifest.fonts.ShareTechMono.typefaceUrl).then(response=>{if(!response.ok)throw new Error('The original timer font could not be loaded.');return response.json();}));
     const nativeCamera=this.manifest.ui.cabinCamera;this.camera.fov=nativeCamera?.fieldOfView||90;this.camera.near=.01;this.camera.far=1000;this.camera.updateProjectionMatrix();
     this.prepareCar();
+    this.nativeScenery=await loadNativeScenery(loader,progress);
     progress('Planting the original forest…');
   }
   prepareCar() {
@@ -66,8 +68,10 @@ export class RallyView {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1:value==='auto'?1.25:1.5));this.renderer.shadowMap.enabled=!low;this.scene.fog.far=low?150:this.manifest.atmosphere.fog.far;this.camera.far=low?300:1000;this.camera.updateProjectionMatrix();
   }
   disposeCourse() {
+    const courseMaterials=new Set();
     for(const car of this.cars)for(const material of car.dynamicMaterials||[])material.dispose();for(const pad of this.tablets){pad.screen?.material.dispose();pad.mapTexture?.dispose();pad.timer?.geometry.dispose();pad.timer?.material.dispose();pad.timerWindow?.traverse(node=>{if(node.isMesh&&node!==pad.timer){node.geometry.dispose();node.material.dispose();}});}
-    for(const child of [...this.world.children]) {this.world.remove(child);if(child.isInstancedMesh)child.dispose();if(child.userData.disposable)child.traverse(n=>{n.geometry?.dispose();});}
+    for(const child of [...this.world.children]) {this.world.remove(child);if(child.userData.courseMaterial)courseMaterials.add(child.userData.courseMaterial);if(child.isInstancedMesh)child.dispose();if(child.userData.disposable)child.traverse(n=>{n.geometry?.dispose();});}
+    for(const material of courseMaterials)material.dispose();
     this.cars=[];this.tablets=[];this.snapshots=[];this.predicted=null;this.presentation=null;
   }
   buildCourse(course) {
@@ -79,7 +83,8 @@ export class RallyView {
       geometry.setAttribute('uv',new THREE.Float32BufferAttribute(data.uvs,2));geometry.setIndex(data.indices);
       const mesh=new THREE.Mesh(geometry,this.roadMaterial);mesh.receiveShadow=true;mesh.userData.disposable=true;this.world.add(mesh);
     }else this.ribbon(course.width,this.roadMaterial,.015);
-    this.ribbon(110,this.groundMaterial,-.25,true);
+    if(course.nativeScene)addNativeScenery(this.world,course.nativeScene,this.nativeScenery,this.assets);
+    else this.ribbon(110,this.groundMaterial,-.25,true);
     for(let type=0;type<this.manifest.models.trees.length;type++) {
       const source=this.assets[`tree${type}`];source.updateMatrixWorld(true);const placements=course.trees.filter(t=>t.variant===type);
       // Chunking keeps thousands of original trees fast and culls distant forest geometry.
@@ -177,7 +182,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
         
         // A Three.js camera looks down -Z: yaw + PI faces the native +Z car forward.
         this.camera.quaternion.setFromEuler(new THREE.Euler(-(this.look.pitch+(this.slot%2===0?11.29:8.1))*Math.PI/180,own.model.rotation.y+Math.PI-this.look.yaw*Math.PI/180,0,'YXZ'));
-        for(const mesh of this.world.children)if(mesh.isInstancedMesh){const center=mesh.boundingSphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=mesh.boundingSphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=distance<(65+radius)**2;}}
+        for(const mesh of this.world.children)if(mesh.isInstancedMesh||mesh.userData.terrainChunk){const sphere=mesh.boundingSphere||mesh.geometry?.boundingSphere,center=sphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=sphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=mesh.isInstancedMesh&&mesh.userData.castShadowAllowed!==false&&distance<(65+radius)**2;}}
         this.sun.position.set(state.x-40,state.y+80,state.z+20);this.sun.target.position.set(state.x,state.y,state.z);this.sun.target.updateMatrixWorld();
       }
       if(now-this.lastMap>80){this.drawMap(snapshot);this.lastMap=now;}
@@ -190,7 +195,8 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
   applyCar(car,state,authority,now,input,dt=1/60) {
     car.model.position.set(state.x,state.y-CAR.height,state.z);car.model.rotation.set(0,state.yaw,0);
     const body=this.find(car.model,'BodyVisual');if(body){body.rotation.z=THREE.MathUtils.lerp(body.rotation.z,-(authority.steer||0)*Math.min(Math.abs(authority.speed)*.001,.015),Math.min(1,dt*8));body.rotation.x=0;}
-    if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,-(authority.doorAngle||0)*Math.PI/180));
+    const doorAngle=this.cars.indexOf(car)===Math.floor(this.slot/2)&&this.localDoorPreview!=null?this.localDoorPreview:authority.doorAngle||0;
+    if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,-doorAngle*Math.PI/180));
     if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-(authority.steer||0)*2.1));
     const team=this.cars.indexOf(car),ownTeam=Math.floor(this.slot/2);const wipe=(team===ownTeam&&input.wipe)||this.snapshot.inputs?.[team*2]?.wipe||this.snapshot.inputs?.[team*2+1]?.wipe;
     car.wipers.forEach((w,i)=>{if(w&&car.wiperRests[i])w.quaternion.copy(car.wiperRests[i]).multiply(q.setFromAxisAngle(UP,wipe?Math.sin(now*.008)*.75:0));});
@@ -205,7 +211,7 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
   }
   updateTimer(pad,snapshot,state) {
     const car=snapshot.cars[state.carrier];pad.timer.visible=this.slot%2===1||this.practice;if(!pad.timer.visible)return;
-    const elapsed=car.finish>=0?car.finish:snapshot.elapsed;let value=snapshot.phase==='countdown'?String(Math.max(1,Math.ceil(snapshot.countdown))):car.dead?'':`${Math.floor(elapsed/60)}:${(elapsed%60).toFixed(1).padStart(4,'0')}`;
+    const elapsed=car.finish>=0?car.finish:snapshot.elapsed;let value=snapshot.phase==='waiting'?'':snapshot.phase==='countdown'?String(Math.max(1,Math.ceil(snapshot.countdown))):car.dead?'':`${Math.floor(elapsed/60)}:${(elapsed%60).toFixed(1).padStart(4,'0')}`;
     if(value===pad.timerValue)return;pad.timerValue=value;pad.timer.geometry.dispose();
     if(!value){pad.timer.geometry=new THREE.BufferGeometry();return;}
     // Unity TextMesh glyph pixels use characterSize/10. TTFLoader uses 100/72 em units.

@@ -178,7 +178,7 @@ export function stepWorld(world,inputs,dt,course){
     const car=world.cars[team];if(car.dead||car.finish>=0){car.jolt=Math.max(0,car.jolt-dt*2);continue;}
     const drive=inputs[team*2]||{};
     stepCar(car,drive,dt,course);
-    if(inputs[team*2]?.wipe||inputs[team*2+1]?.wipe)car.mud=Math.max(0,car.mud-dt/2.2);
+    if(inputs[team*2]?.wipe||inputs[team*2+1]?.wipe)car.mud=Math.max(0,car.mud-dt/2);
     if(Math.abs(drive.steer||0)>.45&&Math.abs(car.speed)>4.45)car.turnHold+=dt;else car.turnHold=0;
     if(world.elapsed>car.nextDoor&&car.turnHold>.4){openDoor(world,team);car.nextDoor=world.elapsed+24+(world.seed%1100)/100;}
     if(car.door){car.doorVelocity+=(Math.abs(drive.steer||0)*20+10-car.doorVelocity*2)*dt;car.doorAngle=clamp(car.doorAngle+car.doorVelocity*dt,8,90);}
