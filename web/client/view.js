@@ -10,6 +10,8 @@ import {loadNativeScenery,addNativeScenery} from './native-scenery.js';
 import {loadNativeDetails,NativeDetails} from './native-details.js';
 import {CrashSequence,CrashCamera} from './crash-presentation.js';
 import {DriverHands} from './hand-rig.js';
+import {NativeWipers,NATIVE_WINDSHIELD} from './windshield-wipers.js';
+import {installWindshieldMud,smoothMud} from './windshield-material.js';
 import {CabinFeel,NATIVE_CABIN,roadPitchAt} from './cabin-feel.js';
 import { CAR } from '../shared/physics.js';
 const UP=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), q=new THREE.Quaternion();
@@ -137,21 +139,12 @@ export class RallyView {
         else if(head){const pivot=new THREE.Group();pivot.position.fromArray(this.manifest.anchors[key].position);(car.body||model).add(pivot);model.updateMatrixWorld(true);pivot.attach(head);const bone=this.find(body,'Head');if(bone&&bone!==head)pivot.attach(bone);car.heads.push({mesh:head,bone,pivot});}else car.heads.push(null);
       }
       car.doorRest=car.door?.quaternion.clone();car.wheelRest=car.wheel?.quaternion.clone();car.wiperRests=car.wipers.map(w=>w?.quaternion.clone());
+      car.wiperMotion=new NativeWipers();car.knob=this.find(model,'mud_knob_location');car.knobRest=car.knob?.quaternion.clone();car.knobSpin=0;
       car.hands=new DriverHands(model,this.handConfig);if(!car.hands.ready)throw new Error(car.hands.reason||'The original driver rig could not be initialized.');
       model.traverse(mesh=>{if(!mesh.isMesh||!mesh.name.toLowerCase().includes('windscreen'))return;
         const materials=(Array.isArray(mesh.material)?mesh.material:[mesh.material]).map(material=>{
-          const m=material.clone();car.dynamicMaterials.push(m);mesh.geometry.computeBoundingBox();const bounds=mesh.geometry.boundingBox,size=bounds.getSize(new THREE.Vector3());const heightAxis=size.y>=size.z?'y':'z';
-          const uniforms={mud:{value:0},mudColor:{value:new THREE.Color().setRGB(.3,.2,.11,THREE.SRGBColorSpace)},mudBoundsMin:{value:bounds.min.clone()},mudBoundsSize:{value:size}};car.mudUniforms.push(uniforms);
-          m.onBeforeCompile=shader=>{
-            Object.assign(shader.uniforms,uniforms);
-            shader.vertexShader='varying vec2 vMudUv; uniform vec3 mudBoundsMin; uniform vec3 mudBoundsSize;\n'+shader.vertexShader;
-            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\nvMudUv=vec2((position.x-mudBoundsMin.x)/max(.0001,mudBoundsSize.x),(position.${heightAxis}-mudBoundsMin.${heightAxis})/max(.0001,mudBoundsSize.${heightAxis}));`);
-            shader.fragmentShader=`varying vec2 vMudUv;uniform float mud;uniform vec3 mudColor;
-float mudHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-float mudNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(mudHash(i),mudHash(i+vec2(1.,0.)),f.x),mix(mudHash(i+vec2(0.,1.)),mudHash(i+vec2(1.,1.)),f.x),f.y);}
-float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise(p*4.01+13.7)*.15;}\n`+shader.fragmentShader;
-            shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>\nfloat mudMask=smoothstep(.8-mud*.75,.9-mud*.75,mudPattern(vMudUv*3.5))*smoothstep(.01,.1,mud);\ndiffuseColor.rgb=mix(diffuseColor.rgb,mudColor,mudMask);\ndiffuseColor.a=max(diffuseColor.a,mudMask*.98);`);
-          };m.customProgramCacheKey=()=> 'native-local-mud-v2';return m;
+          const result=installWindshieldMud(mesh,material,car.body||model,this.manifest.mud.color);
+          car.dynamicMaterials.push(result.material);car.mudUniforms.push(result.uniforms);return result.material;
         });mesh.material=Array.isArray(mesh.material)?materials:materials[0];
       });
       this.cars.push(car);
@@ -231,8 +224,13 @@ float mudPattern(vec2 p){return mudNoise(p)*.55+mudNoise(p*2.03+7.1)*.3+mudNoise
     if(car.door&&car.doorRest)car.door.quaternion.copy(car.doorRest).multiply(q.setFromAxisAngle(UP,doorAngle*Math.PI/180));
     if(car.wheel&&car.wheelRest)car.wheel.quaternion.copy(car.wheelRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-(prediction?.predicted.steer??authority.steer??0)*NATIVE_CABIN.steeringWheelDegrees*Math.PI/180));
     const wipe=(team===ownTeam&&input.wipe)||this.snapshot.inputs?.[team*2]?.wipe||this.snapshot.inputs?.[team*2+1]?.wipe;
-    car.wipers.forEach((w,i)=>{if(w&&car.wiperRests[i])w.quaternion.copy(car.wiperRests[i]).multiply(q.setFromAxisAngle(UP,wipe?Math.sin(now*.008)*.75:0));});
-    car.mudUniforms.forEach(u=>u.mud.value=authority.mud||0);
+    car.wiperMotion??=new NativeWipers();
+    const displayedMud=smoothMud(car,authority.mud||0,dt),wiper=car.wiperMotion.update(Boolean(wipe),displayedMud,dt),axis=new THREE.Vector3(...NATIVE_WINDSHIELD.axis);
+    car.wipers.forEach((w,i)=>{if(w&&car.wiperRests[i])w.quaternion.copy(car.wiperRests[i]).premultiply(q.setFromAxisAngle(axis,wiper.angle));});
+    if(wipe)car.knobSpin=(car.knobSpin+420*dt)%360;
+    if(car.knob&&car.knobRest)car.knob.quaternion.copy(car.knobRest).multiply(q.setFromAxisAngle(new THREE.Vector3(0,0,1),-car.knobSpin*Math.PI/180));
+    const sweep=t=>t*t*(3-2*t)*95*Math.PI/180;
+    car.mudUniforms.forEach(u=>{u.mud.value=displayedMud;u.mudAhead.value=wiper.ahead;u.wipeFrom.value=sweep(wiper.fromT);u.wipeTo.value=-wiper.angle;u.wipeRunning.value=Number(wiper.running);});
     car.heads.forEach((head,seat)=>{const state=this.snapshot.inputs?.[car===this.cars[0]?seat:seat+2];if(head&&state){if(head.skinned&&head.bone)head.bone.quaternion.copy(head.rest).multiply(q.setFromEuler(new THREE.Euler((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ')));else head.pivot?.rotation.set((state.pitch||0)*Math.PI/180,-(state.yaw||0)*Math.PI/180,0,'YXZ');}});
     const steer=prediction?.predicted.steer??authority.steer??0;car.hands?.update(steer,{steerDegrees:steer*NATIVE_CABIN.steeringWheelDegrees,handbrake:controls.handbrake===true,dt});
     if(team===ownTeam&&authority.dead&&this.currentCrash?.hold)car.crashHold=true;

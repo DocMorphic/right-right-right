@@ -32,14 +32,15 @@ test('navigator driving keys leave the actual local render prediction at the aut
 test('actual wiper transforms respond to either crew member without wiping another car',()=>{
   const {view,car,state}=fixture(1);
   view.snapshot.inputs=[{wipe:true},{wipe:false}];
-  view.applyCar(car,state,state,100,{wipe:false});
+  view.applyCar(car,state,state,100,{wipe:false},.2);
   assert.ok(car.wipers[0].quaternion.angleTo(car.wiperRests[0])>.1,'navigator sees the driver wiping');
   view.snapshot.inputs=[{wipe:false},{wipe:true}];
-  view.applyCar(car,state,state,100,{wipe:false});
+  view.applyCar(car,state,state,100,{wipe:false},.2);
   assert.ok(car.wipers[0].quaternion.angleTo(car.wiperRests[0])>.1,'driver sees the navigator wiping');
   view.slot=2;
   view.snapshot.inputs=[{wipe:false},{wipe:false},{wipe:true},{}];
-  view.applyCar(car,state,state,100,{wipe:true});
+  view.applyCar(car,state,state,100,{wipe:true},.5);
+  view.applyCar(car,state,state,100,{wipe:true},.5);
   assert.equal(car.wipers[0].quaternion.angleTo(car.wiperRests[0]),0,'crew B local input does not wipe crew A');
 });
 
