@@ -4,6 +4,7 @@ import {createHttpFixture} from './http-fixture.js';
 import {generateCourse,STAGES,direction,nearestPoint} from '../shared/course.js';
 import {carAnchor} from '../shared/physics.js';
 import {routeInput} from './route-driver.js';
+import {setTimeout as wait} from 'node:timers/promises';
 const find=(reply,type)=>reply.messages?.find(message=>message.type===type);
 
 async function scenario(t,mode='coop'){
@@ -122,4 +123,19 @@ test('650ms HTTP input gaps match continuous controls, then the bounded hold exp
   assert.ok(expired.time-expired.inputs[0].arrived>1.5);assert.ok(expired.cars[0].speed<continuous.cars[0].speed-2);
   const before=expired.cars[0].speed;expired=await coarse.tick(.5);assert.ok(expired.cars[0].speed<before);
   t.diagnostic(JSON.stringify({gapMs:650,holdSeconds:a.inputs[0].ttl,coarseSpeed:a.cars[0].speed,continuousSpeed:b.cars[0].speed,expiredSpeed:expired.cars[0].speed}));
+});
+
+test('wall-time HTTP driving remains active with actual650ms response latency and no clock override',{timeout:20000},async t=>{
+  const fixture=await createHttpFixture({afterResponse:async({body})=>{if(body?.message?.type==='input')await wait(650);}});t.after(()=>fixture.close());
+  const post=async(route,body)=>{const response=await fetch(fixture.url+route,{method:'POST',headers:{'Content-Type':'application/json',Origin:fixture.url},body:JSON.stringify(body)});const data=await response.json();assert.equal(response.status,200,JSON.stringify(data));return data;};
+  const players=[];for(let i=0;i<2;i++)players.push(await post('/api/session',{}));
+  const send=(slot,message)=>post('/api/message',{id:players[slot].id,token:players[slot].token,epoch:1,message});
+  const poll=slot=>post('/api/poll',{id:players[slot].id,token:players[slot].token,epoch:1});
+  const code=find(await send(0,{type:'create',mode:'coop',seed:12345}),'joined').code;await send(1,{type:'join',code});
+  await Promise.all([0,1].map(slot=>send(slot,{type:'ready',ready:true})));let state=find(await send(0,{type:'start'}),'race').snapshot;
+  const start=state.cars[0].z;for(let i=0;i<24&&state.phase==='countdown';i++){await wait(250);state=find(await poll(0),'snapshot');await poll(1);}
+  assert.equal(state.phase,'running');let maxReplyAge=0;
+  for(let seq=1;seq<=8;seq++){state=find(await send(0,{type:'input',epoch:1,seq,throttle:1,steer:0,pitch:0,yaw:0}),'snapshot');maxReplyAge=Math.max(maxReplyAge,Date.now()/1000-state.time);await poll(1);}
+  assert.ok(maxReplyAge>.6);assert.ok(state.cars[0].speed>7);assert.ok(state.cars[0].z>start+15);assert.equal(state.cars[0].dead,false);
+  t.diagnostic(JSON.stringify({actualResponseDelayMs:650,maxReplyAgeSeconds:Number(maxReplyAge.toFixed(3)),speed:state.cars[0].speed,distance:state.cars[0].z-start,clockOverride:false,statePlacements:0}));
 });
