@@ -1,6 +1,7 @@
 {
   "date": "2026-11-14",
   "purpose": "Restore the original first-person sense of speed and body movement in the browser.",
+  "publication": {"version": 8, "url": "https://right-right-right-play.andustry-0633.chatgpt.site", "status": "succeeded", "bundle": "/assets/index-CMi84gla.js", "liveBundleMatchesValidatedBuild": true, "liveMultiplayerSmoke": "passed: four-player race, concurrent inputs, ownership, action acknowledgments, retry, mode change and two-player co-op; 31 requests, zero retries"},
   "source": {
     "game": "Installed Left! Left! LEFT! Playtest",
     "level1Sha256": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
