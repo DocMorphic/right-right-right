@@ -16,7 +16,7 @@ function releaseMouse(){if(document.pointerLockElement)document.exitPointerLock(
 function lockMouse(){if(inRace&&!menuOpen){$('game').requestPointerLock()?.catch?.(()=>{});}}
 function input(){return{throttle:menuOpen?0:Number(keys.has('KeyW')||keys.has('ArrowUp'))-Number(keys.has('KeyS')||keys.has('ArrowDown')),steer:menuOpen?0:Number(keys.has('KeyD')||keys.has('ArrowRight'))-Number(keys.has('KeyA')||keys.has('ArrowLeft')),handbrake:!menuOpen&&keys.has('Space'),wipe:!menuOpen&&keys.has('KeyC'),pitch:look.pitch,yaw:look.yaw};}
 function action(kind){if(inRace&&!menuOpen)actions.push({id:++actionId,kind});}
-function acknowledgeLobby(){if(room?.status==='lobby'&&network.connected&&room.seats[slot]&&!room.seats[slot].ready&&performance.now()-lastReady>250){lastReady=performance.now();send({type:'ready',ready:true});}}
+function acknowledgeLobby(){if(room?.status==='lobby'&&network.connected&&room.seats[slot]&&!room.seats[slot].ready&&performance.now()-lastReady>250){lastReady=performance.now();send({type:'ready',ready:true,catalog:STAGES.length});}}
 setInterval(acknowledgeLobby,300);
 function renderMenu(){
   const count=room?.seats.filter(Boolean).length||0,ready=room?.seats.filter(seat=>seat?.ready).length||0;

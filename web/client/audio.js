@@ -55,7 +55,7 @@ export class RallyAudio {
   }
   bindGestures(){if(typeof document==='undefined'||this.bound)return;this.bound=true;const gesture=()=>this.unlock();document.addEventListener('pointerdown',gesture,true);document.addEventListener('keydown',gesture,true);
     document.addEventListener('pointerover',event=>{const button=event.target?.closest?.('button');if(button&&!button.disabled&&!button.contains(event.relatedTarget))this.play('hover',this.getVolume('menu')*8,'ui');});
-    document.addEventListener('click',event=>{const button=event.target?.closest?.('button');if(button&&!button.disabled&&(event.button??0)===0)this.play('click',this.getVolume('menu')*1.6,'ui');});
+    document.addEventListener('click',event=>{const button=event.target?.closest?.('button');if(button&&!button.disabled&&event.detail>0&&(event.button??0)===0)this.play('click',this.getVolume('menu')*1.6,'ui');},true);
   }
   unlock(){this.unlocked=true;this.context?.resume().catch(()=>{});}
   setEnabled(value){this.enabled=Boolean(value);if(this.master)this.master.gain.value=this.enabled?1:0;}
