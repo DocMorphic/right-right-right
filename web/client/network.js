@@ -1,6 +1,7 @@
 /** Same room protocol over a local WebSocket or hosted HTTP session transport. */
+import {NetworkTiming} from './network-timing.js';
 export class Network extends EventTarget {
-  constructor({storage=typeof sessionStorage==='undefined'?null:sessionStorage}={}) { super();this.storage=storage;this.socket=null;this.session=null;this.connected=false;this.connecting=null;this.closed=false;this.transport='';this.pending=[];this.lastPoll=0;this.epoch=0;this.roomCode=null;this.roomRevision=-1;this.httpTail=Promise.resolve(); }
+  constructor({storage=typeof sessionStorage==='undefined'?null:sessionStorage,timing=new NetworkTiming()}={}) { super();this.storage=storage;this.timing=timing;this.socket=null;this.session=null;this.connected=false;this.connecting=null;this.closed=false;this.transport='';this.pending=[];this.lastPoll=0;this.epoch=0;this.roomCode=null;this.roomRevision=-1;this.httpTail=Promise.resolve(); }
   emit(type,detail) { this.dispatchEvent(new CustomEvent(type,{detail})); }
   async connect() {
     if(this.connected) return;
@@ -27,16 +28,24 @@ export class Network extends EventTarget {
     try{if(session)this.storage?.setItem('rrr-browser-session-v1',JSON.stringify(session));else this.storage?.removeItem('rrr-browser-session-v1');}catch{}
   }
   openSocket() {
+    this.stopSocketTiming();
     return new Promise((resolve,reject)=>{
       const base=import.meta.env?.VITE_GAME_SERVER||location.origin;const url=new URL('/ws',base);url.protocol=url.protocol==='https:'?'wss:':'ws:';
       const ws=new WebSocket(url);this.socket=ws;const timer=setTimeout(()=>{ws.close();reject(new Error('Connection timed out'));},3500);let opened=false;
-      ws.addEventListener('open',()=>{clearTimeout(timer);opened=true;this.transport='ws';this.connected=true;this.emit('connected',{transport:'ws'});resolve();});
-      ws.addEventListener('message',event=>{try{this.deliver([JSON.parse(event.data)]);}catch{this.emit('error',{message:'Invalid server message.'});}});
-      ws.addEventListener('error',()=>{if(!opened){clearTimeout(timer);reject(new Error('WebSocket unavailable'));}});
-      ws.addEventListener('close',()=>{clearTimeout(timer);if(!opened)reject(new Error('WebSocket unavailable'));else{this.connected=false;if(!this.closed)this.emit('disconnected',{});}});
+      ws.addEventListener('open',()=>{clearTimeout(timer);if(this.socket!==ws||this.closed){ws.close();reject(new Error('Connection was closed'));return;}opened=true;this.transport='ws';this.connected=true;this.startSocketTiming(ws);this.emit('connected',{transport:'ws'});resolve();});
+      ws.addEventListener('message',event=>{if(this.socket!==ws)return;try{this.deliver([JSON.parse(event.data)]);}catch{this.emit('error',{message:'Invalid server message.'});}});
+      ws.addEventListener('error',()=>{if(this.socket===ws)this.stopSocketTiming();if(!opened){clearTimeout(timer);reject(new Error('WebSocket unavailable'));}});
+      ws.addEventListener('close',()=>{clearTimeout(timer);if(this.socket===ws)this.stopSocketTiming();if(!opened)reject(new Error('WebSocket unavailable'));else if(this.socket===ws){this.connected=false;if(!this.closed)this.emit('disconnected',{});}});
     });
   }
-  deliver(messages) { for(const message of messages) { if(!message||typeof message.type!=='string')continue;if(message.type==='joined'&&message.code!==this.roomCode){this.roomCode=message.code;this.roomRevision=-1;}if(message.type==='left'){this.roomCode=null;this.roomRevision=-1;}if(['lobby','race','snapshot'].includes(message.type)&&Number.isSafeInteger(message.revision)){if(message.revision<this.roomRevision)continue;this.roomRevision=message.revision;}if(message.type==='race')this.epoch=message.epoch;if(message.type==='left')this.epoch=0;this.emit('message',message);this.emit(message.type,message); } }
+  startSocketTiming(ws){
+    this.stopSocketTiming();
+    const ping=()=>{if(!this.connected||this.transport!=='ws'||this.socket!==ws||ws.readyState!==WebSocket.OPEN){this.stopSocketTiming();return false;}try{ws.send(JSON.stringify(this.timing.ping()));return true;}catch{this.stopSocketTiming();return false;}};
+    if(ping())this.pingTimer=setInterval(ping,1000);
+  }
+  stopSocketTiming(){if(this.pingTimer!==undefined){clearInterval(this.pingTimer);this.pingTimer=undefined;}this.timing.reset();this.roundTripMs=undefined;}
+  snapshotAgeSeconds(snapshot){return this.timing.snapshotAgeSeconds(snapshot?.time??snapshot?.snapshot?.time,{useClock:this.transport==='ws',roundTripMs:this.roundTripMs});}
+  deliver(messages) { for(const message of messages) { if(!message||typeof message.type!=='string')continue;if(message.type==='pong'&&this.transport==='ws'&&this.timing.acceptPong(message))this.roundTripMs=this.timing.roundTripMs;if(message.type==='joined'&&message.code!==this.roomCode){this.roomCode=message.code;this.roomRevision=-1;}if(message.type==='left'){this.roomCode=null;this.roomRevision=-1;}if(['lobby','race','snapshot'].includes(message.type)&&Number.isSafeInteger(message.revision)){if(message.revision<this.roomRevision)continue;this.roomRevision=message.revision;}if(message.type==='race')this.epoch=message.epoch;if(message.type==='left')this.epoch=0;this.emit('message',message);this.emit(message.type,message); } }
   send(message) {
     if(!this.connected) return false;
     if(this.transport==='ws') {if(this.socket?.readyState===WebSocket.OPEN){this.socket.send(JSON.stringify(message));return true;}return false;}
@@ -81,6 +90,6 @@ export class Network extends EventTarget {
       await new Promise(resolve=>setTimeout(resolve,Math.max(0,100-(performance.now()-start))));
     }
   }
-  failed(error) {this.connected=false;this.emit('disconnected',{message:error.message});}
-  close() {this.closed=true;this.connected=false;this.socket?.close();this.pending=[];}
+  failed(error) {this.stopSocketTiming();this.connected=false;this.emit('disconnected',{message:error.message});}
+  close() {this.closed=true;this.connected=false;this.stopSocketTiming();this.socket?.close();this.pending=[];}
 }
