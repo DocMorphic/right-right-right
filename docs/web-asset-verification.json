@@ -458,5 +458,72 @@
     },
     "timerSource": "Native x64 IL2CPP methods verified against embedded Cpp2IL method RVA metadata: BuildTimerHud 0x50E2A0, UpdateTimerHud0x5109F0, CabinFont.Font0x4E9650",
     "status": "Native serialized settings and timer program constants recovered; final game screenshot parity still requires client visual verification."
+  },
+  "mainMenuReferenceVerification": {
+    "sourceFile": "level0",
+    "gameObjectCount": 313,
+    "imageComponents": 202,
+    "textComponents": 85,
+    "buttonComponents": 53,
+    "mainMenuJsonSha256": "a1deb9c6ddf442acabf422b698d98fed3b8b863f71839fc238f287cabcfba222",
+    "title": {
+      "url": "/assets/ui/MainMenuTitle.png",
+      "text": "Right! Right! RIGHT!",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 160.0,
+      "nativeTextColor": [
+        0.8039215803146362,
+        0.21568627655506134,
+        0.0941176488995552,
+        1.0
+      ],
+      "size": [
+        700,
+        104
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF."
+    },
+    "titlePngSha256": "0e70ffbbcbbee95c1c2fe415747a515e2bd6d4d36c939323107e4e9504b50dc8",
+    "validation": "Decoded source layout/components and original baked font pixels; PNG reopened to inspect upright lettering. Browser menu GUI parity has not been tested by this export step."
+  },
+  "clockTypefaceVerification": {
+    "sourceTtfSha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
+    "typefaceSha256": "900dd98f5015fa18b5ee62f1d08a73c13b56a96f034592e2d32b830f2a96d65a",
+    "parser": "Three.js0.187 FontLoader/Font plus ShapeGeometry, Node local modules",
+    "validation": {
+      "bytes": 6481,
+      "output": [
+        {
+          "text": "0:00.0",
+          "shapes": 7,
+          "holes": 8,
+          "valid": true
+        },
+        {
+          "text": "1:23.4",
+          "shapes": 7,
+          "holes": 0,
+          "valid": true
+        },
+        {
+          "text": "8",
+          "shapes": 1,
+          "holes": 2,
+          "valid": true
+        },
+        {
+          "text": "0123456789",
+          "shapes": 10,
+          "holes": 6,
+          "valid": true
+        }
+      ]
+    },
+    "scope": "Original-font format/outlines validation only; no redesigned browser UI GUI parity claim."
   }
 }

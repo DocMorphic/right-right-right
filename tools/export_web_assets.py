@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import io
 import json
+import math
 import re
 import shutil
 import struct
@@ -24,6 +25,9 @@ import numpy as np
 import UnityPy
 from PIL import Image
 from UnityPy.helpers.MeshHelper import MeshHandler
+from fontTools.ttLib import TTFont
+from fontTools.pens.basePen import BasePen
+from fontTools.pens.boundsPen import BoundsPen
 
 ROOT = Path(__file__).resolve().parents[1]
 REFLECT = np.diag([-1., 1., 1., 1.])
@@ -203,6 +207,9 @@ class Exporter:
         (font_dir/'ShareTechMono-Regular.ttf').write_bytes(cabin_data)
         shutil.copyfile(ROOT/'tools/licenses/ShareTechMono-OFL.txt',font_dir/'ShareTechMono-OFL.txt')
         fonts['ShareTechMono']={'url':'/assets/fonts/ShareTechMono-Regular.ttf','licenseUrl':'/assets/fonts/ShareTechMono-OFL.txt','family':'Share Tech Mono','nativeName':cabin_font.m_Name,'nativeFontSize':cabin_font.m_FontSize,'bytes':len(cabin_data),'sha256':hashlib.sha256(cabin_data).hexdigest(),'sourceFile':cabin_font_obj.assets_file.name,'sourcePathId':cabin_font_obj.path_id,'usage':'CabinFont native resource Fonts/ShareTechMono-Regular; dashboard and tablet TextMesh timer'}
+        typeface=three_clock_typeface(cabin_data)
+        (font_dir/'ShareTechMono-Regular.typeface.json').write_text(json.dumps(typeface,separators=(',',':'))+'\n')
+        fonts['ShareTechMono']['typefaceUrl']='/assets/fonts/ShareTechMono-Regular.typeface.json'
         builtin=next(f for f in self.environment.files.values() if getattr(f,'name','')=='unity default resources')
         ui_dir=self.output/'ui';ui_dir.mkdir(parents=True,exist_ok=True)
         textures={}
@@ -224,7 +231,78 @@ class Exporter:
         cabin_camera={'sourceFile':'level1','sourcePathId':camera.object_reader.path_id,'fieldOfView':camera.field_of_view,'nearClip':camera.near_clip_plane,'farClip':camera.far_clip_plane,'clearFlags':camera.m_ClearFlags,'backgroundColor':color(camera.m_BackGroundColor)}
         tablet=self.tablet_metadata()
         (ui_dir/'TabletMinimap.json').write_text(json.dumps(tablet,indent=2)+'\n')
-        return fonts,{'skinUrl':'/assets/ui/GameSkin.json','skin':skin,'textures':textures,'menu':menu,'cabinCamera':cabin_camera,'tablet':tablet}
+        main_menu=self.main_menu_metadata(menu_env)
+        main_menu['title']=self.main_menu_title(main_menu)
+        (ui_dir/'MainMenu.json').write_text(json.dumps(main_menu,indent=2)+'\n')
+        main_menu_reference={key:main_menu[key] for key in ['sourceFile','nodeCount','palette','sprites','referenceResolution','title','notes']}
+        main_menu_reference['url']='/assets/ui/MainMenu.json'
+        return fonts,{'skinUrl':'/assets/ui/GameSkin.json','skin':skin,'textures':textures,'menu':menu,'cabinCamera':cabin_camera,'tablet':tablet,'mainMenu':main_menu_reference}
+
+    def main_menu_title(self, reference):
+        """Compose title from the native baked Anton glyph pixels, without a new font."""
+        title=next(n for n in reference['nodes'] if n.get('text',{}).get('fontAsset')=='Anton-Regular SDF')
+        text=title['text']['value'].strip()
+        font=next(o.read() for o in self.environment.objects if o.type.name=='Font' and o.read().m_Name=='Anton-Regular')
+        atlas=dict(font.m_DefaultMaterial.read().m_SavedProperties.m_TexEnvs)['_MainTex'].m_Texture.read()
+        image=atlas.image.convert('RGBA');glyphs={g.index:g for g in font.m_CharacterRects}
+        kerning=dict(font.m_KerningValues or []);pieces=[];pen=0.;previous=None
+        for ch in text:
+            code=ord(ch);glyph=glyphs[code]
+            if previous is not None:pen+=kerning.get((previous,code),0)
+            uv=glyph.uv;left=min(uv.x,uv.x+uv.width);right=max(uv.x,uv.x+uv.width)
+            bottom=min(uv.y,uv.y+uv.height);top=max(uv.y,uv.y+uv.height)
+            crop=image.crop((round(left*image.width),round((1-top)*image.height),round(right*image.width),round((1-bottom)*image.height)))
+            # Legacy CharacterInfo.uv.y is the lower vertex's UV. Negative UV
+            # height reverses the rows in the upper-left-origin PNG image.
+            if uv.height<0:crop=crop.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+            if uv.width<0:crop=crop.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            if glyph.flipped:crop=crop.transpose(Image.Transpose.ROTATE_90)
+            pixels=Image.new('RGBA',crop.size,(255,255,255,255));pixels.putalpha(crop.getchannel('A'))
+            pieces.append((pixels,round(pen+glyph.vert.x),round(-glyph.vert.y)))
+            pen+=glyph.advance;previous=code
+        min_x=min(x for _,x,_ in pieces);min_y=min(y for _,_,y in pieces)
+        max_x=max(x+i.width for i,x,_ in pieces);max_y=max(y+i.height for i,_,y in pieces)
+        output=Image.new('RGBA',(max_x-min_x,max_y-min_y),(255,255,255,0))
+        for glyph,x,y in pieces:output.alpha_composite(glyph,(x-min_x,y-min_y))
+        output.save(self.output/'ui/MainMenuTitle.png',optimize=True)
+        return {'url':'/assets/ui/MainMenuTitle.png','text':text,'font':'Anton-Regular','sourceFontFile':font.object_reader.assets_file.name,'sourceFontPathId':font.object_reader.path_id,'embeddedTtfBytes':len(font.m_FontData or []),'sourceAtlasPathId':atlas.object_reader.path_id,'sourceFontSize':font.m_FontSize,'nativeTextFontSize':title['text']['fontSize'],'nativeTextColor':title['text']['color'],'size':[output.width,output.height],'note':'White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.'}
+
+    def main_menu_metadata(self, environment):
+        """Preserve the original uGUI tablet menu as an inspectable UI reference."""
+        scene=next(f for f in environment.files.values() if getattr(f,'name','')=='level0')
+        shared=next(f for f in self.environment.files.values() if getattr(f,'name','')=='sharedassets0.assets')
+        sprites={}
+        for obj in shared.objects.values():
+            if obj.type.name!='Sprite':continue
+            d=obj.read()
+            sprites[obj.path_id]={'name':d.m_Name,'url':'/assets/textures/'+safe_name(d.m_Name)+'.png','size':[d.m_Rect.width,d.m_Rect.height],'border':vec(d.m_Border,4),'pixelsToUnits':d.m_PixelsToUnits}
+        nodes=[]
+        for obj in scene.objects.values():
+            if obj.type.name!='GameObject':continue
+            go=obj.read();node={'id':obj.path_id,'name':go.m_Name,'active':go.m_IsActive}
+            for c in go.m_Component:
+                component=c.component.deref()
+                if component.type.name=='RectTransform':
+                    t=component.read()
+                    node['parentId']=t.m_Father.read().m_GameObject.m_PathID if t.m_Father.m_PathID else None
+                    node['rect']={'anchorMin':vec(t.m_AnchorMin,2),'anchorMax':vec(t.m_AnchorMax,2),'pivot':vec(t.m_Pivot,2),'sizeDelta':vec(t.m_SizeDelta,2),'anchoredPosition':vec(t.m_AnchoredPosition,2),'localPosition':vec(t.m_LocalPosition),'localRotation':vec(t.m_LocalRotation,4),'localScale':vec(t.m_LocalScale)}
+                if component.type.name!='MonoBehaviour':continue
+                base=component.read_typetree(check_read=False,wrap=True)
+                kind=base.m_Script.read().m_ClassName;data=component.get_raw_data()
+                if kind=='Image' and len(data)==136:
+                    file_id,sprite_id=struct.unpack_from('<iq',data,88)
+                    node['image']={'color':list(struct.unpack_from('<4f',data,44)),'sprite':sprites.get(sprite_id) if file_id else None,'type':struct.unpack_from('<i',data,100)[0],'pixelsPerUnitMultiplier':struct.unpack_from('<f',data,132)[0]}
+                if kind=='TextMeshProUGUI' and len(data)>300:
+                    length=struct.unpack_from('<i',data,88)[0]
+                    if not 0<=length<4096:continue
+                    text=data[92:92+length].decode('utf-8');end=(92+length+3)&~3
+                    font_file,font_id=struct.unpack_from('<iq',data,end+4)
+                    font_name=shared.objects[font_id].read_typetree(check_read=False).get('m_Name') if font_file==2 and font_id in shared.objects else None
+                    node['text']={'value':text,'fontAsset':font_name,'color':list(struct.unpack_from('<4f',data,end+52)),'fontSize':struct.unpack_from('<f',data,end+192)[0]}
+                if kind=='Button' and len(data)>=180:
+                    node['button']={'transition':struct.unpack_from('<i',data,88)[0],'colors':{name:list(struct.unpack_from('<4f',data,92+i*16)) for i,name in enumerate(['normal','highlighted','pressed','selected','disabled'])},'colorMultiplier':struct.unpack_from('<f',data,172)[0],'fadeDuration':struct.unpack_from('<f',data,176)[0]}
+            nodes.append(node)
+        return {'sourceFile':'level0','nodeCount':len(nodes),'referenceResolution':[1920,1080],'palette':{'tablet':[.93,.52,.12,1],'lip':[.14,.11,.09,1],'screen':[.16,.15,.09,1],'buttonOutline':[.4,.34,.2,1],'primaryLabel':[.86,.72,.42,1],'buttonFill':[.1,.095,.06,1],'mutedLabel':[.6,.5,.3,1],'heading':[244/255,141/255,30/255,1],'timerRim':[.8,.42,.08,1]},'sprites':sprites,'nodes':nodes,'notes':['Original native uGUI MainMenu under MenuCanvas; separate from the extension IMGUI DirectSession overlay.','Most menu and tablet labels use the exact exported Share Tech Mono font. Header sizes18px, primary START38px, secondary buttons26px.','Tablet casing RectTransform560x720 at1.12scale, left-middle anchored[1130,0], rotation0 on1920x1080MenuFrame.','TabletRound128px sprite has40px nine-slice borders; native button pixelsPerUnitMultiplier4 makes10px effective corners, casing.8 makes50px corners.','ee.png is the original transparent car-and-crews illustration. No new artwork or scenery is generated.']}
 
     def tablet_metadata(self):
         go=self.find('Tablet')
@@ -287,6 +365,35 @@ class PointerAdapter:
     def __init__(self, obj): self.obj = obj
     def read(self): return self.obj.read()
     def deref(self): return self.obj
+
+
+def three_clock_typeface(data):
+    """Convert original TTF clock glyphs to Three FontLoader's self-contained JSON.
+
+    Uses the same 100000/(unitsPerEm*72) scaling and Math.round semantics as
+    Three TTFLoader; source quadratic/cubic curves are retained exactly.
+    """
+    font=TTFont(io.BytesIO(data));glyph_set=font.getGlyphSet();cmap=font.getBestCmap()
+    scale=100000/(font['head'].unitsPerEm*72)
+    rounded=lambda value:math.floor(value*scale+.5)
+    class OutlinePen(BasePen):
+        def __init__(self):super().__init__(glyph_set);self.commands=[]
+        def add(self,name,*points):
+            self.commands.append(name)
+            for point in points:self.commands.extend(str(rounded(v)) for v in point)
+        def _moveTo(self,p):self.add('m',p)
+        def _lineTo(self,p):self.add('l',p)
+        def _qCurveToOne(self,control,end):self.add('q',end,control)
+        def _curveToOne(self,c1,c2,end):self.add('b',end,c1,c2)
+        def _closePath(self):self.add('z')
+        def _endPath(self):pass
+    glyphs={}
+    for ch in '0123456789:., km/hxX?-':
+        glyph_name=cmap[ord(ch)];glyph=glyph_set[glyph_name];pen=OutlinePen();glyph.draw(pen)
+        bounds_pen=BoundsPen(glyph_set);glyph.draw(bounds_pen);bounds=bounds_pen.bounds or (0,0,0,0)
+        glyphs[ch]={'ha':rounded(font['hmtx'][glyph_name][0]),'x_min':rounded(bounds[0]),'x_max':rounded(bounds[2]),'o':' '.join(pen.commands)+' '}
+    head=font['head'];hhea=font['hhea'];post=font['post'];names=font['name']
+    return {'glyphs':glyphs,'familyName':'Right Right Right Cabin Clock','ascender':rounded(hhea.ascent),'descender':rounded(hhea.descent),'underlinePosition':post.underlinePosition,'underlineThickness':post.underlineThickness,'boundingBox':{'xMin':head.xMin,'xMax':head.xMax,'yMin':head.yMin,'yMax':head.yMax},'resolution':1000,'original_font_information':{'copyright':names.getDebugName(0),'family':names.getDebugName(1),'subfamily':names.getDebugName(2),'fullName':names.getDebugName(4)},'source':{'sha256':hashlib.sha256(data).hexdigest(),'conversion':'Native TTF outlines; Three TTFLoader compatible 100000/(unitsPerEm*72) scale and rounding; derivative subset renamed to respect the source font reserved name','licenseUrl':'/assets/fonts/ShareTechMono-OFL.txt'}}
 
 
 def decode_native_game_skin(data,textures):
