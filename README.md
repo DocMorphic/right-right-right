@@ -8,7 +8,7 @@ Double-click the setup EXE. It installs everything, creates shortcuts and starts
 
 ## Browser adaptation
 
-The [browser game](https://right-right-right-play.andustry-0633.chatgpt.site) is deployed **owner-private**. Public access has not been enabled, so this is currently an owner preview rather than a shareable public play link.
+The [browser game](https://right-right-right-play.andustry-0633.chatgpt.site) is available through a link. Friends open the same URL, host or join a browser room, and play without installing the Windows game.
 
 The browser implementation uses the authorized original models, textures, sounds, fonts and Unity control skin. Its menu/HUD are reconstructed from this repository's native mod source and extracted runtime settings; its driving and networking are implemented in JavaScript. It targets current WebGL browsers on macOS, Windows and Linux. Browser players use separate browser rooms; their codes do not join the downloadable Windows release's Unity Relay/DTLS rooms.
 
@@ -44,7 +44,7 @@ WASD/Space drives. **E** grabs/drops tablets, **G** closes the door, hold **C** 
 
 ## Alpha scope
 
-Alpha.5 passes scripted native gameplay checks through CrossOver on Apple Silicon: two-player co-op, four-player racing, retry/return to lobby and synchronized 2→4→2 mode changes, all through live Unity Relay/DTLS. The complete installer also passes its embedded-file verification and normal installation/launch. See [release checks and limits](docs/RELEASE-0.3.0-alpha.5.md) and [the sanitized results](docs/alpha5-verification-results.json). These are same-Mac headless tests, not a manual full-course or separate-computer playtest.
+Alpha.5 passes scripted native gameplay checks through CrossOver on Apple Silicon: two-player co-op, four-player racing, retry/return to lobby and synchronized 2→4→2 mode changes, all through live Unity Relay/DTLS. The complete installer also passes its embedded-file verification and normal installation/launch. See [release checks and limits](docs/RELEASE-0.3.0-alpha.5.md) and [the sanitized results](docs/alpha5-verification-results.json). A later [separate-computer cross-play check](docs/mac-windows-crossplay-verification.json) passed with a Mac ARM64 Wine/FEX host and a native Windows guest, covering co-op driving, tablet/door/mud actions, shared finish, retry and tree failure. These scripted headless checks do not establish manual full-course play or working graphics in the experimental standalone Mac app.
 
 Two-player co-op and four-player racing are tested with native game processes using real Unity Authentication, Relay rooms and DTLS. Co-op tests cover one-car/two-seat setup, driving, navigator map privacy, mud/wiping, doors, loose tablets, shared finish, retry and tree failure. Lobby lifecycle tests cover retry, return and synchronized 2→4→2 mode changes with the same room. Processes run on one PC through Unity's hosted service; separate home-network playtests remain needed. See the [mode verification report](docs/mode-verification-results.json).
 
@@ -54,7 +54,7 @@ Right Right Right is independently branded. It includes licensed compiled runtim
 
 ## Developer build
 
-**Developing on a Mac:** [Mac setup and cross-platform build guide](docs/MAC-DEVELOPMENT.md). Use `python tools/build_from_release.py` to fetch a pinned published runtime and build the Windows package on macOS without the home Windows laptop. A native Mac game is not available. CrossOver startup and the embedded font have runtime checks, and the user confirmed readable text. Scripted co-op, four-player gameplay and lobby lifecycle pass through live Relay/DTLS on the Mac. Manual full-course driving and separate-computer play remain untested. The current source is on `main` and `standalone/portable-steam`.
+**Developing on a Mac:** [Mac setup and cross-platform build guide](docs/MAC-DEVELOPMENT.md). Use `python tools/build_from_release.py` to fetch a pinned published runtime and build the Windows package on macOS without the home Windows laptop. A native Mac game is not available. CrossOver startup and the embedded font have runtime checks, and the user confirmed readable text. Scripted co-op, four-player gameplay and lobby lifecycle pass through live Relay/DTLS on the Mac. Manual full-course driving remains untested; the separate-computer scripted Mac/Windows co-op check above passes. The current source is on `main` and `standalone/portable-steam`.
 
 On Windows x64, a prepared pinned player and the local Python 3.12/.NET toolchain build the portable release:
 

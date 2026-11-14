@@ -4,7 +4,7 @@ This is a browser adaptation using the authorized original game models, textures
 
 ## Deployment and scope
 
-The [deployed browser game](https://right-right-right-play.andustry-0633.chatgpt.site) is currently **owner-private**. Public sharing has not been enabled. Browser room codes belong to this service and cannot join the downloadable Windows game's rooms.
+Open the [deployed browser game](https://right-right-right-play.andustry-0633.chatgpt.site) and share that link with friends. Browser room codes belong to this service and cannot join the downloadable Windows game's rooms.
 
 The menu and HUD are a source-based reconstruction of the native mod UI, using extracted original fonts, skin textures and serialized settings. Driving, networking, procedural mud and dynamic tablet rendering run in browser/server JavaScript. Exact native rendering and physics parity remain subject to comparison with the compiled game.
 

@@ -1,0 +1,67 @@
+{
+  "Date": "2026-11-14",
+  "Pass": true,
+  "Build": "0.3.0-alpha.5",
+  "Host": {
+    "OS": "macOS 26.5.2",
+    "Hardware": "Apple Silicon M1 Max",
+    "Runtime": "Original signed MetalSharp Wine 6.5 ARM64 with FEX (4K pages)",
+    "CrossOverRequired": false,
+    "Headless": true,
+    "Result": {
+      "Pass": true,
+      "Client": 0,
+      "Slot": 0,
+      "Players": 2,
+      "Cars": 1,
+      "Tablets": 1,
+      "Rounds": 2,
+      "FinishTime": 26.292273,
+      "TreeDeaths": 1,
+      "Checks": {
+        "one_car_two_seats": true,
+        "navigator_map": true,
+        "driving": true,
+        "mud": true,
+        "remote_drop": true,
+        "tablet_falls": true,
+        "remote_door": true,
+        "remote_wipe": true,
+        "shared_finish": true,
+        "tree_ends_coop": true
+      },
+      "Error": ""
+    }
+  },
+  "Guest": {
+    "Pass": true,
+    "PeerOS": "native Windows",
+    "LiveUnityRelay": true,
+    "Dtls": true,
+    "Game": {
+      "Pass": true,
+      "Client": 1,
+      "Slot": 1,
+      "Players": 2,
+      "Cars": 1,
+      "Tablets": 1,
+      "Rounds": 2,
+      "FinishTime": 26.292273,
+      "TreeDeaths": 1,
+      "Checks": {
+        "one_car_two_seats": true,
+        "navigator_map": true,
+        "replicated_tree_failure": true
+      },
+      "Error": ""
+    },
+    "ExitCode": 0
+  },
+  "WindowsAction": "https://github.com/DocMorphic/right-right-right/actions/runs/43597443138",
+  "Limits": [
+    "Scripted headless native game processes over live Unity Relay/DTLS on separate computers.",
+    "Harness drives initial movement and positions the car at later hazards/finish; this is not a manual full-course playthrough.",
+    "Mac graphical rendering and manual input remain unverified; the current graphical test shows a blank window.",
+    "A public Mac download is not yet ready."
+  ]
+}

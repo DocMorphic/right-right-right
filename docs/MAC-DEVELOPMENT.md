@@ -83,3 +83,11 @@ Sources: [CrossOver system requirements and trial](https://www.codeweavers.com/c
 ## A native Mac release
 
 A reliable native port needs the developers' Unity project/source and a macOS export, or a suitable developer-provided native Mac build plus compatible mod-loader bindings. This repository cannot reconstruct a signed Apple Silicon game from the Windows executable alone. That is a separate porting project; the cross-platform developer workflow here does not claim to perform it.
+
+## Experimental self-contained Mac app
+
+`tools/build_macos.py` and `macos/Launcher.swift` assemble a separate compatibility app with a bundled ARM64 Wine/FEX runtime, isolated prefix and verified complete game payload. First-launch extraction and prefix setup run inside the app; no CrossOver installation is required. This is an experimental packaging tool, not a released or native Unity Mac game.
+
+The original signed MetalSharp Wine 6.5 runtime enables the 4K-page mode needed by this game on macOS 26.4 or later. Its signature and provisioning profile must remain intact. The unsigned relocatable runtime did not start this game's loader reliably. A headless Mac host using the signed engine passed a [live separate-computer co-op check with native Windows](mac-windows-crossplay-verification.json). The graphical test still shows a blank window: Mullion and DXVK paths are under investigation. Do not upload the current QA app as a playable Mac release.
+
+A public app also needs distribution signing/notarization and complete runtime source/license distribution. No Developer ID signing identity is installed on the current development Mac. The builder deliberately reports `GatekeeperReady: false`, `Notarized: false` and `GameplayVerified: false` for its current QA output.
