@@ -9,7 +9,7 @@
     "liveMultiplayerSmoke": "passed: four-player race, concurrent inputs, driver ownership, action acknowledgments, guest bootstrap, retry, switching mode and two-player co-op; 31 requests, zero retries"
   },
   "nativeReference": {
-    "source": "Installed Left! Left! LEFT! Playtest, recovered serialized level1/level2/level3 GoofyCarController and road data",
+    "source": "Authorized original native player, recovered serialized level1/level2/level3 GoofyCarController and road data",
     "cooperativeRoadWidthMeters": 5,
     "authoredRoads": "Original meshes and varying strip widths are retained unchanged, including the original start and finish poses.",
     "wheelbaseMeters": 2.8,

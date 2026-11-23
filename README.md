@@ -8,13 +8,13 @@ Double-click the setup EXE. It installs everything, creates shortcuts and starts
 
 ## Browser adaptation
 
-The [browser game](https://right-right-right-play.andustry-0633.chatgpt.site) is available through a link. Friends open the same URL, host or join a browser room, and play without installing the Windows game.
+The [browser game](https://right-right-right.vercel.app) is available through a link. Friends open the same URL, host or join a browser room, and play without installing the Windows game.
 
 The browser implementation uses the authorized original models, textures, sounds, fonts and Unity control skin. Its menu/HUD are reconstructed from this repository's native mod source and extracted runtime settings; its driving and networking are implemented in JavaScript. It targets current WebGL browsers on macOS, Windows and Linux. Browser players use separate browser rooms; their codes do not join the downloadable Windows release's Unity Relay/DTLS rooms.
 
 The browser supports two-player co-op and four-player racing, with shared courses, driver/navigator seats, mud, doors, tablets, tree collisions, retries and lobby mode changes. Automated tests cover local multi-client WebSockets, a SQLite-backed D1 adapter, gameplay rules and all six course profiles. The public HTTP service also completed a 4.739 km course in 557.06 seconds using normal input packets with no state placement; see the [sanitized browser verification report](docs/browser-gameplay-verification.json). Asset format validation and local visual checks are recorded separately. These checks do not establish exact Unity rendering/physics parity or a complete separate-device playtest of the deployed service.
 
-See the [browser setup and controls](web/README.md), [server/deployment details](web/server/README.md), and [asset export/provenance guide](docs/WEB-ASSET-EXPORT.md). Generated game assets and builds stay outside Git; a source checkout needs an authorized native runtime export before it can build the browser game. The Windows installer above remains a separate downloadable release.
+See the [browser setup and controls](web/README.md), [server/deployment details](web/server/README.md), and [asset export/provenance guide](docs/WEB-ASSET-EXPORT.md). The authorized browser assets and map/contact data are included in Git, so a source checkout can build the browser game directly. Generated builds and the compiled native runtime stay outside Git. The Windows installer above remains a separate downloadable release.
 
 ## Play with friends
 
@@ -50,7 +50,7 @@ Two-player co-op and four-player racing are tested with native game processes us
 
 Both cars are simulated on the host. The second driver's controls have round-trip latency with no client prediction yet. There is no host migration or in-race joining. Lost tablets remain in the world until retrieved or the host retries. Tree DNF uses the race HUD so the other crew can continue.
 
-Right Right Right is independently branded. It includes licensed compiled runtime/assets and our extension; this repository does not contain the editable original Unity project. Licensed content is attributable to Stellux Interactive under the developer permission stated by the project owner, and is not covered by our source-code MIT license.
+**Credit:** Right Right Right is based on *Left! Left! LEFT!* by Stellux Interactive, used under the developer permission stated by the project owner. Right Right Right is independently branded and includes licensed compiled runtime/assets and our extension; this repository does not contain the editable original Unity project. Original licensed content retains its ownership and is not covered by our source-code MIT license.
 
 ## Developer build
 
