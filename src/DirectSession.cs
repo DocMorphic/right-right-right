@@ -13,7 +13,7 @@ using Object=UnityEngine.Object;
 
 namespace RightRightRight;
 
-internal static class DirectSession
+internal static partial class DirectSession
 {
     internal static bool Enabled=>SteamDistribution.Config?.Direct==true;
     private static readonly Dictionary<ulong,string> accepted=new();
@@ -221,39 +221,4 @@ internal static class DirectSession
         RaceNetwork.Seats=Array.Empty<ulong>();accepted.Clear();proposal="";loading=false;busy=false;note=message;
     }
 
-    internal static void Gui()
-    {
-        if(!Enabled||!Menu)return;
-        float left=Math.Max(8,(Screen.width-700)/2f),top=Math.Max(8,(Screen.height-520)/2f);
-        GUI.Box(new Rect(left,top,700,510),"RIGHT RIGHT RIGHT / "+SessionMode.Name);
-        bool disconnected=RaceNetwork.Manager==null||(!RaceNetwork.Manager.IsListening&&!RaceNetwork.Manager.ShutdownInProgress);
-        if(!advanced)RelaySession.Gui(left,top,disconnected);
-        else {
-            GUI.Label(new Rect(left+20,top+35,660,40),"LAN / VPN: enter the host's IPv4 address. Porthole: share UDP 7787, then join 127.0.0.1.");
-            GUI.enabled=!busy&&!RelaySession.Busy&&disconnected;
-            GUI.Label(new Rect(left+20,top+90,100,25),"Host address");address=GUI.TextField(new Rect(left+125,top+90,205,28),address,45);
-            GUI.Label(new Rect(left+345,top+90,45,25),"Port");portText=GUI.TextField(new Rect(left+390,top+90,75,28),portText,5);
-            if(GUI.Button(new Rect(left+485,top+90,85,30),"HOST"))Connect(true);
-            if(GUI.Button(new Rect(left+580,top+90,95,30),"JOIN"))Connect(false);
-            GUI.enabled=true;
-            if(GUI.Button(new Rect(left+20,top+135,150,28),"OPEN PORTHOLE"))Application.OpenURL("steam://run/4963920");
-            if(GUI.Button(new Rect(left+180,top+135,150,28),"GET PORTHOLE"))Application.OpenURL("https://store.steampowered.com/app/4963920/");
-        }
-        if(GUI.Button(new Rect(left+575,top+135,100,28),"DISCONNECT"))Disconnect("Disconnected. Host or join a race.");
-        GUI.Label(new Rect(left+20,top+185,660,45),$"{RaceNetwork.Count}/{SessionMode.Players} players — {note}");
-        GUI.enabled=(disconnected||RaceNetwork.Host)&&!busy&&!RelaySession.Busy&&!loading&&proposal.Length==0;
-        bool modeButtons=GUI.enabled;GUI.enabled=modeButtons&&RaceNetwork.Count<=2;
-        if(GUI.Button(new Rect(left+20,top+235,215,30),SessionMode.Players==2?"[ 2 PLAYER CO-OP ]":"2 PLAYER CO-OP"))ChangeMode(2);
-        GUI.enabled=modeButtons;
-        if(GUI.Button(new Rect(left+250,top+235,215,30),SessionMode.Players==4?"[ 4 PLAYER RACE ]":"4 PLAYER RACE"))ChangeMode(4);
-        GUI.enabled=true;
-        GUI.Label(new Rect(left+20,top+270,660,28),SessionMode.Players==2?"One car: host drives, friend navigates. Host can change mode in the lobby.":"Two cars. Join order: A driver, A navigator, B driver, B navigator.");
-        bool canChoose=RaceNetwork.Host&&AllAccepted&&!loading&&proposal.Length==0;
-        GUI.Label(new Rect(left+20,top+301,660,25),canChoose?"Everyone connected. Host: choose a course.":$"The host can choose a course when all {SessionMode.Players} matching players are connected.");
-        GUI.enabled=canChoose;
-        for(int i=0;i<Mod.Stages.Length;i++)if(GUI.Button(new Rect(left+20+(i%2)*335,top+332+(i/2)*40,320,34),Mod.Stages[i].Name))Select(Mod.Stages[i]);
-        GUI.enabled=true;
-        if(GUI.Button(new Rect(left+20,top+460,220,28),advanced?"BACK TO ROOM CODES":"LAN / ADVANCED"))advanced=!advanced;
-        GUI.Label(new Rect(left+260,top+460,415,35),"Everyone needs the same game version.");
-    }
 }

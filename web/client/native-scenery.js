@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import {assetUrl} from './asset-url.js';
+import {registerWorldCollision,backgroundTreeColliders,buildPropSurface} from '../shared/world-collision.js';
+import {collisionMesh} from './collision-mesh.js';
 
 // Original terrain samples are signed-height-range values stored in uint16s.
 // Keep every authored vertex; chunking only allows distant geometry to be culled.
@@ -58,8 +60,11 @@ export async function loadNativeScenery(loader,progress=()=>{}){
     const response=await fetch(assetUrl(`/assets/scenery/native-0${number}.json`));if(!response.ok)throw new Error(`Original Stage 0${number} scenery could not be loaded.`);const data=await response.json();
     const heights=fetch(assetUrl(data.terrain.heightUrl)).then(r=>{if(!r.ok)throw new Error('Original terrain could not be loaded.');return r.arrayBuffer();});
     await Promise.all([...data.terrain.layers.flatMap(layer=>[texture(layer.diffuse),texture(layer.normal,true)]),...data.terrain.splats.map(s=>texture(s.url,true)),...Object.values(data.propModels).map(m=>model(m.url))]);
-    progress(`Loading original Stage 0${number} terrain and forest…`);return {data,heights:await heights};
+    const heightData=await heights;progress(`Loading original Stage 0${number} terrain and forest…`);return {data,heights:heightData};
   }));
+  const manifest=await(await fetch(assetUrl('/assets/manifest.json'))).json(),templates={};
+  for(const source of scenes)for(const[name,spec]of Object.entries(source.data.propModels))if(/^(Rock|TreeStump)/.test(name)&&!templates[name])templates[name]=collisionMesh(models.get(spec.url));
+  for(const source of scenes)registerWorldCollision(source.data.scene,{terrain:source.data.terrain,heights:new DataView(source.heights),trees:backgroundTreeColliders(source.data.backgroundTrees,manifest.models.trees),props:buildPropSurface(templates,source.data.props)});
   return {scenes:new Map(scenes.map(s=>[String(s.data.scene),s])),textures,models};
 }
 

@@ -1,0 +1,166 @@
+{
+  "date": "2026-11-23",
+  "branch": "standalone/portable-steam",
+  "validation": {
+    "isolatedStagedCheckout": true,
+    "browserTestsPassed": 298,
+    "browserProductionBuild": "passed",
+    "desktopTestsPassed": 5,
+    "pythonPackagingTestsPassed": 10,
+    "nativeCSharpBuild": {
+      "result": "passed",
+      "warnings": 0,
+      "errors": 0
+    },
+    "nativeProtocolTests": "passed",
+    "distributionTests": "passed",
+    "newFilesCredentialScan": "no matches",
+    "unpublishedHistoryCredentialScan": "no matches"
+  },
+  "browserAssets": {
+    "gameplayAssetsVersioned": true,
+    "nativeCourseDataVersioned": true,
+    "terrainContactDataVersioned": true,
+    "originalAssetCreditsPreserved": true,
+    "runtimeBinariesAndBuildOutputsExcluded": true
+  },
+  "deployedAuthority": {
+    "filename": "rrr-server-dc970838656aa3d3.mjs",
+    "sha256": "dc970838656aa3d3276dd27d17e07df69c41878f3c56365072b4b691e97924a1",
+    "bytes": 19184809,
+    "source": "local server + generated native course data",
+    "transport": "websocket",
+    "health": "/health",
+    "frontendAssetsIncluded": false
+  },
+  "renderDeploymentId": "dep-dc21tuc9v7es73c1ljq0",
+  "fourPlayerPublicColdStart": {
+    "ok": true,
+    "url": "https://right-right-right-multiplayer.onrender.com",
+    "clients": 4,
+    "physicalMachines": 1,
+    "statePlacements": 0,
+    "pongDelayMs": 12000,
+    "controlPongDelayExercised": false,
+    "seconds": 123,
+    "dropRecoverCyclesPerTablet": 19,
+    "matchingSnapshots": 2422,
+    "snapshotGapP95Ms": 60,
+    "maxSnapshotGapMs": 501,
+    "applicationPingP95Ms": 63,
+    "pings": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "pongs": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "checks": [
+      "both cars driven with normal input",
+      "both tablets repeatedly dropped and recovered",
+      "public proxy hides control pings; application pings verified",
+      "identical car/tablet/ragdoll snapshots",
+      "retry cleanup"
+    ]
+  },
+  "fourPlayerTheftAndMount": {
+    "ok": true,
+    "publicServer": "https://right-right-right-multiplayer.onrender.com",
+    "clients": 4,
+    "physicalMachines": 1,
+    "statePlacements": 0,
+    "transport": "WebSocket",
+    "elapsedAtTheft": 52.56000000000262,
+    "matchingSnapshots": 1113,
+    "matchingStolenSnapshots": 2,
+    "matchingMountedSnapshots": 15,
+    "matchingOpenDoorSnapshots": 1028,
+    "reach": {
+      "at": 51.76000000000249,
+      "slot": 0,
+      "tablet": 1
+    },
+    "checks": [
+      "live capabilities and occupied role swaps",
+      "navigator cannot toggle driver door",
+      "driver door opens identically on four clients",
+      "held rival tablet protected through both open doors",
+      "normal driving brings cars together; loose rival tablet successfully stolen",
+      "driver aims right and attaches stolen tablet; passenger keeps own tablet",
+      "aimed removal and reattachment",
+      "driver closes door while tablet stays securely mounted",
+      "retry clears doors, reach and stolen ownership"
+    ]
+  },
+  "fourPlayerDelayedDriving": {
+    "ok": true,
+    "url": "https://right-right-right-multiplayer.onrender.com",
+    "clients": 4,
+    "physicalMachines": 1,
+    "transport": "WebSocket",
+    "driverBArtificialEachWayDelayMs": 160,
+    "statePlacements": 0,
+    "matchingSnapshotFrames": 414,
+    "hostSlot": 1,
+    "carDistanceMeters": [
+      89.51,
+      43.77
+    ],
+    "serverCadenceP95Ms": 59.999942779541016,
+    "checks": [
+      "occupied role swap",
+      "host navigator retains start/retry",
+      "same course",
+      "both crews drive",
+      "navigator throttle rejected",
+      "drop and recover both tablets",
+      "identical car/tablet/body snapshots",
+      "retry cleanup"
+    ]
+  },
+  "healthDuringPublicSoak": {
+    "ok": true,
+    "requests": 109,
+    "maxMs": 395
+  },
+  "fourPlayerCpuThrottledSuspension": {
+    "ok": true,
+    "url": "http://127.0.0.1:8796",
+    "clients": 4,
+    "physicalMachines": 1,
+    "statePlacements": 0,
+    "pongDelayMs": 12000,
+    "controlPongDelayExercised": true,
+    "seconds": 71,
+    "dropRecoverCyclesPerTablet": 8,
+    "matchingSnapshots": 629,
+    "snapshotGapP95Ms": 105,
+    "maxSnapshotGapMs": 11009,
+    "applicationPingP95Ms": 7152,
+    "pings": [
+      6,
+      6,
+      6,
+      6
+    ],
+    "pongs": [
+      5,
+      5,
+      5,
+      5
+    ],
+    "checks": [
+      "both cars driven with normal input",
+      "both tablets repeatedly dropped and recovered",
+      "four players survive late control-frame pongs",
+      "identical car/tablet/ragdoll snapshots",
+      "retry cleanup"
+    ]
+  },
+  "scope": "Four automated WebSocket clients on one physical Mac; public runs use the Render authority. These are not measurements from four physical laptops in India and Germany."
+}

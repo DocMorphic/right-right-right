@@ -1,0 +1,388 @@
+{
+  "source": "Pinned original native player, runtime cabin shell/body proxies and RW_Notebook material captured in Unity PhysX; ForceDrop RVA 0x4EB740 / Release RVA 0x4ECE00. Unity X reflected for browser.",
+  "assemblySha256": "b81c064eabebbc0b30af66f9684df3ffbae5e8a515e76a813c95a5ca95158f2e",
+  "mass": 0.4,
+  "half": [
+    0.13,
+    0.026,
+    0.16
+  ],
+  "angularDamping": 0.4,
+  "linearDamping": 0,
+  "staticFriction": 0.7,
+  "dynamicFriction": 0.55,
+  "bounciness": 0.08,
+  "releaseLocalVelocity": [
+    0.5,
+    0.35,
+    1.6
+  ],
+  "anchors": {
+    "driver": [
+      0.369,
+      0.75,
+      0.28
+    ],
+    "passenger": [
+      -0.333165,
+      0.75,
+      0.28
+    ],
+    "quaternion": [
+      -0.216439614,
+      0,
+      0,
+      0.976296007
+    ]
+  },
+  "shapes": [
+    {
+      "name": "BodyBlock",
+      "position": [
+        -0.336443,
+        0.760525,
+        -0.244333
+      ],
+      "quaternion": [
+        -0.1283289,
+        0.0051832,
+        0.0002354,
+        0.9917184
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.14,
+      "height": 0.379589
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        -0.452346,
+        0.517551,
+        0.481273
+      ],
+      "quaternion": [
+        0.8746974,
+        0.0025335,
+        -0.0016125,
+        0.4846605
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.07,
+      "height": 0.500089
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        -0.211138,
+        0.514624,
+        0.484244
+      ],
+      "quaternion": [
+        0.8747023,
+        0.0025335,
+        -0.0016146,
+        0.4846516
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.07,
+      "height": 0.511109
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        -0.455336,
+        0.601827,
+        0.058246
+      ],
+      "quaternion": [
+        0.6232598,
+        0.0040874,
+        -0.0011504,
+        0.7820036
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.08,
+      "height": 0.432972
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        -0.214158,
+        0.601825,
+        0.056533
+      ],
+      "quaternion": [
+        0.6232627,
+        0.0040873,
+        -0.0011505,
+        0.7820013
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.08,
+      "height": 0.432987
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        0.360127,
+        0.812693,
+        -0.251836
+      ],
+      "quaternion": [
+        -0.0977537,
+        0.0052014,
+        -0.0024839,
+        0.9951941
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.14,
+      "height": 0.36472
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        0.255482,
+        0.532567,
+        0.460563
+      ],
+      "quaternion": [
+        0.8881586,
+        0.0024007,
+        -0.0162523,
+        0.4592437
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.07,
+      "height": 0.500085
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        0.49664,
+        0.526939,
+        0.45767
+      ],
+      "quaternion": [
+        0.8881587,
+        0.0024007,
+        -0.0162454,
+        0.4592437
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.07,
+      "height": 0.51112
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        0.243803,
+        0.647339,
+        0.042285
+      ],
+      "quaternion": [
+        0.6564067,
+        0.0039421,
+        -0.0176473,
+        0.7541908
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.08,
+      "height": 0.432978
+    },
+    {
+      "name": "BodyBlock",
+      "position": [
+        0.484857,
+        0.644902,
+        0.034888
+      ],
+      "quaternion": [
+        0.6564087,
+        0.0039421,
+        -0.0176357,
+        0.7541894
+      ],
+      "material": "body",
+      "kind": "capsule",
+      "radius": 0.08,
+      "height": 0.432978
+    },
+    {
+      "name": "DoorRight",
+      "position": [
+        -0.724996,
+        0.88,
+        0.094999
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.025,
+        0.56,
+        0.455
+      ]
+    },
+    {
+      "name": "SeatShelf",
+      "position": [
+        -2e-06,
+        0.520001,
+        -0.070002
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.7,
+        0.025,
+        0.29
+      ]
+    },
+    {
+      "name": "Roof",
+      "position": [
+        -3e-06,
+        1.465,
+        0.095002
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.7,
+        0.025,
+        0.455
+      ]
+    },
+    {
+      "name": "SeatFront",
+      "position": [
+        1e-06,
+        0.432501,
+        0.195003
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.7,
+        0.1125,
+        0.025
+      ]
+    },
+    {
+      "name": "FootwellFloor",
+      "position": [
+        3e-06,
+        0.295001,
+        0.384996
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.7,
+        0.025,
+        0.165
+      ]
+    },
+    {
+      "name": "SeatBack",
+      "position": [
+        4.00001170148583e-06,
+        0.880001,
+        -0.311341376
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.7,
+        0.56,
+        0.098663
+      ]
+    },
+    {
+      "name": "DoorLeft",
+      "position": [
+        0.725001,
+        0.880001,
+        0.094996
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.025,
+        0.56,
+        0.455
+      ]
+    },
+    {
+      "name": "Dash",
+      "position": [
+        1e-06,
+        0.88,
+        0.574999
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.0,
+        1.0000002
+      ],
+      "material": "cabin",
+      "kind": "box",
+      "half": [
+        0.7,
+        0.56,
+        0.025
+      ]
+    }
+  ]
+}

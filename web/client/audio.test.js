@@ -45,3 +45,12 @@ test('native volume API clamps and keeps menu/music independent, failed clip dec
  const previousWindow=globalThis.window,previousFetch=globalThis.fetch;globalThis.window={AudioContext:Context};globalThis.fetch=async url=>({ok:url!=='missing',status:url==='missing'?404:200,arrayBuffer:async()=>new ArrayBuffer(4)});
  try{const load=new RallyAudio();await load.init({sounds:{idle:{url:'original'},limiter:{url:'missing'}}});assert.equal(load.buffers.has('idle'),true);assert.deepEqual(load.loadErrors,[{name:'limiter',message:'HTTP 404'}]);}finally{if(previousWindow===undefined)delete globalThis.window;else globalThis.window=previousWindow;globalThis.fetch=previousFetch;}
 });
+
+test('driver engine feedback uses predicted speed immediately while navigator and crash audio remain authoritative',()=>{
+ const audio=audioFixture();audio.unlock();audio.active=true;const states=[];audio.engine.step=(car)=>{states.push({...car});return[];};
+ const snap={epoch:1,phase:'running',cars:[car(20,{mud:.7,doorAngle:30})],inputs:[{throttle:1},{}],stats:{}};
+ audio.update(snap,0,{throttle:-1},car(17,{mud:0,doorAngle:0}));assert.equal(states.at(-1).speed,17);assert.equal(states.at(-1).mud,.7);assert.equal(states.at(-1).doorAngle,30);
+ audio.update(snap,1,{},car(17));assert.equal(states.at(-1).speed,20,'navigator cannot replace the driver speed');
+ audio.update({...snap,cars:[car(0,{dead:true})]},0,{throttle:1},car(17));assert.equal(states.at(-1).dead,true);assert.equal(states.at(-1).speed,0,'a late local prediction cannot rev a crashed car');
+ audio.update({...snap,phase:'countdown'},0,{},car(17));assert.equal(states.at(-1).speed,20,'countdown still follows authority');
+});

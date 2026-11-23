@@ -1,6 +1,6 @@
 {
-  "scope": "Source export integrity only; not runtime screenshot parity.",
-  "cockpitSha256": "b5125da0750641abd60c27b08a57f6fd2a151dc4da49bc6d97d724f5b456725e",
+  "scope": "Source/export integrity and CPU rest-skin correspondence; not pixel-perfect runtime rendering parity.",
+  "cockpitSha256": "b6a828dcf2c1aa9e244a47c5172e94153d63d58a4e1cb94d826d97aa7de69c40",
   "fontSha256": "2c731b40044c8bacb0cb210d7568fc8c329dc0dfdfc234cdaa03b4179ccb1e0e",
   "sourceTtfSha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
   "sourceHashes": {
@@ -20,5 +20,12 @@
     "maxSpeedKmh": 160.0,
     "maxRpm": 9000.0,
     "needleFollow": 14.0
-  }
+  },
+  "runtimeTabletConstructionSha256": "e394b15b09da3ab69cfacffa7c51d2933f2610e68ba72f6926322fc8a677639e",
+  "navigatorRigSha256": "fca48e41ab3cf77216eef38b36e341b5c83c12259739c5e0f4c7213c3cb89919",
+  "cabinSurfaceMetadataSha256": "171a2c2da732009b12d83a45f32d3c64d1da16dba92068f18dae5482ddbeee1d",
+  "runtimeTabletPartCount": 14,
+  "nativeNavigatorSkins": 4,
+  "nativeNavigatorVerticesCompared": 10232,
+  "maximumNavigatorRestErrorMeters": 2.5910230681563136e-07
 }

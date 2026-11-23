@@ -38,3 +38,14 @@ test('four-player ready display waits for every driver and navigator role',()=>{
   assert.deepEqual(readyRoleState({stageReady:[true,false,true,false]}),{driverReady:true,navigatorReady:false});
   assert.deepEqual(readyRoleState({stageReady:[true,true,true,true]}),{driverReady:true,navigatorReady:true});
 });
+
+
+test('four-player results identify either winner and keep both seats of a crew consistent',async()=>{
+ const {raceResultLabel}=await import('./race-controls.js');
+ const cars=[{dead:false,finish:12},{dead:false,finish:10}];
+ for(const slot of[0,1,2,3])assert.equal(raceResultLabel({cars,phase:'ended',winner:1},slot),'CREW B WINS');
+ assert.equal(raceResultLabel({cars,phase:'ended',winner:0},1),'CREW A WINS');
+ assert.equal(raceResultLabel({cars:[{dead:true,finish:-1},{dead:false,finish:-1}],phase:'running'},1),'CREW B STILL RACING');
+ assert.equal(raceResultLabel({cars:cars.map(()=>({dead:true,finish:-1})),phase:'ended',winner:null},3),"BOTH CREWS TREE'D");
+ assert.equal(raceResultLabel({cars:[cars[0]],phase:'ended',winner:0},1),'');
+});

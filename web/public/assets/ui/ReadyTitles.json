@@ -1,0 +1,282 @@
+{
+  "source": "Native StageReadyOverlay.Build RVA0x549E20 / Apply0x549BB0; original Anton atlas",
+  "copyright": "Original game and artwork: Stellux Interactive. Authorized original content; excluded from source-code MIT license.",
+  "titles": [
+    {
+      "url": "/assets/ui/ReadyControlsTitle.png",
+      "text": "CONTROLS",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 52,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        352,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "1332e349ebc3dfc40b874d4d5a881cdae3cfd5c0fc32e72139147005ce66c70b"
+    },
+    {
+      "url": "/assets/ui/ReadyDriverTitle.png",
+      "text": "DRIVER",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 26,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        243,
+        85
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "15d083d3935080a6770f331f6f6a376ed00306a3b5f0deb1e0071041b0103e03"
+    },
+    {
+      "url": "/assets/ui/ReadyNavigatorTitle.png",
+      "text": "NAVIGATOR",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 26,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        384,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "58492b741c8e7610279a45d0fb53dd0aeb6a9ee5439c0fb240274866ff384c74"
+    },
+    {
+      "url": "/assets/ui/ReadyFooter.png",
+      "text": "PRESS R WHEN READY",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 36,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        760,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "37e450ff95673bd68122f49afec1e137364d2c116e5d5b6069d5b22037edb111"
+    },
+    {
+      "url": "/assets/ui/ReadyStatus00.png",
+      "text": "DRIVER  \u2014      NAVIGATOR  \u2014",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 22,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        968,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "60ce835b4528671ca82445f6739ffd95ba4a71408e5782697abf44c7a50eb544"
+    },
+    {
+      "url": "/assets/ui/ReadyStatus01.png",
+      "text": "DRIVER  \u2014      NAVIGATOR  READY",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 22,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1139,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "e34b15f4a81a1ce62b865f6b7f1c7883db2676c865fb4ac135510e1f72fae398"
+    },
+    {
+      "url": "/assets/ui/ReadyStatus10.png",
+      "text": "DRIVER  READY      NAVIGATOR  \u2014",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 22,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1137,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "3428e912893b4f77e8f51397dea855bb516da2d06670ab5be7c22574e1b74581"
+    },
+    {
+      "url": "/assets/ui/ReadyStatus11.png",
+      "text": "DRIVER  READY      NAVIGATOR  READY",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 22,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        1308,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "6d50348d9277c1b6dd6eb6b5915851adcbb325aea763ddbd9d2a8b5c652d2bc3"
+    }
+  ],
+  "nativePanel": {
+    "referenceResolution": [
+      1920,
+      1080
+    ],
+    "size": [
+      980,
+      620
+    ],
+    "paletteSource": "StageReadyOverlay.Build literal Dim RGBA at RVA0x54A0C7; other palette entries GameUiColors .cctor token0x60002E9 RVA0x539C60",
+    "palette": {
+      "Backdrop": [
+        0.05,
+        0.04,
+        0.03,
+        0.62
+      ],
+      "Panel": [
+        0.08,
+        0.075,
+        0.07,
+        0.96
+      ],
+      "Amber": [
+        1,
+        0.69,
+        0.13,
+        1
+      ],
+      "Sand": [
+        0.86,
+        0.78,
+        0.58,
+        1
+      ],
+      "Dim": [
+        0.52,
+        0.48,
+        0.4,
+        1
+      ]
+    },
+    "driverControls": "W / S     throttle / brake\nA / D     steer\nSPACE     handbrake\nMOUSE     look around",
+    "navigatorControls": "E            grab / drop tablet\nHOLD E       dash knob = wipers\n             (drop tablet first)\nLMB + look   grab open door, slam shut\nMOUSE        look around",
+    "bodyFont": "ShareTechMono-Regular",
+    "bodyFontSize": 20,
+    "rectsTopDown": {
+      "title": [
+        39.2,
+        12.4,
+        901.6,
+        74.4
+      ],
+      "driverHead": [
+        58.8,
+        86.8,
+        411.6,
+        62
+      ],
+      "driverBody": [
+        58.8,
+        148.8,
+        411.6,
+        248
+      ],
+      "navigatorHead": [
+        509.6,
+        86.8,
+        411.6,
+        62
+      ],
+      "navigatorBody": [
+        509.6,
+        148.8,
+        411.6,
+        285.2
+      ],
+      "footer": [
+        58.8,
+        458.8,
+        862.4,
+        86.8
+      ],
+      "status": [
+        39.2,
+        545.6,
+        901.6,
+        62
+      ]
+    }
+  },
+  "note": "White original 96px glyph masks. Preserve aspect; scale by nativeTextFontSize/sourceFontSize before viewport scaling. Source UI references do not establish browser interaction/rendering parity."
+}

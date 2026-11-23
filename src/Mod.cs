@@ -88,6 +88,7 @@ public sealed class Mod : MelonMod
 
     public override void OnUpdate()
     {
+        RenderDiagnostics.Tick();
         RaceNetwork.Update();
         CourseSession.Update();
         if(RaceNetwork.Enabled) RaceRuntime.Active?.Update(); else StageHazards.Active?.Tick();
@@ -97,6 +98,7 @@ public sealed class Mod : MelonMod
 
     public override void OnGUI()
     {
+        RenderDiagnostics.Gui();
         GuiFonts.Apply();
         RaceRuntime.Active?.Gui();
         RaceNetwork.Gui();

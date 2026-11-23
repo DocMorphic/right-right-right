@@ -23,7 +23,7 @@ function sampleHeight(terrain,heights,u,v){
  const at=(x,z)=>heights.getUint16((z*r+x)*2,true)/terrain.heightDivisor*terrain.spacing[1];
  return mix(mix(at(x0,z0),at(x1,z0),x-x0),mix(at(x0,z1),at(x1,z1),x-x0),z-z0);
 }
-export function detailPatch(source,details,patchX,patchZ){
+export function detailPatch(source,details,patchX,patchZ,density=1){
  const terrain=source.data.terrain,spec=details.data,res=spec.resolution,span=spec.patchSamples,transform=new THREE.Matrix4().fromArray(terrain.matrix),heights=new DataView(source.heights),point=new THREE.Vector3();
  return spec.layers.map((layer,index)=>{
   const positions=[],sizes=[],colors=[],healthy=new THREE.Color().setRGB(...layer.healthyColor.slice(0,3),THREE.SRGBColorSpace),dry=new THREE.Color().setRGB(...layer.dryColor.slice(0,3),THREE.SRGBColorSpace),color=new THREE.Color(),coverage=details.coverages[index];
@@ -31,6 +31,8 @@ export function detailPatch(source,details,patchX,patchZ){
    const value=coverage[z*res+x];if(!value)continue;
    const expected=value*(layer.useDensityScaling===0?1:spec.density)*(layer.density??1),count=Math.floor(expected)+(random(x,z,index,0)<expected%1?1:0);
    for(let n=0;n<count;n++){
+    // A stable subset of the authored coverage; quality changes never move it.
+    if(density<1&&random(x,z,index,n*5+8)>=density)continue;
     const u=(x+random(x,z,index,n*5+1))/res,v=(z+random(x,z,index,n*5+2))/res;
     point.set(-u*terrain.size[0],sampleHeight(terrain,heights,u,v),v*terrain.size[2]).applyMatrix4(transform);positions.push(point.x,point.y,point.z);
     sizes.push(mix(layer.minWidth,layer.maxWidth,random(x,z,index,n*5+3)),mix(layer.minHeight,layer.maxHeight,random(x,z,index,n*5+4)));
@@ -43,7 +45,7 @@ export function detailPatch(source,details,patchX,patchZ){
 function grassMaterial(texture,center,distance){
  const material=new THREE.MeshBasicMaterial({map:texture,alphaTest:.5,side:THREE.DoubleSide,depthWrite:true,fog:true});
  material.onBeforeCompile=shader=>{
-  shader.uniforms.nativeGrassCenter={value:center};shader.uniforms.nativeGrassDistance={value:distance};
+  shader.uniforms.nativeGrassCenter={value:center};shader.uniforms.nativeGrassDistance=distance;
   shader.vertexShader='attribute vec3 nativeGrassOffset;attribute vec2 nativeGrassSize;attribute vec3 nativeGrassColor;varying vec3 vNativeGrassColor;varying vec2 vNativeGrassOffset;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','vec3 nativeFacing=cameraPosition-nativeGrassOffset;nativeFacing.y=0.;vec3 nativeRight=normalize(vec3(nativeFacing.z,0.,-nativeFacing.x)+vec3(.000001,0.,0.));vec3 transformed=nativeGrassOffset+nativeRight*position.x*nativeGrassSize.x+vec3(0.,position.y*nativeGrassSize.y,0.);vNativeGrassColor=nativeGrassColor;vNativeGrassOffset=nativeGrassOffset.xz;');
   shader.fragmentShader='uniform vec2 nativeGrassCenter;uniform float nativeGrassDistance;varying vec3 vNativeGrassColor;varying vec2 vNativeGrassOffset;\n'+shader.fragmentShader;
@@ -62,16 +64,22 @@ function geometryFor(patches,layer){
 export class NativeDetails{
  constructor(world,source,details){
   this.world=world;this.source=source;this.details=details;this.patches=new Map();this.meshes=[];this.center=new THREE.Vector2();this.distance=details.data.renderDistance;
+  this.density=1;this.distanceUniform={value:this.distance};
   this.inverse=new THREE.Matrix4().fromArray(source.data.terrain.matrix).invert();this.point=new THREE.Vector3();this.disposed=false;
-  details.data.layers.forEach(layer=>{const mesh=new THREE.Mesh(geometryFor(this.patches,0),grassMaterial(details.textures.get(layer.textureUrl),this.center,this.distance));mesh.frustumCulled=false;mesh.castShadow=mesh.receiveShadow=false;mesh.name='Original native grass';mesh.userData.nativeDetails=true;this.meshes.push(mesh);world.add(mesh);});
+  details.data.layers.forEach(layer=>{const mesh=new THREE.Mesh(geometryFor(this.patches,0),grassMaterial(details.textures.get(layer.textureUrl),this.center,this.distanceUniform));mesh.frustumCulled=false;mesh.castShadow=mesh.receiveShadow=false;mesh.name='Original native grass';mesh.userData.nativeDetails=true;this.meshes.push(mesh);world.add(mesh);});
+ }
+ setReduced(value){
+  const distance=value?Math.min(24,this.details.data.renderDistance):this.details.data.renderDistance,density=value?.35:1;
+  if(distance===this.distance&&density===this.density)return;
+  this.distance=distance;this.density=density;this.distanceUniform.value=distance;this.patches.clear();this.dirty=true;
  }
  update(x,z,now){
   if(this.disposed)return;this.center.set(x,z);const terrain=this.source.data.terrain,spec=this.details.data;
   this.point.set(x,0,z).applyMatrix4(this.inverse);const localX=-this.point.x,localZ=this.point.z,sx=terrain.size[0]/spec.patchCount,sz=terrain.size[2]/spec.patchCount,r=this.distance;
-  const wanted=new Set();let changed=false;
+  const wanted=new Set();let changed=Boolean(this.dirty);this.dirty=false;
   for(let pz=Math.max(0,Math.floor((localZ-r)/sz));pz<Math.min(spec.patchCount,Math.ceil((localZ+r)/sz));pz++)for(let px=Math.max(0,Math.floor((localX-r)/sx));px<Math.min(spec.patchCount,Math.ceil((localX+r)/sx));px++){
    const dx=Math.max(px*sx-localX,0,localX-(px+1)*sx),dz=Math.max(pz*sz-localZ,0,localZ-(pz+1)*sz);if(dx*dx+dz*dz>r*r)continue;
-   const key=`${px},${pz}`;wanted.add(key);if(!this.patches.has(key)){this.patches.set(key,detailPatch(this.source,this.details,px,pz));changed=true;}
+   const key=`${px},${pz}`;wanted.add(key);if(!this.patches.has(key)){this.patches.set(key,detailPatch(this.source,this.details,px,pz,this.density));changed=true;}
   }
   for(const key of this.patches.keys())if(!wanted.has(key)){this.patches.delete(key);changed=true;}
   if(changed)this.meshes.forEach((mesh,layer)=>{const old=mesh.geometry;mesh.geometry=geometryFor(this.patches,layer);old.dispose();});

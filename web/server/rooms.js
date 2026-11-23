@@ -1,6 +1,6 @@
 import {generateCourse, STAGES} from '../shared/course.js';
 import {PROTOCOL_VERSION, MODES, validMode, playerCount, safeName, validSeed, validInput, newer, START_COUNTDOWN_SECONDS} from '../shared/protocol.js';
-import {makeWorld, stepWorld, applyActions} from '../shared/physics.js';
+import {makeWorld, stepWorld, stepCrashedTablets, applyActions} from '../shared/physics.js';
 
 const courses = new Map();
 export const clockSeconds = () => Date.now()/1000;
@@ -25,11 +25,13 @@ export function newRoom(code,session,message,now=clockSeconds()){
 }
 export function lobbyMessage(room){
   return {type:'lobby',version:PROTOCOL_VERSION,revision:room.revision??0,code:room.code,hostId:room.hostId,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,status:room.status,epoch:room.epoch,
-    playersRequired:playerCount(room),seats:Array.from({length:room.practice?1:MODES[room.mode].players},(_,i)=>room.seats[i]?{id:room.seats[i].id,name:room.seats[i].name,ready:room.seats[i].ready}:null)};
+    playersRequired:playerCount(room),seatSwaps:true,driverDoors:true,dashboardTabletMounts:true,seats:Array.from({length:room.practice?1:MODES[room.mode].players},(_,i)=>room.seats[i]?{id:room.seats[i].id,name:room.seats[i].name,ready:room.seats[i].ready}:null)};
 }
 export function snapshotMessage(room,now=clockSeconds()){
   const world=room.world;if(!world)return null;
-  return {type:'snapshot',...world,revision:room.revision??0,time:Math.max(now,room.lastAt),serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,arrived:i.arrived,ttl:i.ttl??.5,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
+  // The broadcast interval can run between physics ticks. Timestamp the state
+  // that was actually simulated so clients also forecast that scheduling gap.
+  return {type:'snapshot',...world,revision:room.revision??0,time:Number.isFinite(room.lastAt)?room.lastAt:now,serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,arrived:i.arrived,ttl:i.ttl??.5,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
 }
 export function raceMessage(room,now=clockSeconds()){
   return {type:'race',revision:room.revision??0,epoch:room.epoch,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,courseHash:courseHash(courseFor(room)),snapshot:snapshotMessage(room,now)};
@@ -62,16 +64,29 @@ function beginStageCountdown(room,now){
     world.phase='countdown';world.countdown=START_COUNTDOWN_SECONDS;room.lastAt=now;
   }
 }
-export function advanceRoom(room,now=clockSeconds()){
+export function advanceRoom(room,now=clockSeconds(),{fixedStep=false,maxCatchup=2}={}){
   if(!room.world){room.lastAt=now;return;}
   const world=room.world;
   const missing=room.seats.filter(Boolean).length!==playerCount(room)||room.seats.some(s=>s&&now-s.lastSeen>10);
   if(missing&&world.phase!=='ended'&&world.phase!=='paused'){world.resumePhase=world.phase;world.phase='paused';}
   if(!missing&&world.phase==='paused'){world.phase=world.resumePhase||'running';delete world.resumePhase;}
   beginStageCountdown(room,now);
-  const simulationStart=room.lastAt;let progressed=0;
-  let remaining=Math.max(0,Math.min(2,now-room.lastAt));room.lastAt=Math.max(room.lastAt,now);
-  if(world.phase==='paused'||world.phase==='ended'||world.phase==='waiting')return;
+  // The WebSocket authority owns a 50 Hz clock. Network packets must not split
+  // its ticks into tiny Rapier steps, and a slow host must yield instead of
+  // repeatedly simulating seconds of backlog before it can service sockets.
+  const gap=Math.max(0,now-room.lastAt);
+  const budget=Math.min(maxCatchup,gap);
+  let remaining=fixedStep?Math.floor((budget+1e-7)/.02)*.02:budget;
+  const simulationStart=fixedStep&&gap>maxCatchup?now-remaining:room.lastAt;let progressed=0;
+  room.lastAt=fixedStep?simulationStart+remaining:Math.max(room.lastAt,now);
+  if(world.phase==='paused'||world.phase==='waiting'){room.lastAt=Math.max(room.lastAt,now);return;}
+  if(world.phase==='ended'){
+    let stepped=false;
+    while(remaining>1e-6&&world.tabletSettleRemaining>0){const dt=Math.min(.02,remaining);remaining-=dt;stepped=stepCrashedTablets(world,dt,courseFor(room))||stepped;}
+    if(stepped)world.seq++;
+    return;
+  }
+  if(remaining<=1e-6)return;
   const course=courseFor(room);
   while(remaining>1e-6){
     const dt=Math.min(.02,remaining);remaining-=dt;progressed+=dt;const stepAt=simulationStart+progressed-dt*.5;
@@ -91,13 +106,13 @@ function startRoom(room,now,{stageReady=room.stageReadyRequired}={}){
   if(room.practice)room.world.tablets[0].holder=0;
 }
 /** All room mutations are transport independent and JSON serializable for the D1 adapter. */
-export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5}={}){
+export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5,advance=true}={}){
   // HTTP tabs have no reliable disconnect event. Expired peers release their seats;
   // the oldest remaining crew member becomes host through removePlayer.
   for(const seat of [...room.seats])if(seat&&seat.id!==session.id&&now-seat.lastSeen>30)removePlayer(room,seat.id,now);
   const slot=seatOf(room,session.id);if(slot<0)fail('membership','Join a room first.');
   room.seats[slot].lastSeen=Math.max(room.seats[slot].lastSeen,now);
-  advanceRoom(room,now);
+  if(advance)advanceRoom(room,now);
   const host=room.hostId===session.id;
   switch(message.type){
     case 'poll':return {broadcast:false};
@@ -107,8 +122,12 @@ export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5
     case 'seat':{
       if(room.status!=='lobby')fail('started','Seats can only change in the lobby.');
       if(!Number.isInteger(message.slot)||message.slot<0||message.slot>=playerCount(room))fail('seat','Choose an available seat.');
-      if(room.seats[message.slot]&&message.slot!==slot)fail('occupied','That seat is occupied.');
-      room.seats[message.slot]=room.seats[slot];if(message.slot!==slot)room.seats[slot]=null;resetReady(room);return {broadcast:true};
+      const target=message.slot;if(target===slot)return {broadcast:false};
+      if(room.seats[target]&&message.swap!==true)fail('occupied','That seat is occupied.');
+      // A swap moves only the requesting player and the selected occupant.
+      // Hosting remains attached to identity, independently of driving role.
+      const other=room.seats[target]??null;room.seats[target]=room.seats[slot];room.seats[slot]=other;
+      room.inputs=[];resetReady(room);return {broadcast:true};
     }
     case 'configure':{
       if(!host)fail('host','Only the host can configure the room.');if(room.status!=='lobby')fail('started','Return to the lobby first.');

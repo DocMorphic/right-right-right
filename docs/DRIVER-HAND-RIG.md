@@ -1,6 +1,6 @@
-# Original driver hand rig candidate
+# Original driver hand rig
 
-This work is frozen as a **local candidate**, deferred from the current playable browser release at the user's direction. No public `car.glb`, scene manifest, browser renderer or deployed asset was replaced.
+The browser renderer uses the original skinned driver and native grip references. Current tablet/cabin visual parity changes remain local at the user's direction; the live build received only the separately requested larger wiper control. `car.glb` remains unchanged.
 
 Run `.venv-build/bin/python tools/export_driver_rig.py`. The default output is ignored `local/web-assets/driver-rig-candidate/driver-rig.glb` and `DriverWheelHandIk.json`. The source runtime defaults to the authorized compiled native player. The JSON's `/assets/driver-rig.glb` URL is a proposed integration URL, not a claim that the file is currently published.
 

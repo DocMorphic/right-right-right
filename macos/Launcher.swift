@@ -29,8 +29,9 @@ final class GameRunner {
         if let testRoot = testRoot, CommandLine.arguments.contains("--rrr-relay-verify") {
             base = URL(fileURLWithPath: String(testRoot.dropFirst("--rrr-mac-test-root=".count)), isDirectory: true)
         } else {
+            let flavor = bundle.object(forInfoDictionaryKey: "RRRRuntimeFlavor") as? String ?? "legacy"
             base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent("RightRightRight/Mac/" + contentVersion, isDirectory: true)
+                .appendingPathComponent("RightRightRight/Mac/" + contentVersion + "/" + flavor, isDirectory: true)
         }
         engine = bundle.bundleURL.appendingPathComponent("Contents/" + enginePath, isDirectory: true)
         wine = engine.appendingPathComponent(winePath)
@@ -49,6 +50,12 @@ final class GameRunner {
         env["WINEMSYNC"] = "0"
         env["WINEDLLOVERRIDES"] = "version=n,b;mscoree,mshtml="
         env["WINESERVER"] = server.path
+        if let backend = bundle.object(forInfoDictionaryKey: "RRRGraphicsBackend") as? String, !backend.isEmpty {
+            env["GRAPHICS_BACKEND"] = backend
+        }
+        if bundle.object(forInfoDictionaryKey: "RRRDisableSamplerLodBias") as? Bool == true {
+            env["MVK_CONFIG_EMULATE_SAMPLER_LOD_BIAS"] = "0"
+        }
         environment = env
     }
 
@@ -168,6 +175,23 @@ final class GameDelegate: NSObject, NSApplicationDelegate {
     var runner: GameRunner?
     var window: NSWindow?
     var label: NSTextField?
+    var startupTimer: Timer?
+
+    func watchGameStart(_ runner: GameRunner) {
+        startupTimer?.invalidate()
+        let started = Date()
+        let log = runner.base.appendingPathComponent("Game/RightRightRight/player/MelonLoader/Latest.log")
+        startupTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
+            guard let self = self else { timer.invalidate(); return }
+            if Date().timeIntervalSince(started) > 120 || runner.stopped { timer.invalidate(); return }
+            guard let attributes = try? FileManager.default.attributesOfItem(atPath: log.path),
+                  let modified = attributes[.modificationDate] as? Date, modified >= started,
+                  let text = try? String(contentsOf: log, encoding: .utf8),
+                  text.contains("UI_FONT_PASS:") else { return }
+            timer.invalidate()
+            self.window?.orderOut(nil)
+        }
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 160),
@@ -190,7 +214,10 @@ final class GameDelegate: NSObject, NSApplicationDelegate {
             do {
                 let runner = try GameRunner()
                 self.runner = runner
-                let status = try runner.start { status in DispatchQueue.main.async { self.label?.stringValue = status } }
+                let status = try runner.start { status in DispatchQueue.main.async {
+                    self.label?.stringValue = status
+                    if status == "Starting Right Right Right…" { self.watchGameStart(runner) }
+                } }
                 DispatchQueue.main.async {
                     if status != 0 { self.showError("The game stopped unexpectedly. Launch log: " + runner.base.appendingPathComponent("Logs/mac-launcher.log").path) }
                     NSApp.terminate(nil)
@@ -210,6 +237,7 @@ final class GameDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        startupTimer?.invalidate()
         runner?.cancel()
         return .terminateNow
     }

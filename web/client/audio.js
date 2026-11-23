@@ -4,6 +4,7 @@
  * Web Audio and Unity DSP are different renderers; this ports source parameters, not a bit-exact output claim.
  */
 import {assetUrl} from './asset-url.js';
+import {SpectatorAudio,SPECTATOR_SOUNDS} from './spectator-audio.js';
 const clamp=(value,lo=0,hi=1)=>Math.max(lo,Math.min(hi,value));
 const move=(value,target,amount)=>value+Math.sign(target-value)*Math.min(Math.abs(target-value),Math.max(0,amount));
 const smooth=value=>{value=clamp(value);return value*value*(3-2*value);};
@@ -47,21 +48,22 @@ export class NativeEngineMix {
   }
 }
 export class RallyAudio {
-  constructor(){this.enabled=true;this.buffers=new Map();this.loops=new Map();this.active=false;this.ready=false;this.unlocked=false;this.volumes={game:.5,menu:.5,music:.5};this.engine=new NativeEngineMix();this.oneShots=new Set();this.loadErrors=[];this.lastPhase='';this.lastCountdown=-1;this.stats={};this.lastMud=0;this.epoch=null;this.lastTime=null;}
+  constructor(){this.enabled=true;this.buffers=new Map();this.loops=new Map();this.active=false;this.ready=false;this.unlocked=false;this.volumes={game:.5,menu:.5,music:.5};this.engine=new NativeEngineMix();this.spectators=new SpectatorAudio(this);this.oneShots=new Set();this.loadErrors=[];this.lastPhase='';this.lastCountdown=-1;this.stats={};this.lastMud=0;this.epoch=null;this.lastTime=null;}
   get active(){return this._active||false;}
-  set active(value){this._active=Boolean(value);if(this._active){this.stop('menu_music');if(this.musicBus)this.musicBus.gain.value=0;}else this.applyVolumes();}
+  set active(value){this._active=Boolean(value);if(this._active){this.stop('menu_music');if(this.musicBus)this.musicBus.gain.value=0;}else{this.spectators?.reset();this.applyVolumes();}}
+  setCourse(course){this.spectators.setCourse(course);}
   async init(manifest){
     this.manifest=manifest;this.context=new (window.AudioContext||window.webkitAudioContext)();this.master=this.context.createGain();this.master.gain.value=this.enabled?1:0;this.master.connect(this.context.destination);
     this.gameBus=this.context.createGain();this.gameBus.connect(this.master);this.uiBus=this.context.createGain();this.uiBus.connect(this.master);this.musicBus=this.context.createGain();this.musicBus.connect(this.master);
     for(const bus of ['game','menu','music']){try{const stored=localStorage.getItem(`rw.vol.${bus}`);if(stored!==null&&Number.isFinite(Number(stored)))this.volumes[bus]=clamp(Number(stored));}catch{}}this.applyVolumes();this.bindGestures();
-    await Promise.all(Object.entries(manifest.sounds||{}).map(async([name,asset])=>{try{const response=await fetch(assetUrl(asset.url));if(!response.ok)throw new Error(`HTTP ${response.status}`);this.buffers.set(name,await this.context.decodeAudioData(await response.arrayBuffer()));}catch(error){this.loadErrors.push({name,message:error.message});}}));this.ready=true;if(this.unlocked)this.unlock();
+    await Promise.all(Object.entries({...manifest.sounds,...SPECTATOR_SOUNDS}).map(async([name,asset])=>{try{const response=await fetch(assetUrl(asset.url));if(!response.ok)throw new Error(`HTTP ${response.status}`);this.buffers.set(name,await this.context.decodeAudioData(await response.arrayBuffer()));}catch(error){this.loadErrors.push({name,message:error.message});}}));this.ready=true;if(this.unlocked)this.unlock();
   }
   bindGestures(){if(typeof document==='undefined'||this.bound)return;this.bound=true;const gesture=()=>this.unlock();document.addEventListener('pointerdown',gesture,true);document.addEventListener('keydown',gesture,true);
     document.addEventListener('pointerover',event=>{const button=event.target?.closest?.('button');if(button&&!button.disabled&&!button.contains(event.relatedTarget))this.play('hover',this.getVolume('menu')*8,'ui');});
     document.addEventListener('click',event=>{const button=event.target?.closest?.('button');if(button&&!button.disabled&&event.detail>0&&(event.button??0)===0)this.play('click',this.getVolume('menu')*1.6,'ui');},true);
   }
   unlock(){this.unlocked=true;this.context?.resume().catch(()=>{});}
-  setEnabled(value){this.enabled=Boolean(value);if(this.master)this.master.gain.value=this.enabled?1:0;}
+  setEnabled(value){this.enabled=Boolean(value);if(this.master)this.master.gain.value=this.enabled?1:0;if(!this.enabled)this.spectators.stop();}
   getVolume(bus){return this.volumes[bus]??.5;}
   setVolume(bus,value){if(!Object.hasOwn(this.volumes,bus)||!Number.isFinite(Number(value)))return;this.volumes[bus]=clamp(Number(value));try{localStorage.setItem(`rw.vol.${bus}`,String(this.volumes[bus]));}catch{}this.applyVolumes();}
   applyVolumes(){if(this.gameBus)this.gameBus.gain.value=this.volumes.game*.35;if(this.uiBus)this.uiBus.gain.value=1;if(this.musicBus)this.musicBus.gain.value=this.active?0:this.volumes.music*.55;}
@@ -73,12 +75,15 @@ export class RallyAudio {
     gain.connect(bus==='music'?this.musicBus:this.gameBus);source.start();const result={source,gain,panner,extra};this.loops.set(name,result);return result;
   }
   stop(name){const voice=this.loops.get(name);if(!voice)return;try{voice.source.stop();}catch{}voice.source.disconnect();voice.gain.disconnect();for(const node of voice.extra||[])node.disconnect();this.loops.delete(name);}
-  update(snapshot,slot,input={}){
+  update(snapshot,slot,input={},localCar=null){
     if(!this.ready||!this.context)return;const now=this.context.currentTime,dt=clamp(this.lastTime===null?1/60:now-this.lastTime,0,.1);this.lastTime=now;
     if(!this.active){for(const name of [...this.loops.keys()])if(name!=='menu_music')this.stop(name);const music=this.loop('menu_music',0,'music');if(music)music.gain.gain.value=1;this.epoch=null;return;}
-    this.stop('menu_music');const car=snapshot?.cars[Math.floor(slot/2)];if(!snapshot||!car)return;
+    this.stop('menu_music');const authority=snapshot?.cars[Math.floor(slot/2)];if(!snapshot||!authority)return;
+    // Local speed gives immediate engine/brake feedback. Ownership, hazards,
+    // doors and results always come from the authority, including during a crash.
+    const car=slot%2===0&&localCar&&snapshot.phase==='running'&&!authority.dead&&authority.finish<0?{...authority,speed:localCar.speed,vx:localCar.vx,vz:localCar.vz,steer:localCar.steer,grounded:localCar.grounded}:authority;
     if(this.epoch!==snapshot.epoch||this.slot!==slot){this.epoch=snapshot.epoch;this.slot=slot;for(const name of [...this.loops.keys()])if(name!=='menu_music')this.stop(name);for(const shot of [...this.oneShots])if(shot.bus==='game'){try{shot.source.stop();}catch{}shot.source.disconnect();shot.gain.disconnect();this.oneShots.delete(shot);}this.engine.reset();this.lastPhase='';this.lastCountdown=-1;this.stats={...snapshot.stats};this.lastMud=car.mud||0;this.lastDead=Boolean(car.dead);}
-    // Both occupants hear the driver's authoritative engine, never the navigator's local WASD.
+    // Both occupants hear the driver's engine, never the navigator's local WASD.
     const driver={...(snapshot.inputs?.[Math.floor(slot/2)*2]||{})};if(slot%2===0&&snapshot.phase==='running')Object.assign(driver,input);if(snapshot.phase!=='running'||car.dead||car.finish>=0)Object.assign(driver,{throttle:0,steer:0,handbrake:false});
     const voices=this.engine.step(car,driver,dt);for(const state of voices){const voice=this.loop(state.name,state.highpass);if(voice){voice.gain.gain.setValueAtTime(car.dead?0:state.name==='wind sound car'?state.volume:state.volume<.008?0:clamp(state.volume),now);voice.source.playbackRate.setValueAtTime(state.pitch,now);}}
     const wind=this.loops.get('wind sound car');if(wind?.panner){const eye=this.manifest.anchors?.[slot%2===0?'Main Camera':'EyeAnchor']?.position||[0,1.3,0];for(const [key,value] of [['positionX',-eye[0]],['positionY',-eye[1]],['positionZ',-eye[2]]])wind.panner[key]?.setValueAtTime(value,now);const yaw=-(input.yaw||0)*Math.PI/180,pitch=((input.pitch||0)+(slot%2===0?11.29:8.1))*Math.PI/180,listener=this.context.listener;for(const [key,value] of [['forwardX',Math.sin(yaw)*Math.cos(pitch)],['forwardY',-Math.sin(pitch)],['forwardZ',Math.cos(yaw)*Math.cos(pitch)],['upX',0],['upY',1],['upZ',0]])listener?.[key]?.setValueAtTime(value,now);}
@@ -86,6 +91,7 @@ export class RallyAudio {
     if(snapshot.phase==='running'&&this.lastPhase==='countdown')this.play('countdown-go');
     if((snapshot.stats?.impacts||0)>(this.stats.impacts||0)||car.dead&&!this.lastDead)this.play('collision-heavy');
     if((car.mud||0)>this.lastMud+.001)this.play('mud',.9);
+    this.spectators.update(snapshot,slot,input.yaw||0,dt);
     this.lastDead=car.dead;this.lastMud=car.mud||0;this.stats={...snapshot.stats};this.lastPhase=snapshot.phase;
   }
 }

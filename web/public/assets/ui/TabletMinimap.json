@@ -1,0 +1,216 @@
+{
+  "sourceFile": "level1",
+  "sourcePathId": 40329,
+  "serializedBytes": 168,
+  "decodedBytes": 168,
+  "roadObjectName": "road_0001",
+  "orthoSize": 75.0,
+  "lookAheadFrac": 0.4000000059604645,
+  "rtSize": 512,
+  "roadWidthMul": 1.350000023841858,
+  "markerSize": 10.0,
+  "roadColor": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "markerFill": [
+    0.3499999940395355,
+    0.3499999940395355,
+    0.3499999940395355,
+    1.0
+  ],
+  "markerOutline": [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+  ],
+  "mapBackground": [
+    0.20000000298023224,
+    0.18000000715255737,
+    0.10000000149011612,
+    1.0
+  ],
+  "markerTriangleFactors": [
+    [
+      0,
+      0,
+      0.62
+    ],
+    [
+      -0.42,
+      0,
+      -0.48
+    ],
+    [
+      0.42,
+      0,
+      -0.48
+    ]
+  ],
+  "screenRuntimeTransform": {
+    "position": [
+      0,
+      0.9444444635768003,
+      -0.015
+    ],
+    "eulerDegrees": [
+      -90,
+      0,
+      0
+    ],
+    "scale": [
+      0.58,
+      -0.55,
+      1
+    ],
+    "note": "Native LayoutScreen modifies the source scene Screen quad on startup; values in native Unity tablet-local coordinates."
+  },
+  "privacy": {
+    "shaderProperty": "_Privacy",
+    "driver": 1,
+    "navigator": 0,
+    "glassColor": [
+      0.1,
+      0.09,
+      0.07,
+      1
+    ],
+    "hidesTimerText": true,
+    "addsText": false
+  },
+  "timer": {
+    "source": "Native GameAssembly TabletMinimap.BuildTimerHud RVA0x50E2A0 / UpdateTimerHud RVA0x5109F0; CabinFont.Font RVA0x4E9650",
+    "type": "3D TextMesh and native cubes, not Canvas/TMP or a route image header",
+    "parent": "Tablet",
+    "window": {
+      "name": "TimerWindow",
+      "position": [
+        0,
+        0.7,
+        0.37
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "plate": {
+      "name": "TimerPlate",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.56,
+        0.05,
+        0.11
+      ],
+      "color": [
+        0.02,
+        0.02,
+        0.018,
+        1
+      ]
+    },
+    "rim": {
+      "color": [
+        0.8,
+        0.42,
+        0.08,
+        1
+      ],
+      "cubes": [
+        {
+          "position": [
+            0,
+            0.17,
+            0.045
+          ],
+          "scale": [
+            0.526,
+            0.02,
+            0.006
+          ]
+        },
+        {
+          "position": [
+            0,
+            0.17,
+            -0.045
+          ],
+          "scale": [
+            0.526,
+            0.02,
+            0.006
+          ]
+        },
+        {
+          "position": [
+            0.26,
+            0.17,
+            0
+          ],
+          "scale": [
+            0.006,
+            0.02,
+            0.096
+          ]
+        },
+        {
+          "position": [
+            -0.26,
+            0.17,
+            0
+          ],
+          "scale": [
+            0.006,
+            0.02,
+            0.096
+          ]
+        }
+      ]
+    },
+    "text": {
+      "name": "TimerText",
+      "position": [
+        0,
+        0.04,
+        0.012
+      ],
+      "rotation": "Quaternion.LookRotation(Vector3.up,Vector3.forward)",
+      "scale": [
+        -0.29538461565971375,
+        0.24,
+        1
+      ],
+      "font": "ShareTechMono",
+      "fontSize": 48,
+      "characterSize": 0.05,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "initial": "0:00.0",
+      "format": "minutes + \":\" + seconds.ToString(\"00.0\")",
+      "countdown": "bare integer digit 1..5",
+      "waitingAndCrashed": "empty string",
+      "update": "tenths of a second"
+    }
+  }
+}

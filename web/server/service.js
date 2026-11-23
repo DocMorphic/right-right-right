@@ -1,9 +1,9 @@
 import {randomBytes} from 'node:crypto';
 import {PROTOCOL_VERSION, normalizedCode, safeName} from '../shared/protocol.js';
-import {clockSeconds, newRoom, joinRoom, removePlayer, commandRoom, advanceRoom, roomMessages, seatOf, ProtocolError} from './rooms.js';
+import {clockSeconds, newRoom, joinRoom, removePlayer, commandRoom, advanceRoom, roomMessages, snapshotMessage, seatOf, ProtocolError} from './rooms.js';
 
 export class GameService {
-  constructor({send=()=>{},now=clockSeconds}={}){this.rooms=new Map();this.sessions=new Map();this.send=send;this.now=now;}
+  constructor({send=()=>{},now=clockSeconds,scheduledPhysics=false}={}){this.rooms=new Map();this.sessions=new Map();this.send=send;this.now=now;this.scheduledPhysics=scheduledPhysics;}
   connect(id=randomBytes(12).toString('base64url')){const session={id,name:'Player',code:null,lastSeen:this.now()};this.sessions.set(id,session);this.send(id,{type:'welcome',version:PROTOCOL_VERSION,id,transport:'websocket'});return session;}
   broadcast(room,race=false){room.revision=(room.revision||0)+1;for(const seat of room.seats)if(seat)for(const message of roomMessages(room,this.now(),race))this.send(seat.id,message);}
   receive(id,message){
@@ -26,11 +26,11 @@ export class GameService {
       }
       const room=this.rooms.get(session.code);if(!room)throw new ProtocolError('membership','Create or join a room first.');
       if(message.type==='leave'){this.leave(session);this.send(id,{type:'left'});return;}
-      const result=commandRoom(room,session,message,this.now());if(result.broadcast)this.broadcast(room,result.race);
+      const result=commandRoom(room,session,message,this.now(),{advance:!this.scheduledPhysics});if(result.broadcast)this.broadcast(room,result.race);
     }catch(error){this.send(id,{type:'error',code:error.code||'server',message:error instanceof ProtocolError?error.message:'The server could not handle this message.'});if(!(error instanceof ProtocolError))console.error(error);}
   }
   leave(session){const room=this.rooms.get(session.code);session.code=null;if(!room)return;removePlayer(room,session.id,this.now());if(room.seats.some(Boolean))this.broadcast(room);else this.rooms.delete(room.code);}
   disconnect(id){const session=this.sessions.get(id);if(session)this.leave(session);this.sessions.delete(id);}
-  tick(){for(const room of this.rooms.values()){for(const seat of room.seats)if(seat&&this.sessions.has(seat.id))seat.lastSeen=this.now();advanceRoom(room,this.now());}}
-  snapshots(){for(const room of this.rooms.values())if(room.world){for(const seat of room.seats)if(seat)this.send(seat.id,roomMessages(room,this.now()).at(-1));}}
+  tick(){for(const room of this.rooms.values()){const now=this.now();for(const seat of room.seats)if(seat&&this.sessions.has(seat.id))seat.lastSeen=now;advanceRoom(room,now,this.scheduledPhysics?{fixedStep:true,maxCatchup:.1}:undefined);}}
+  snapshots(){for(const room of this.rooms.values())if(room.world){const message=snapshotMessage(room,this.now());for(const seat of room.seats)if(seat)this.send(seat.id,message);}}
 }

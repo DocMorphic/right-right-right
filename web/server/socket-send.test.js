@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {sendSocketMessage} from './socket-send.js';
+test('a temporary slow connection skips stale snapshots and sends the latest after draining',()=>{const ws={readyState:1,bufferedAmount:300*1024,sent:[],send(s){this.sent.push(JSON.parse(s));},close(){assert.fail('temporary congestion must not disconnect');}};for(let seq=1;seq<=100;seq++)sendSocketMessage(ws,{type:'snapshot',seq});assert.equal(ws.sent.length,0);assert.equal(ws.skippedSnapshots,100);ws.bufferedAmount=0;sendSocketMessage(ws,{type:'snapshot',seq:101});assert.deepEqual(ws.sent,[{type:'snapshot',seq:101}]);assert.equal(ws.skippedSnapshots,0);});
+test('essential messages are not silently dropped and a pathological backlog stays bounded',()=>{const ws={readyState:1,bufferedAmount:300*1024,sent:[],send(s){this.sent.push(JSON.parse(s));},close(code){this.code=code;}};sendSocketMessage(ws,{type:'race',epoch:2});assert.equal(ws.sent[0].epoch,2);ws.bufferedAmount=2*1024*1024;sendSocketMessage(ws,{type:'pong'});assert.equal(ws.code,1013);});

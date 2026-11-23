@@ -18,9 +18,9 @@ test('native cabin aiming follows transformed own-car knob/door and empty-handed
  c.aim(c.door);assert.equal(interactionTarget(o),'door');o.car.door=false;assert.equal(interactionTarget(o),null);o.car.door=true;
  o.snapshot.phase='waiting';assert.equal(interactionTarget(o),null);o.snapshot.phase='running';o.car.dead=true;assert.equal(interactionTarget(o),null);
 });
-test('native knob aim uses 1.3m forward reach and .15m ray tolerance without requiring a knob mesh',()=>{
+test('native knob aim uses 1.3m forward reach and .25m ray tolerance without requiring a knob mesh',()=>{
  const c=cabin(),o=c.context;o.carRoot.position.set(0,0,0);o.carRoot.rotation.set(0,0,0);o.camera.position.set(0,0,0);o.camera.rotation.set(0,0,0);o.car.door=false;
- c.knob.position.set(.149,0,-1.3);assert.equal(interactionTarget(o),'knob');c.knob.position.x=.151;assert.equal(interactionTarget(o),null);
+ c.knob.position.set(.249,0,-1.3);assert.equal(interactionTarget(o),'knob');c.knob.position.x=.251;assert.equal(interactionTarget(o),null);
  c.knob.position.set(0,0,-1.301);assert.equal(interactionTarget(o),null);c.knob.position.z=.5;assert.equal(interactionTarget(o),null);
 });
 test('holding E starts only on an aimed press and continues after looking away until release',()=>{

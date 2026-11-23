@@ -1,0 +1,14 @@
+Original game and assets: Stellux Interactive
+Browser adaptation: Right Right Right
+Used under the developer permission stated by the project owner.
+Licensed original content is excluded from the repository source-code MIT license.
+See the repository LICENSE for the adaptation license.
+
+Roadside spectator audio:
+Cheering excerpts: "Crowd Cheer 6" and "Crowd Cheer 2" by Krizin, Freesound (CC0 1.0).
+https://freesound.org/people/Krizin/sounds/651645/
+https://freesound.org/people/Krizin/sounds/651642/
+https://creativecommons.org/publicdomain/zero/1.0/
+Edited for proximity loops: shortened, filtered, compressed, faded and level matched.
+Pedestrian impact thuds: shortened and filtered derivatives of the authorized original game collision-heavy clip.
+The Instagram reference video/audio is not included in the distributed game.

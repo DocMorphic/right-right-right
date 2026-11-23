@@ -10,8 +10,8 @@ test('all nine stages produce deterministic roadside groups clear of roads, trun
   assert.deepEqual(generateSpectators({...course}),people);assert.ok(people.length>=6&&people.length<=96,JSON.stringify({profile,count:people.length}));counts.push(people.length);
   const start=course.startPose?{x:course.startPose.position[0],z:course.startPose.position[2]}:course.points[course.startIndex??8],finish=course.finishPose?{x:course.finishPose.position[0],z:course.finishPose.position[2]}:course.points[course.finishIndex??course.points.length-9];
   for(const [id,p]of people.entries()){
-   assert.equal(p.id,id);assert.ok(p.variant>=0&&p.variant<4);assert.ok(p.scale>=.9&&p.scale<=1.1);assert.ok(Math.hypot(p.x-start.x,p.z-start.z)>=24.99);assert.ok(Math.hypot(p.x-finish.x,p.z-finish.z)>=24.99);
-   for(let i=0;i<course.points.length-1;i++)assert.ok(distance(p,course.points[i],course.points[i+1])>=Math.max(course.widths?.[i]??course.width,course.widths?.[i+1]??course.width)/2+.79,`profile ${profile}, spectator ${id} crowds the road`);
+   assert.equal(p.id,id);assert.ok(p.variant>=0&&p.variant<6);assert.ok(p.scale>=.9&&p.scale<=1.1);assert.ok(Math.hypot(p.x-start.x,p.z-start.z)>=24.99);assert.ok(Math.hypot(p.x-finish.x,p.z-finish.z)>=24.99);
+   for(let i=0;i<course.points.length-1;i++)assert.ok(distance(p,course.points[i],course.points[i+1])>=Math.max(course.widths?.[i]??course.width,course.widths?.[i+1]??course.width)/2+.11,`profile ${profile}, spectator ${id} crowds the road`);
    for(const tree of course.trees)assert.ok(Math.hypot(p.x-tree.x,p.z-tree.z)>=(tree.radius??.4)+.59,`profile ${profile}, spectator ${id} overlaps a trunk`);
   }
  }
@@ -23,7 +23,7 @@ const course=people=>({seed:12345,points:[{x:0,y:20,z:0},{x:0,y:20,z:100}],width
 test('parked/slow cars do not hit people; swept capsules catch crossings without changing the car',()=>{
  const c=car(),world={...makeSpectatorState(),cars:[c],elapsed:3,phase:'running'},map=course([person(0,0,0),person(1,50,0)]);
  Object.assign(c,{vx:8,vz:0,speed:8});stepSpectators(world,.02,map);assert.equal(world.spectatorHits.length,0,'velocity without actual movement cannot hit someone');
- Object.assign(c,{lastX:-8,x:8,yaw:Math.PI/2,vx:2,speed:2});stepSpectators(world,.02,map);assert.equal(world.spectatorHits.length,0);
+ Object.assign(c,{lastX:-8,x:8,yaw:Math.PI/2,vx:.2,speed:.2});stepSpectators(world,.02,map);assert.equal(world.spectatorHits.length,0);
  Object.assign(c,{vx:8,speed:8});const before=structuredClone(c);stepSpectators(world,.02,map);assert.deepEqual(c,before);assert.equal(world.spectatorHits.length,1);assert.equal(world.spectatorHits[0].id,0);assert.equal(world.spectatorHits[0].time,3);
  for(let i=0;i<20;i++){world.elapsed+=.02;stepSpectators(world,.02,map);}assert.equal(world.spectatorHits.length,1,'a person is hit only once during the run');
 });

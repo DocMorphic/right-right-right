@@ -35,6 +35,8 @@ function restore(bones,quaternions){bones.forEach((bone,index)=>bone.quaternion.
 function cacheAxes(arm,driver){
  const wristRotation=rotation(arm.wrist),inverse=wristRotation.clone().invert();
  arm.forearmLocal=position(arm.lower).sub(position(arm.wrist)).normalize().applyQuaternion(inverse);
+ // Native CacheWristBoneAxes reads wrist.up then InverseTransformDirection,
+ // so its perpendicular reference starts at local Y.
  arm.upLocal=new THREE.Vector3(0,1,0).addScaledVector(arm.forearmLocal,-arm.forearmLocal.y).normalize();
  arm.restWristInDriver=rotation(driver).invert().multiply(wristRotation);
 }
@@ -79,6 +81,7 @@ export class DriverHands{
   this.ready=true;
   // TrySetup 0x4F8150 solves zero-steer arms, then caches THAT pose and its axes.
   this.update(0,{bake:true});for(const arm of this.arms){arm.rest=capture(arm.bones);cacheAxes(arm,this.driver);}
+  this.reachingArm=this.arms.reduce((outer,arm)=>this.model.worldToLocal(position(arm.upper)).x>this.model.worldToLocal(position(outer.upper)).x?arm:outer);
   this.update(0);
  }
  shoulderAim(arm,target,weight,limitWeight,bake){
@@ -102,7 +105,14 @@ export class DriverHands{
     else this.rightPalmLocal.copy(local);
     this.rightWasBrake=handbrake;targetPalm.copy(this.driver.localToWorld(this.rightPalmLocal.clone()));
    }
-   const restRotation=rotation(this.driver).multiply(arm.restWristInDriver),weight=steerWeight(steerDegrees,config.wristIkSteerDeadZone??3,config.wristIkSteerFullAt??110),twistWeight=steerWeight(steerDegrees,config.wristIkSteerDeadZone??3,config.gripTwistFullAt??50);
+   const phase=clamp(options.reachProgress??0,0,1),reachWeight=arm===this.reachingArm?Math.sin(Math.PI*phase)**2:0;
+   if(reachWeight>0){
+    // Extend the outer arm through its own doorway, keeping the native bone
+    // lengths. The tablet is picked up by authority; this is a brief snatch.
+    const reach=this.model.worldToLocal(position(arm.upper));reach.x+=arm.length*.84;reach.y-=.035;reach.z+=.04;
+    targetPalm.lerp(this.model.localToWorld(reach),reachWeight);
+   }
+   const restRotation=rotation(this.driver).multiply(arm.restWristInDriver),weight=Math.max(reachWeight,steerWeight(steerDegrees,config.wristIkSteerDeadZone??3,config.wristIkSteerFullAt??110)),twistWeight=steerWeight(steerDegrees,config.wristIkSteerDeadZone??3,config.gripTwistFullAt??50)*(1-reachWeight);
    const outward=new THREE.Vector3(arm.side==='L'?-1:1,0,0).applyQuaternion(rotation(this.driver)),inside=Math.max(0,arm.side==='L'?steerDegrees:-steerDegrees)*weight;
    const pole=position(arm.lower).addScaledVector(outward,(config.elbowHintRestOutward??.06)+(config.elbowHintOutwardPerDegree??.0022)*inside).add(new THREE.Vector3(0,0,1).applyQuaternion(rotation(this.driver)).multiplyScalar((config.elbowHintForwardPerDegree??.0008)*inside));
    let wristRotation=restRotation.clone();

@@ -4,6 +4,7 @@ import {makeWorld,stepWorld,toggleTablet,openDoor,resolveCarCollision,carAnchor,
 import {STAGES,generateCourse} from '../shared/course.js';
 import {newRoom,joinRoom,commandRoom,advanceRoom,courseFor,courseHash} from './rooms.js';
 import {stepHandling} from '../shared/native-handling.js';
+import {tabletExtents}from'../shared/tablet-physics.js';
 const course={seed:1,width:9.5,points:Array.from({length:120},(_,i)=>({x:0,y:20,z:i*2})),trees:[],mud:[]};
 function running(mode='coop'){const w=makeWorld(course,mode,1);w.phase='running';return w;}
 
@@ -42,18 +43,16 @@ test('tree trunk impact kills the moving crew and ends solo run',()=>{
   assert.equal(w.cars[0].dead,true);assert.equal(w.stats.treeDeaths,1);assert.equal(w.phase,'ended');assert.equal(w.cars[0].speed,0);
 });
 test('tablet drop, closed-door theft rejection, open-door stealing, duplicate action rejection',()=>{
-  const w=running('race');Object.assign(w.cars[0],{x:0,z:40});Object.assign(w.cars[1],{x:-1.9,z:40});
+  const w=running('race');Object.assign(w.cars[0],{x:0,z:40,yaw:0,driverDoor:true,driverDoorAngle:80});Object.assign(w.cars[1],{x:3.4,z:40,yaw:0});
   const p=w.tablets[1];p.holder=-1;Object.assign(p,carAnchor(w.cars[1],3));
-  assert.equal(toggleTablet(w,0,{pitch:0,yaw:90}),false);openDoor(w,1);w.cars[1].doorAngle=70;
-  assert.equal(toggleTablet(w,0,{pitch:0,yaw:90}),true);assert.equal(p.holder,0);assert.equal(p.carrier,0);assert.equal(w.stats.steals,1);
+  assert.equal(toggleTablet(w,0,{pitch:0,yaw:-90}),false);openDoor(w,1);w.cars[1].doorAngle=70;
+  assert.equal(toggleTablet(w,0,{pitch:0,yaw:-90}),true);assert.equal(p.holder,0);assert.equal(p.carrier,0);assert.equal(w.stats.steals,1);
   assert.equal(toggleTablet(w,0,{}),true);assert.equal(p.holder,-1);
 });
-test('loose tablet gives time to react before it slides through a fully open passenger door',()=>{
-  const w=running();w.tablets[0].holder=-1;openDoor(w,0);w.cars[0].doorAngle=70;
-  for(let i=0;i<40;i++)stepWorld(w,[],.02,course);
-  assert.equal(w.tablets[0].inCabin,true,'tablet remains retrievable after .8 seconds');
-  for(let i=0;i<100;i++)stepWorld(w,[],.02,course);
-  assert.equal(w.tablets[0].inCabin,false);assert.ok(w.tablets[0].x<w.cars[0].x);
+test('an open door does not pull a stationary loose tablet out of the car',()=>{
+  const w=running();toggleTablet(w,1,{});for(let i=0;i<100;i++)stepWorld(w,[],.02,course);openDoor(w,0);w.cars[0].doorAngle=90;
+  for(let i=0;i<1500;i++)stepWorld(w,[],.02,course);
+  assert.equal(w.tablets[0].inCabin,true,'a parked tablet stays put even after thirty seconds with the door open');assert.equal(w.tablets[0].holder,-1);
 });
 test('closing the door during the grace period retains the tablet and held tablets never eject',()=>{
  const w=running(),p=w.tablets[0];p.holder=-1;openDoor(w,0);w.cars[0].doorAngle=70;
@@ -104,4 +103,28 @@ test('all nine course profiles use identical server/client stages and reject unk
   }
   assert.equal(STAGES.length,9);
   assert.throws(()=>commandRoom(room,a,{type:'configure',profile:9},0),/Invalid course profile/);
+});
+
+test('dropped tablet falls and slides against the real footwell, occupants and dashboard rather than being pinned or phasing through them',()=>{
+ const w=running(),p=w.tablets[0];toggleTablet(w,1,{});let high=p.ly,low=high;
+ for(let i=0;i<100;i++){stepWorld(w,[{throttle:1,steer:.6}],.02,course);const e=tabletExtents(p);high=Math.max(high,p.ly);low=Math.min(low,p.ly);assert.ok(p.lz+e[2]<=.55001,'front corners stay behind the native dash');assert.ok(p.lz-e[2]>=-.32,'tablet stays within the rear cabin contact region during a tumble');assert.ok(p.ly-e[1]>=.3199,'tablet stays above the actual floor');}
+ assert.ok(high-low>.05,'release actually moves and settles on the original lap/body contacts');assert.equal(p.inCabin,true);assert.equal(toggleTablet(w,1,{pitch:50}),true);assert.equal(p.holder,1);
+});
+
+test('browser handbrake engages promptly with a stronger drift while preserving stopping and release recovery',()=>{
+ const tuned=makeWorld(course,'coop',1).cars[0];Object.assign(tuned,{speed:20,vz:20});const previous=structuredClone(tuned);
+ for(let i=0;i<20;i++){const input={throttle:1,steer:.8,handbrake:true};stepCar(tuned,input,.02,course);stepHandling(previous,input,.02,{gripMultiplier:1.2});}
+ assert.equal(tuned.handbrakeAmount,1);assert.ok(Math.abs(tuned.yawRate)>Math.abs(previous.yawRate)*1.15,'Space must actually rotate the moving car more strongly');assert.ok(tuned.speed>10,'drift must not just stop the car');
+ for(let i=0;i<100;i++)stepCar(tuned,{throttle:0,steer:0},.02,course);
+ assert.equal(tuned.handbrakeAmount,0);assert.ok(Math.abs(tuned.yawRate)<.01,'released Space does not keep rotating the car');
+ const slow=makeWorld(course,'coop',1).cars[0];Object.assign(slow,{vz:3,speed:3,yawRate:-.9,steer:1});for(let i=0;i<100;i++)stepCar(slow,{throttle:1,steer:1,handbrake:true},.02,course);assert.ok(Math.hypot(slow.vx,slow.vz)<.001);assert.ok(Math.abs(slow.yawRate)<.001);
+});
+
+test('a fast car launches off a ramp crest and lands without TREEd; a real trunk still crashes it',()=>{
+ const ramp={seed:1,width:10,trees:[],mud:[],points:Array.from({length:180},(_,i)=>({x:0,y:i<=20?20+i*.25:25,z:i})),startIndex:8,finishIndex:170};
+ const w=makeWorld(ramp,'coop',1);w.phase='running';const car=w.cars[0];Object.assign(car,{vz:18,speed:18});let airborne=false,peak=0,landed=false;
+ for(let i=0;i<160;i++){stepWorld(w,[{throttle:.06}],.02,ramp);if(!car.grounded){airborne=true;peak=Math.max(peak,car.y-CAR.height-25);}else if(airborne)landed=true;assert.equal(car.dead,false,'terrain landing cannot trigger TREEd');}
+ assert.ok(airborne&&peak>.15&&landed,JSON.stringify({airborne,peak,landed}));
+ ramp.trees.push({x:car.x,y:25,z:car.z+1,radius:.32,solid:true}); // A fresh course avoids mutating a cached collision grid.
+ const withTree={...ramp,trees:[...ramp.trees]};stepWorld(w,[{throttle:1}],.02,withTree);assert.equal(car.dead,true);
 });

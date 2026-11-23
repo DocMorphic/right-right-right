@@ -44,3 +44,17 @@ test('detail loader validates coverage bytes and decodes identical original prot
  globalThis.fetch=async url=>String(url).endsWith('.json')?Response.json(details.data):new Response(new Uint8Array(15));
  await assert.rejects(loadNativeDetails(1,{loadAsync:async()=>new THREE.Texture()}),/incomplete/);
 });
+
+test('reduced grass keeps a stable subset, updates shader range and restores original density',()=>{
+ const {source,details}=fixture({resolution:64,patchSamples:2,size:500});details.coverages.forEach(c=>c.fill(5));
+ const full=detailPatch(source,details,8,8)[0],reduced=detailPatch(source,details,8,8,.35)[0];
+ const points=new Set(Array.from({length:full.count},(_,i)=>[...full.positions.slice(i*3,i*3+3)].join(',')));
+ assert.ok(reduced.count>0&&reduced.count<full.count*.6);
+ for(let i=0;i<reduced.count;i++)assert.ok(points.has([...reduced.positions.slice(i*3,i*3+3)].join(',')));
+ const grass=new NativeDetails(new THREE.Group(),source,details);grass.update(-240,245,0);
+ const count=grass.meshes[0].geometry.instanceCount,shader={uniforms:{},vertexShader:'',fragmentShader:''};grass.meshes[0].material.onBeforeCompile(shader);
+ grass.setReduced(true);grass.update(-240,245,1);
+ assert.equal(shader.uniforms.nativeGrassDistance.value,24);assert.ok(grass.meshes[0].geometry.instanceCount<count*.2);
+ const geometry=grass.meshes[0].geometry;grass.setReduced(true);grass.update(-240,245,2);assert.equal(grass.meshes[0].geometry,geometry);
+ grass.setReduced(false);grass.update(-240,245,3);assert.equal(grass.meshes[0].geometry.instanceCount,count);assert.equal(shader.uniforms.nativeGrassDistance.value,55);grass.dispose();
+});

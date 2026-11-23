@@ -29,6 +29,31 @@ test('navigator driving keys leave the actual local render prediction at the aut
   assert.ok(driver.view.predicted.speed>0,'the driver still predicts their own driving');
 });
 
+test('menu does not redraw the covered WebGL canvas or change world visibility',()=>{
+ const {view}=fixture();view.active=false;let renders=0;view.renderer.render=()=>renders++;
+ const background=view.scene.background;for(let i=0;i<60;i++)view.update(1/60,1000+i*17,{});
+ assert.equal(renders,0);assert.equal(view.world.visible,true);assert.equal(view.scene.background,background);
+});
+
+test('crew B driver predicts their own inputs immediately and crew B navigator cannot drive',()=>{
+ for(const slot of [2,3]){
+  const {view}=fixture(slot);
+  const state=makeCar(view.course,1,'race'),model=new THREE.Group(),car={model,wipers:[new THREE.Object3D(),new THREE.Object3D()],wiperRests:[new THREE.Quaternion(),new THREE.Quaternion()],mudUniforms:[],heads:[]};
+  view.cars.push(car);view.snapshot.cars.push(state);view.snapshot.inputs.push({},{});view.setSnapshot(view.snapshot);
+  view.update(.02,1000,{throttle:1,steer:.4});
+  assert.equal(view.cars[0].presentation.predicted.speed,0);
+  if(slot===2)assert.ok(car.presentation.predicted.speed>0);else assert.equal(car.presentation.predicted.speed,0);
+ }
+});
+
+test('changing shadow quality invalidates cached materials and camera exposure history',t=>{
+ const old=globalThis.devicePixelRatio;globalThis.devicePixelRatio=1;t.after(()=>{if(old===undefined)delete globalThis.devicePixelRatio;else globalThis.devicePixelRatio=old;});
+ const {view}=fixture(),material=new THREE.MeshStandardMaterial();view.world.add(new THREE.Mesh(new THREE.BoxGeometry(),material));
+ view.manifest.atmosphere={fog:{far:260}};view.renderer={shadowMap:{enabled:true},setPixelRatio(){}};let resets=0;view.frame={reset(){resets++;}};
+ const version=material.version;view.setQuality('low');assert.equal(view.renderer.shadowMap.enabled,false);assert.equal(material.version,version+1);
+ view.setQuality('high');assert.equal(view.renderer.shadowMap.enabled,true);assert.equal(material.version,version+2);assert.equal(resets,2);
+});
+
 test('actual wiper transforms respond to either crew member without wiping another car',()=>{
   const {view,car,state}=fixture(1);
   view.snapshot.inputs=[{wipe:true},{wipe:false}];

@@ -11,3 +11,10 @@ test('Vercel proxy rejects unknown routes, wrong methods and oversized game pack
  const handler=createProxy(()=>{throw Error('Unexpected upstream request');});
  for(const [url,method,body,status] of [['/api/elsewhere','POST',{},404],['/api/message','GET',{},405],['/api/message','POST','x'.repeat(16385),413],['/api/ws','GET',undefined,426]]){const res=response();await handler({url,method,body},res);assert.equal(res.statusCode,status);}
 });
+
+test('the stable frontend health and fallback routes follow the explicitly configured realtime authority',async()=>{
+ const urls=[],handler=createProxy(async url=>{urls.push(url);return Response.json({ok:true,transport:'websocket'});},{origin:'https://realtime.example'});
+ const health=response();await handler({url:'/api/health',method:'GET'},health);
+ await handler({url:'/api/session',method:'POST',body:{}},response());
+ assert.deepEqual(urls,['https://realtime.example/health','https://realtime.example/api/session']);assert.equal(JSON.parse(health.body).transport,'websocket');
+});

@@ -90,3 +90,64 @@ button:active:not(:disabled),button:focus-visible{background:transparent}
 #death-warm{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgb(140,15,10);opacity:0}
 #hud{z-index:3}#hud.result #race-status{transform:translate(-50%,-50%) rotate(-7deg) scale(var(--crash-scale,1))}
 #countdown{position:fixed;left:50%;top:50%;width:min(84px,12vmin);height:min(104px,16vmin);transform:translate(-50%,-50%);z-index:3;pointer-events:none;color:transparent;background:#ffb021;mask:var(--countdown-mask) center/contain no-repeat;-webkit-mask:var(--countdown-mask) center/contain no-repeat}
+
+#browser-menu .pause-audio-button{top:422px;height:44px;font-size:22px}
+
+/* The whole start screen fits as one composition. Its content is measured
+   before scaling, so four-player rooms and browser zoom cannot add scrolling. */
+html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+#menu.game-menu{inset:0;width:100%;height:100dvh;max-width:none;margin:0;padding:24px 4vw 32px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;gap:0;overflow:hidden}
+.menu-layout{width:min(1360px,100%);min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,480px);gap:clamp(24px,4vw,64px);align-items:center;transform:scale(var(--menu-fit,1));transform-origin:center}
+#menu.game-menu:not([data-fitted]) .menu-layout{visibility:hidden}
+.menu-art{min-height:0}.original-car{width:100%;max-height:400px;object-fit:contain;margin-left:0}
+#menu.game-menu #menu-audio{font-size:12px;background:transparent;border:0;box-shadow:none;padding:3px 0;min-height:24px;color:var(--muted)}
+#menu.game-menu #advanced-section{position:absolute;inset:58px 18px 50px;margin:0;z-index:2;background:var(--screen);border:0;display:grid;place-items:center;font-size:15px;line-height:1.9}
+#menu.game-menu[data-controls=open] .tablet-screen>:not(.tablet-heading):not(.tablet-footer):not(#advanced-section){visibility:hidden}
+#menu.game-menu .tablet-footer{z-index:3}
+@media(max-height:840px){
+ #menu.game-menu{padding-top:16px;padding-bottom:24px}
+ .tablet-screen{padding:14px 18px 10px}.tablet-heading{padding-bottom:10px}.tablet-brand{padding-bottom:7px}.tablet-bottom{padding-top:8px}
+ #menu.game-menu .intro{margin:10px 0;font-size:13px}#menu.game-menu #create-room{height:38px;font-size:22px}
+ .room-code-row{margin:7px 0 9px;min-height:26px}#menu.game-menu #mode-description{margin:7px 0 10px}.crew-seats{margin:7px 0 11px;gap:6px 12px}
+ #menu.game-menu #courses button{min-height:32px}#menu.game-menu #start-game{height:42px;margin-top:11px;font-size:25px}
+ #menu.game-menu #native-status{min-height:26px;margin-top:6px;font-size:10px}.tablet-frame{padding:12px;border-radius:27px}.tablet-lip{padding:6px}
+}
+@media(max-width:1000px){.menu-layout{grid-template-columns:minmax(0,1fr) minmax(0,430px);gap:24px}}
+@media(max-width:760px){
+ #menu.game-menu{display:grid;padding:14px 18px 24px;gap:0;overflow:hidden}
+ .menu-layout{width:min(480px,100%);grid-template-columns:minmax(0,1fr);gap:14px}
+ .menu-art{display:block;max-width:none;width:100%}.original-title{width:70%;max-width:none;margin:0 auto}.original-car,.original-tip{display:none}
+ .tablet-frame{max-width:none}
+}
+
+/* Branded loading shell. Progress follows real setup phases and completions. */
+#loading{position:fixed;inset:0;left:0;top:0;width:100%;height:100dvh;min-height:0;padding:24px;transform:none;z-index:15;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#3b3524 0,#24211f 58%,#181817 100%);font-family:ShareTechMono,monospace;color:#dbb86b}
+.loading-card{width:min(590px,100%);padding:22px 30px 20px;background:#292617;border:1px solid #665733;border-top:3px solid #ed851f;border-radius:18px;box-shadow:0 22px 70px #0004}
+.loading-brand{display:flex;justify-content:space-between;gap:12px;font-size:10px;letter-spacing:.09em;color:#99804d}
+.loading-brand>span:first-child{color:#ed851f}.loading-art{height:150px;position:relative;margin:18px 0 8px;display:flex;align-items:flex-end;justify-content:center}
+.loading-logo{position:absolute;top:0;left:0;width:100%;height:38px;background:#cd3718;mask:url('/assets/ui/MainMenuTitle.png') center/contain no-repeat;-webkit-mask:url('/assets/ui/MainMenuTitle.png') center/contain no-repeat}
+.loading-art img{width:78%;height:120px;object-fit:contain;filter:drop-shadow(0 12px 12px #0003)}
+#loading .loading-eyebrow{font-size:10px;letter-spacing:.13em;color:#99804d;margin:16px 0 7px}
+.loading-copy h1{font-size:clamp(20px,2.2vw,27px);font-weight:400;line-height:1.25;margin:0 0 24px;color:#ebd7a3;letter-spacing:-.02em}
+.loading-meter{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.08em}.loading-meter output{color:#ed851f;font-size:21px;letter-spacing:0}
+#asset-progress{appearance:none;-webkit-appearance:none;display:block;width:100%;height:9px;border:0;border-radius:5px;overflow:hidden;margin:9px 0 0;background:#18170f;color:#ed851f;accent-color:#ed851f}
+#asset-progress::-webkit-progress-bar{background:#18170f;border-radius:5px}#asset-progress::-webkit-progress-value{background:#ed851f;border-radius:5px;transition:width .2s ease}#asset-progress::-moz-progress-bar{background:#ed851f;border-radius:5px}
+#loading #load-status{min-height:18px;margin:12px 0 22px;font-size:12px;line-height:1.5;color:#bda56e}
+.loading-steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1.25fr .8fr 1fr .9fr;gap:10px}
+.loading-steps li{font-size:9px;color:#726443;display:flex;flex-direction:column;gap:6px;border-top:1px solid #55482c;padding-top:9px;white-space:nowrap}.loading-steps li span{font-size:12px;color:#726443}
+.loading-steps li[data-state=active],.loading-steps li[data-state=active] span{color:#ed851f}.loading-steps li[data-state=active]{border-color:#ed851f}.loading-steps li[data-state=done],.loading-steps li[data-state=done] span{color:#d4ba7b}
+#loading .loading-tip{margin:24px 0 0;padding-top:15px;border-top:1px solid #66573366;font-size:11px;color:#99804d;text-align:center}
+#loading [data-load-retry]{width:100%;margin:18px 0 0;padding:12px;border:1px solid #ed851f;border-radius:8px;background:#3b3019;color:#edc479;font-family:inherit;font-size:15px;isolation:auto}#loading [data-load-retry]:before{display:none}#loading [data-load-retry][hidden]{display:none}
+#loading[data-state=error]{background:radial-gradient(ellipse at center,#3f2b22,#24211f 70%)}#loading[data-state=error] .loading-eyebrow{color:#e18c64}
+@media(max-height:620px){#loading{padding:14px}.loading-card{padding:16px 24px}.loading-art{height:100px;margin:10px 0 0}.loading-art img{height:85px}.loading-logo{height:28px}.loading-copy h1{margin-bottom:14px}#loading #load-status{margin-bottom:12px}#loading .loading-tip{margin-top:14px;padding-top:10px}}
+@media(max-height:440px){.loading-art{display:none}.loading-card{padding:14px 20px}#loading .loading-eyebrow{margin-top:10px}.loading-copy h1{font-size:20px}.loading-steps{gap:6px}}
+@media(prefers-reduced-motion:reduce){#asset-progress::-webkit-progress-value{transition:none}}
+#menu.game-menu .room-code-row:has(#copy-invite.hidden){display:none}
+/* Clipping, rather than a hidden scroll container, also prevents keyboard
+   focus from scrolling the menu's unscaled layout behind its fitted view. */
+html,body,#menu.game-menu,#loading{overflow:clip}
+
+#ready-theft{top:395px!important;left:40px!important;width:900px!important;text-align:center;font:20px/1.4 ShareTechMono,monospace;color:#dbb86b;white-space:pre-line;}
+
+#tablet-mount-prompt{position:fixed;left:50%;top:calc(50% + 32px);transform:translateX(-50%) scale(var(--hud-scale,1));transform-origin:top center;z-index:4;display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid #786848;border-radius:3px;background:#171513ed;color:#dbc794;font:16px/1.2 ShareTechMono,monospace;pointer-events:none;white-space:nowrap;}
+#tablet-mount-prompt kbd{font:inherit;color:#ffb021;border:1px solid #a1854e;border-radius:2px;padding:2px 5px;}

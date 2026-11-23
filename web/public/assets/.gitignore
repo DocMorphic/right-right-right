@@ -1,3 +1,3 @@
-# Licensed native exports are generated locally and packaged separately.
-*
-!.gitignore
+# Authorized gameplay exports are versioned with their original credits.
+# Checksummed deployment bundles are generated from source, not game assets.
+server/

@@ -24,22 +24,23 @@ async function loadGeometry(path){
  result.writeUInt32LE(0x46546c67,0);result.writeUInt32LE(2,4);result.writeUInt32LE(result.length,8);result.writeUInt32LE(text.length+padding,12);result.writeUInt32LE(0x4e4f534a,16);text.copy(result,20);result.fill(0x20,20+text.length,20+text.length+padding);body.copy(result,20+text.length+padding);
  return(await new GLTFLoader().parseAsync(result.buffer.slice(result.byteOffset,result.byteOffset+result.byteLength),'')).scene;
 }
-const carPath=new URL('../public/assets/car.glb',import.meta.url),candidatePath=new URL('../../local/web-assets/driver-rig-candidate/driver-rig.glb',import.meta.url),configPath=new URL('../../local/web-assets/driver-rig-candidate/DriverWheelHandIk.json',import.meta.url);
-test('original skinned driver follows the full ±190° wheel sweep within native bone and shoulder limits',{skip:![carPath,candidatePath,configPath].every(existsSync)},async t=>{
- const car=await loadGeometry(carPath),driver=await loadGeometry(candidatePath),config=JSON.parse(readFileSync(configPath));let body,old;
+const carPath=new URL('../public/assets/car.glb',import.meta.url),driverPath=new URL('../public/assets/driver-rig.glb',import.meta.url),configPath=new URL('../public/assets/DriverWheelHandIk.json',import.meta.url);
+test('original driver preserves native ±110° grip reach and stays bounded under a ±190° stress sweep',{skip:![carPath,driverPath,configPath].every(existsSync)},async t=>{
+ const car=await loadGeometry(carPath),driver=await loadGeometry(driverPath),config=JSON.parse(readFileSync(configPath));let body,old;
  for(const [key,value]of Object.entries(NATIVE_DRIVER_HANDS))if(key in config.serialized)assert.deepEqual(value,config.serialized[key],`default ${key} matches the recovered native component`);
  car.traverse(node=>{if(node.name==='BodyVisual')body=node;if(node.name==='character_fat')old=node;});assert.ok(body&&old);old.removeFromParent();while(driver.children.length)body.add(driver.children[0]);car.updateMatrixWorld(true);
  const hands=new DriverHands(car,config);assert.equal(hands.ready,true,hands.reason);
  const vertices=hands.arms.map(arm=>{let found;hands.driver.traverse(node=>{if(found||!node.isSkinnedMesh)return;const ids=node.geometry.attributes.skinIndex,weights=node.geometry.attributes.skinWeight;for(let i=0;i<ids.count;i++){let score=0;for(let k=0;k<4;k++){const name=node.skeleton.bones[ids.array[i*4+k]]?.name||'';if(/Wrist|Index|Thumb|Middle|Pinky|Ring/i.test(name)&&name.endsWith(arm.side))score+=weights.array[i*4+k];}if(score>.95){found={mesh:node,index:i};break;}}});assert.ok(found,'each original hand has an actual weighted test vertex');return found;});
  const point=entry=>entry.mesh.localToWorld(entry.mesh.getVertexPosition(entry.index,new THREE.Vector3())),first=vertices.map(point),rest=hands.wheel.quaternion.clone(),lengths=hands.arms.map(arm=>[arm.upper.getWorldPosition(new THREE.Vector3()).distanceTo(arm.lower.getWorldPosition(new THREE.Vector3())),arm.lower.getWorldPosition(new THREE.Vector3()).distanceTo(arm.wrist.getWorldPosition(new THREE.Vector3()))]);
- let worst={error:0},maximumModerateError=0,maximumStep=0,previous;
+ let worst={error:0},maximumModerateError=0,maximumNativeError=0,maximumStep=0,previous;
  for(let angle=-190;angle<=190;angle++){
   // The reflected original car turns its wheel around negative local Z for D.
   hands.wheel.quaternion.copy(rest).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),-angle*Math.PI/180));hands.update(angle/190,{steerDegrees:angle});
   const points=vertices.map(point);if(previous)points.forEach((p,i)=>maximumStep=Math.max(maximumStep,p.distanceTo(previous[i])));previous=points;
   hands.arms.forEach((arm,i)=>{
    assert.ok(Number.isFinite(arm.error));assert.ok(arm.error<.05,'full-lock gaps stay bounded without stretching the original rig');
-   if(Math.abs(angle)<=70){maximumModerateError=Math.max(maximumModerateError,arm.error);assert.ok(arm.error<.001,'ordinary steering keeps the native palm centers on their grips');}
+   if(Math.abs(angle)<=70){maximumModerateError=Math.max(maximumModerateError,arm.error);assert.ok(arm.error<.001,'ordinary steering keeps both native palm centers on their grips');}
+   if(Math.abs(angle)<=110){maximumNativeError=Math.max(maximumNativeError,arm.error);assert.ok(arm.error<.01,`native ${angle}° ${arm.side}: ${arm.error*1000}mm palm error`);}
    assert.ok(arm.rest[0].angleTo(arm.shoulder.quaternion)<=config.serialized.maxShoulderDegrees*Math.PI/180+.00001);
    const current=[arm.upper.getWorldPosition(new THREE.Vector3()).distanceTo(arm.lower.getWorldPosition(new THREE.Vector3())),arm.lower.getWorldPosition(new THREE.Vector3()).distanceTo(arm.wrist.getWorldPosition(new THREE.Vector3()))];current.forEach((value,j)=>assert.ok(Math.abs(value-lengths[i][j])<.00001,'native arm segments cannot stretch'));
    if(arm.error>worst.error)worst={angle,side:arm.side,error:arm.error,palm:arm.targetPalm.clone()};
@@ -60,5 +61,13 @@ test('original skinned driver follows the full ±190° wheel sweep within native
  const brakePalm=hands.arms[1].targetPalm.clone();hands.update(0,{handbrake:false,dt:1/60});assert.ok(hands.arms[1].targetPalm.distanceTo(brakePalm)<.05,'returning to the wheel blends instead of snapping');
  for(let i=0;i<60;i++)hands.update(0,{handbrake:false,dt:1/60});assert.ok(hands.arms[1].targetPalm.distanceTo(hands.arms[1].grip.getWorldPosition(new THREE.Vector3()))<.001);
  assert.ok(maximumStep<.05,'one-degree steering steps cannot snap rendered hand vertices across the cabin');
- t.diagnostic(JSON.stringify({poses:381,actualSkinnedHandVertices:2,maximumModerateErrorMeters:maximumModerateError,fullLockResidual:worst,maximumVertexStepMeters:maximumStep,nativeLimits:{upperLength:lengths[0][0],lowerLength:lengths[0][1],maxShoulderDegrees:18},limitation:'Extreme crossed-arm targets can exceed native reach; no bone stretch or fake hand offset is applied.'}));hands.dispose();
+ t.diagnostic(JSON.stringify({poses:381,actualSkinnedHandVertices:2,maximumModerateErrorMeters:maximumModerateError,maximumNativeSteeringErrorMeters:maximumNativeError,fullLockResidual:worst,maximumVertexStepMeters:maximumStep,nativeLimits:{upperLength:lengths[0][0],lowerLength:lengths[0][1],maxShoulderDegrees:18},limitation:'Extreme crossed-arm targets can exceed native reach; no bone stretch or fake hand offset is applied.'}));hands.dispose();
 });
+
+test('driver snatch moves only the outer arm, keeps native bone lengths and returns to steering',{skip:![carPath,driverPath,configPath].every(existsSync)},async t=>{
+ const car=await loadGeometry(carPath),driver=await loadGeometry(driverPath),config=JSON.parse(readFileSync(configPath)),body=car.getObjectByName('BodyVisual');car.getObjectByName('character_fat').removeFromParent();while(driver.children.length)body.add(driver.children[0]);car.updateMatrixWorld(true);const hands=new DriverHands(car,config),outer=hands.reachingArm,other=hands.arms.find(a=>a!==outer),point=arm=>car.worldToLocal(arm.wrist.getWorldPosition(new THREE.Vector3())),start=point(outer),otherStart=point(other),lengths=hands.arms.map(a=>[a.upper.position.length(),a.lower.position.length(),a.wrist.position.length()]);let max=0;
+ for(let i=0;i<=80;i++){hands.update(0,{reachProgress:i/80,dt:.01});max=Math.max(max,point(outer).x);for(const [index,a]of hands.arms.entries())[a.upper,a.lower,a.wrist].forEach((bone,j)=>assert.ok(Math.abs(bone.position.length()-lengths[index][j])<1e-9));assert.ok(point(other).distanceTo(otherStart)<1e-6,'other hand remains on wheel');}
+ assert.ok(max-start.x>.15,'outer wrist visibly reaches toward driver doorway');assert.ok(point(outer).distanceTo(start)<1e-6,'snatch returns exactly to normal grip');t.diagnostic(JSON.stringify({arm:outer.side,startX:start.x,maxWristX:max}));
+ car.rotation.set(.1,1.3,.12,'YXZ');car.position.set(20,3,-40);hands.update(0,{reachProgress:.5});assert.ok(point(outer).x>start.x+.15,'reach stays car-local while car turns');
+});
+test('original driver door swings outward on its native hinge',{skip:!existsSync(carPath)},async()=>{const car=await loadGeometry(carPath),door=car.getObjectByName('door_lf_ok');assert.ok(door);car.updateMatrixWorld(true);const point=door.worldToLocal(new THREE.Vector3(.7858,.8455,.0612));door.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-Math.PI/4));car.updateMatrixWorld(true);assert.ok(door.localToWorld(point).x>1.25,'driver door opens to positive X, outside cabin');});

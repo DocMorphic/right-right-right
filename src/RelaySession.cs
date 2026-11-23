@@ -18,6 +18,8 @@ internal static class RelaySession
     internal static bool Active { get; private set; }
     internal static string RoomCode { get; private set; } = "";
     internal static bool Available => client != null;
+    internal static string EntryCode { get => entryCode; set => entryCode = value; }
+    internal static string SetupNote => setupNote;
     internal static bool Fixture => RaceNetwork.Args.Contains("--rrr-relay-verify") && RaceNetwork.Arg("--rrr-relay-fixture=").Length > 0;
 
     internal static void Initialize()

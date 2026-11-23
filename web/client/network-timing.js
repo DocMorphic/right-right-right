@@ -18,10 +18,12 @@ export class NetworkTiming{
   const sample={at,rtt,offset:message.serverTime*1000-(sent+at)/2};
   this.samples.push(sample);this.samples=this.samples.filter(item=>at-item.at<=30000).slice(-20);
   const minimum=Math.min(...this.samples.map(item=>item.rtt));
-  // Retain a prior good clock fit through jitter; high-latency samples still
-  // update RTT but cannot teach the predictor a false clock displacement.
-  if(minimum<=250){
-   const selected=this.samples.filter(item=>item.rtt<=minimum+Math.max(5,minimum*.25)).toSorted((a,b)=>a.rtt-b.rtt).slice(0,5);
+  // Prefer the lowest-delay path through jitter. A long-distance connection
+  // can legitimately stay above 250ms: require three consistent samples there
+  // instead of disabling its clock fit forever. A single delayed pong still
+  // cannot establish a high-latency fit or displace an existing better sample.
+  const selected=this.samples.filter(item=>item.rtt<=minimum+Math.max(5,minimum*.25)).toSorted((a,b)=>a.rtt-b.rtt).slice(0,5);
+  if(minimum<=250||selected.length>=3){
    this.offsetMs=median(selected.map(item=>item.offset));this.offsetAt=Math.max(...selected.map(item=>item.at));
   }
   return true;

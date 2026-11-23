@@ -1,0 +1,2927 @@
+{
+  "name": "GameSkin",
+  "styles": {
+    "box": {
+      "name": "box",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.7999999523162842,
+            0.7999999523162842,
+            0.7999999523162842,
+            1.0
+          ],
+          "background": "/assets/ui/box.png",
+          "backgroundPathId": 11001
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 6,
+        "right": 6,
+        "top": 6,
+        "bottom": 6
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 1,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "button": {
+      "name": "button",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": "/assets/ui/button.png",
+          "backgroundPathId": 11006
+        },
+        "hover": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/button_hover.png",
+          "backgroundPathId": 11003
+        },
+        "active": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": "/assets/ui/button_active.png",
+          "backgroundPathId": 11002
+        },
+        "onNormal": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.9019607901573181,
+            0.9019607901573181,
+            0.9019607901573181,
+            1.0
+          ],
+          "background": "/assets/ui/button_on.png",
+          "backgroundPathId": 11005
+        },
+        "onActive": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/button_on_hover.png",
+          "backgroundPathId": 11004
+        },
+        "focused": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": "/assets/ui/button_active.png",
+          "backgroundPathId": 11002
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 6,
+        "right": 6,
+        "top": 6,
+        "bottom": 4
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 6,
+        "right": 6,
+        "top": 3,
+        "bottom": 3
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 4,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "toggle": {
+      "name": "toggle",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.8911289572715759,
+            0.8911289572715759,
+            0.8911289572715759,
+            1.0
+          ],
+          "background": "/assets/ui/toggle.png",
+          "backgroundPathId": 11018
+        },
+        "hover": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/toggle_hover.png",
+          "backgroundPathId": 11014
+        },
+        "active": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/toggle_active.png",
+          "backgroundPathId": 11013
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.8901960849761963,
+            0.8901960849761963,
+            0.8901960849761963,
+            1.0
+          ],
+          "background": "/assets/ui/toggle_on.png",
+          "backgroundPathId": 11016
+        },
+        "onActive": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/toggle_on_hover.png",
+          "backgroundPathId": 11015
+        },
+        "focused": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/toggle_on_active.png",
+          "backgroundPathId": 11017
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 14,
+        "right": 0,
+        "top": 14,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 15,
+        "right": 0,
+        "top": 3,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": -1,
+        "right": 0,
+        "top": -4,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "label": {
+      "name": "label",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 3,
+        "bottom": 3
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": true,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "textfield": {
+      "name": "textfield",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.7999999523162842,
+            0.7999999523162842,
+            0.7999999523162842,
+            1.0
+          ],
+          "background": "/assets/ui/textfield.png",
+          "backgroundPathId": 11024
+        },
+        "hover": {
+          "textColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            1.0
+          ],
+          "background": "/assets/ui/textfield_hover.png",
+          "backgroundPathId": 11026
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/textfield_hover.png",
+          "backgroundPathId": 11026
+        },
+        "onHover": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/textfield_on.png",
+          "backgroundPathId": 11025
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 3,
+        "right": 3,
+        "top": 3,
+        "bottom": 3
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": false,
+      "clipping": 1,
+      "imagePosition": 3,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "textarea": {
+      "name": "textarea",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.9019607901573181,
+            0.9019607901573181,
+            0.9019607901573181,
+            1.0
+          ],
+          "background": "/assets/ui/textfield.png",
+          "backgroundPathId": 11024
+        },
+        "hover": {
+          "textColor": [
+            0.7999999523162842,
+            0.7999999523162842,
+            0.7999999523162842,
+            1.0
+          ],
+          "background": "/assets/ui/textfield_hover.png",
+          "backgroundPathId": 11026
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/textfield_on.png",
+          "backgroundPathId": 11025
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 3,
+        "right": 3,
+        "top": 3,
+        "bottom": 3
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": true,
+      "richText": false,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "window": {
+      "name": "window",
+      "states": {
+        "normal": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/window.png",
+          "backgroundPathId": 11023
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "background": "/assets/ui/window_on.png",
+          "backgroundPathId": 11022
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 8,
+        "right": 8,
+        "top": 18,
+        "bottom": 8
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 10,
+        "right": 10,
+        "top": 20,
+        "bottom": 10
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 1,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        -18.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "horizontalslider": {
+      "name": "horizontalslider",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/horizontalslider.png",
+          "backgroundPathId": 11009
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 3,
+        "right": 3,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": -1,
+        "right": -1,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": -2,
+        "bottom": -3
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 2,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 12.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "horizontalsliderthumb": {
+      "name": "horizontalsliderthumb",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/slider_thumb.png",
+          "backgroundPathId": 11011
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/slidert_humb_hover.png",
+          "backgroundPathId": 11012
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/slider_thumb_active.png",
+          "backgroundPathId": 11010
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 4,
+        "right": 4,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 7,
+        "right": 7,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": -1,
+        "right": -1,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 2,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 12.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "verticalslider": {
+      "name": "verticalslider",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/verticalslider.png",
+          "backgroundPathId": 11021
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 3,
+        "bottom": 3
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": -1,
+        "bottom": -1
+      },
+      "overflow": {
+        "left": -2,
+        "right": -3,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 0,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 12.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": false,
+      "stretchHeight": true
+    },
+    "verticalsliderthumb": {
+      "name": "verticalsliderthumb",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/slider_thumb.png",
+          "backgroundPathId": 11011
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/slidert_humb_hover.png",
+          "backgroundPathId": 11012
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/slider_thumb_active.png",
+          "backgroundPathId": 11010
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 7,
+        "bottom": 7
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": -1,
+        "bottom": -1
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 12.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": false,
+      "stretchHeight": true
+    },
+    "horizontalscrollbar": {
+      "name": "horizontalscrollbar",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/horizontal_scrollbar.png",
+          "backgroundPathId": 11008
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 9,
+        "right": 9,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 4,
+        "right": 4,
+        "top": 1,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 2,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 15.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "horizontalscrollbarthumb": {
+      "name": "horizontalscrollbarthumb",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/horizontal_scrollbar_thumb.png",
+          "backgroundPathId": 11007
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 6,
+        "right": 6,
+        "top": 6,
+        "bottom": 6
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 6,
+        "right": 6,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": -1,
+        "bottom": 1
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 13.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "horizontalscrollbarleftbutton": {
+      "name": "horizontalscrollbarleftbutton",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "horizontalscrollbarrightbutton": {
+      "name": "horizontalscrollbarrightbutton",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "verticalscrollbar": {
+      "name": "verticalscrollbar",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/vertical_scrollbar.png",
+          "backgroundPathId": 11020
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 9,
+        "bottom": 9
+      },
+      "margin": {
+        "left": 1,
+        "right": 4,
+        "top": 4,
+        "bottom": 4
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 1,
+        "bottom": 1
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 15.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "verticalscrollbarthumb": {
+      "name": "verticalscrollbarthumb",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": "/assets/ui/vertical_scrollbar_thumb.png",
+          "backgroundPathId": 11019
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 6,
+        "right": 6,
+        "top": 6,
+        "bottom": 6
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 6,
+        "bottom": 6
+      },
+      "overflow": {
+        "left": -1,
+        "right": -1,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 2,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 15.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": false,
+      "stretchHeight": true
+    },
+    "verticalscrollbarupbutton": {
+      "name": "verticalscrollbarupbutton",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "verticalscrollbardownbutton": {
+      "name": "verticalscrollbardownbutton",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "scrollview": {
+      "name": "scrollview",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 1,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "thumb": {
+      "name": "thumb",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 0,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "leftbutton": {
+      "name": "leftbutton",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 0,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    },
+    "rightbutton": {
+      "name": "rightbutton",
+      "states": {
+        "normal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "hover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "active": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onNormal": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onHover": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onActive": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "focused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        },
+        "onFocused": {
+          "textColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "background": null,
+          "backgroundPathId": 0
+        }
+      },
+      "border": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "margin": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "padding": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "overflow": {
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "bottom": 0
+      },
+      "fontFileId": 0,
+      "fontPathId": 0,
+      "fontSize": 0,
+      "fontStyle": 0,
+      "alignment": 0,
+      "wordWrap": false,
+      "richText": true,
+      "clipping": 0,
+      "imagePosition": 0,
+      "contentOffset": [
+        0.0,
+        0.0
+      ],
+      "fixedWidth": 0.0,
+      "fixedHeight": 0.0,
+      "stretchWidth": true,
+      "stretchHeight": false
+    }
+  },
+  "settings": {
+    "doubleClickSelectsWord": true,
+    "tripleClickSelectsLine": true,
+    "cursorColor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "cursorFlashSpeed": -1.0,
+    "selectionColor": [
+      1.0,
+      0.3840390741825104,
+      0.0,
+      0.699999988079071
+    ]
+  },
+  "serializedBytes": 8488,
+  "decodedBytes": 8488,
+  "fontSizeFallback": "GUIFonts replaces skin font with embedded LiberationSans (native import size 16px); zero style.fontSize inherits font size.",
+  "sourceFile": "unity default resources",
+  "sourcePathId": 11000,
+  "fontOverride": "LiberationSans",
+  "copyright": "Unity Technologies native runtime IMGUI skin; retained with authorized game content"
+}

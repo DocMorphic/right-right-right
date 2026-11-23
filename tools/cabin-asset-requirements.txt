@@ -1,0 +1,4 @@
+-r web-assets-requirements.txt
+pefile>=2024.8.26
+capstone>=5.0
+unicorn>=2.1

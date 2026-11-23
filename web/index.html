@@ -1,31 +1,40 @@
 <!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#24211f"><meta name="description" content="Right Right Right browser multiplayer"><title>Right Right Right</title>
+<link rel="icon" href="/rally-car.ico" sizes="16x16 32x32 48x48"><link rel="icon" type="image/png" sizes="64x64" href="/rally-car-64.png"><link rel="icon" type="image/svg+xml" sizes="any" href="/rally-car-icon.svg"><link rel="apple-touch-icon" sizes="180x180" href="/rally-car-touch.png">
 <link rel="preload" as="image" href="/assets/ui/ReadyControlsTitle.png"><link rel="preload" as="image" href="/assets/ui/ReadyDriverTitle.png"><link rel="preload" as="image" href="/assets/ui/ReadyNavigatorTitle.png"><link rel="preload" as="image" href="/assets/ui/ReadyFooter.png"><link rel="preload" as="image" href="/assets/ui/ReadyStatus00.png"><link rel="preload" as="image" href="/assets/ui/ReadyStatus01.png"><link rel="preload" as="image" href="/assets/ui/ReadyStatus10.png"><link rel="preload" as="image" href="/assets/ui/ReadyStatus11.png">
 </head><body>
 <div id="device-gate" class="hidden" role="status">Only available on laptop for now</div>
 <canvas id="game" tabindex="0" aria-label="Right Right Right original game cockpit and forest"></canvas>
-<div id="loading" class="native-box"><div>RIGHT RIGHT RIGHT</div><p id="load-status">Loading...</p></div>
-<main id="menu" class="game-menu hidden" aria-label="Right Right Right multiplayer menu">
-  <section class="menu-art"><h1 class="original-title">Right! Right! RIGHT!</h1><img class="original-car" src="/assets/textures/ee.png" alt="The original red rally car with its driver and navigator"><p class="original-tip"><span>DRIVER</span> steers the wreck<br><span>NAVIGATOR</span> calls the turns</p></section>
-  <section class="tablet-frame"><div class="tablet-brand">NAV-1350 <span>RIGHT RIGHT RIGHT</span></div><div class="tablet-lip"><div class="tablet-screen">
-    <header class="tablet-heading"><span id="native-title">MAIN MENU</span><span id="mode-badge">2 PLAYER CO-OP</span></header>
-    <div id="room-section"><p class="intro">Host a room, choose a mode, and share its code with your friends.</p><div id="connection-actions"><button id="create-room" class="menu-primary">HOST GAME</button><form id="join-form"><input id="room-code" aria-label="Room code" maxlength="12" placeholder="ROOM CODE" autocomplete="off" spellcheck="false"><button id="join-room" type="submit">JOIN CODE</button></form></div><div class="room-code-row"><p id="room-note">One driver. One navigator. One way out.</p><button id="copy-invite" class="hidden">COPY CODE</button></div></div>
+<section id="loading" aria-label="Loading game assets" aria-busy="true">
+  <div class="loading-card">
+    <div class="loading-art" aria-hidden="true"><div class="loading-logo"></div><img src="/assets/textures/ee.png" alt=""></div>
+    <div class="loading-meter"><h1 data-load-title>Loading</h1><output data-load-percent aria-hidden="true">0%</output></div>
+    <progress id="asset-progress" max="100" value="0" aria-label="Game setup progress"></progress>
+    <p id="load-status" role="status" aria-live="polite">Loading…</p>
+    <button data-load-retry hidden>RETRY</button>
+  </div>
+</section>
+<main id="menu" class="game-menu hidden" data-room="none" aria-label="Right Right Right multiplayer menu"><div class="menu-layout">
+  <section class="menu-art"><h1 class="original-title">Right! Right! RIGHT!</h1><img class="original-car" src="/assets/textures/ee.png" alt="The red rally car with its driver and navigator"></section>
+  <section class="tablet-frame"><div class="tablet-lip"><div class="tablet-screen">
+    <header class="tablet-heading"><h2 id="native-title">PLAY</h2></header>
     <div class="mode-row"><button id="mode-coop" data-mode="coop">2 PLAYER CO-OP</button><button id="mode-race" data-mode="race">4 PLAYER RACE</button></div>
-    <p id="mode-description">One car: host drives, friend navigates.</p>
+    <div id="room-section"><div id="connection-actions"><button id="create-room" class="menu-primary">HOST GAME</button><form id="join-form"><label for="room-code">ROOM CODE</label><div class="join-row"><input id="room-code" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters" spellcheck="false"><button id="join-room" type="submit" disabled>JOIN GAME</button></div></form></div><div class="room-code-row"><p id="room-note" aria-label="Room code"></p><button id="copy-invite" class="hidden">COPY CODE</button></div></div>
     <div class="crew-heading"><span>CREW</span><span id="crew-count">0 / 2</span></div><div id="crew-seats" class="crew-seats"></div>
-    <div class="course-heading"><span>PICK A STAGE</span><span id="course-status">HOST A ROOM TO BEGIN</span></div><div id="courses"></div>
-    <button id="start-game" class="menu-primary start-game" disabled>START GAME</button><p id="native-status" class="menu-status">Host a game, or enter your friend's room code.</p>
-    <div id="advanced-section" class="hidden"><p>WASD / arrows — drive<br>Mouse — look around<br>E — grab / drop tablet<br>G — close door · hold C — wipe<br>Space — handbrake · R — ready / restart</p></div>
-    <footer class="tablet-footer"><button id="advanced-toggle">CONTROLS</button><span id="version-note">FOREST RUN</span><button id="disconnect" class="hidden">LEAVE</button></footer>
-  </div></div><div class="tablet-bottom"><span>RIGHT RIGHT RIGHT</span><i></i></div></section>
-</main>
+    <div class="course-heading"><span>STAGE</span><span id="course-status"></span></div><div id="courses"></div>
+    <button id="start-game" class="menu-primary start-game" disabled>START GAME</button><p id="native-status" class="menu-status" role="status" aria-live="polite"></p>
+    <div id="advanced-section" class="hidden"><p>WASD / arrows — drive<br>Mouse — look around<br>E — grab / drop tablet<br>G — door · hold C — wipe<br>Space — handbrake · R — ready / restart</p></div>
+    <footer class="tablet-footer"><button id="advanced-toggle" aria-expanded="false">CONTROLS</button><button id="menu-audio">SETTINGS</button><button id="disconnect" class="hidden">LEAVE ROOM</button></footer>
+  </div></div></section>
+</div></main>
 <div id="death-warm" class="hidden" aria-hidden="true"></div><div id="countdown" class="hidden" role="status" aria-label="Race countdown"></div>
 <div id="hud" class="hidden"><div id="race-status" class="native-box" role="status" aria-live="polite"><span id="result-title"></span><span id="result-time"></span><span id="result-subtitle"></span></div></div>
-<div id="stage-ready" class="hidden" aria-label="Controls and stage readiness"><section class="ready-card"><h1 id="ready-controls-title" class="ready-anton">CONTROLS</h1><h2 id="ready-driver-title" class="ready-anton">DRIVER</h2><p id="ready-driver-controls"></p><h2 id="ready-navigator-title" class="ready-anton">NAVIGATOR</h2><p id="ready-navigator-controls"></p><div id="ready-footer" class="ready-anton">PRESS R WHEN READY</div><div id="ready-status" class="ready-anton" data-ready="00" role="status" aria-live="polite">DRIVER  —      NAVIGATOR  —</div></section></div>
+<div id="stage-ready" class="hidden" aria-label="Controls and stage readiness"><section class="ready-card"><h1 id="ready-controls-title" class="ready-anton">CONTROLS</h1><h2 id="ready-driver-title" class="ready-anton">DRIVER</h2><p id="ready-driver-controls"></p><h2 id="ready-navigator-title" class="ready-anton">NAVIGATOR</h2><p id="ready-navigator-controls"></p><p id="ready-theft" class="hidden">DRIVERS: G — OPEN / CLOSE DOOR · E — GRAB / DROP</p><div id="ready-footer" class="ready-anton">PRESS R WHEN READY</div><div id="ready-crews" class="hidden" role="status" aria-live="polite"></div><div id="ready-status" class="ready-anton" data-ready="00" role="status" aria-live="polite">DRIVER  —      NAVIGATOR  —</div></section></div>
+<div id="tablet-mount-prompt" class="hidden" role="status"><kbd>E</kbd><span id="tablet-mount-label">ATTACH TABLET</span></div>
 <div id="race-hint" class="hidden"><div id="race-hint-text"></div></div>
 <div id="browser-menu" class="hidden" role="dialog" aria-modal="true" aria-label="Pause menu">
   <section class="pause-shell"><div class="pause-lip"></div><div class="pause-screen"></div><div class="pause-route-marker"></div><div class="pause-timer-rim"></div><div class="pause-timer">PAUSED</div>
-    <div data-pause-page="home"><div id="pause-role">DRIVER</div><button id="resume-game" class="pause-resume">RESUME</button><button id="retry-game" class="pause-restart">RESTART</button><button id="exit-game" class="pause-leave">LEAVE SESSION</button><button id="pause-settings" class="pause-settings-button">SETTINGS</button><button id="menu-lobby" class="pause-main-menu">BACK TO MENU</button><div class="pause-footer">ESC  BACK TO THE ROAD</div></div>
-    <div data-pause-page="settings" class="hidden"><div class="pause-heading">SETTINGS</div><label class="pause-quality-label" for="quality-setting">GRAPHICS</label><select id="quality-setting" aria-label="Graphics quality"><option value="auto">AUTO</option><option value="high">HIGH</option><option value="low">LOW</option></select><button id="pause-volume" class="pause-volume-button">VOLUME</button><button id="pause-settings-back" class="pause-back">BACK</button></div>
+    <div data-pause-page="home"><div id="pause-role">DRIVER</div><button id="resume-game" class="pause-resume">RESUME</button><button id="retry-game" class="pause-restart">RESTART</button><button id="exit-game" class="pause-leave">LEAVE SESSION</button><button id="pause-settings" class="pause-settings-button">SETTINGS</button><button id="menu-lobby" class="pause-main-menu">BACK TO MENU</button><button id="pause-audio" class="pause-audio-button">VOLUME</button><div class="pause-footer">ESC  BACK TO THE ROAD</div></div>
+    <div data-pause-page="settings" class="hidden"><div class="pause-heading">SETTINGS</div><label class="pause-quality-label" for="quality-setting">GRAPHICS</label><select id="quality-setting" aria-label="Graphics quality"><option value="auto">AUTO</option><option value="high">HIGH</option><option value="low">LOW · OLDER LAPTOPS</option></select><button id="pause-volume" class="pause-volume-button">VOLUME</button><button id="pause-settings-back" class="pause-back">BACK</button></div>
     <div data-pause-page="volume" class="hidden"><div class="pause-heading">VOLUME</div>
       <label class="pause-volume-row" style="--row-y:170px" for="volume-game"><span>GAME</span><output id="volume-game-percent">50%</output><input id="volume-game" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Game volume"></label>
       <label class="pause-volume-row" style="--row-y:250px" for="volume-menu"><span>MENU</span><output id="volume-menu-percent">50%</output><input id="volume-menu" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Menu volume"></label>

@@ -140,10 +140,12 @@ def export(runtime, assets):
             'sourceComponentPathId': components['GoofyCarController'].path_id, 'serializedReferenceOffset': offset,
             'note': 'Source maxSteeringWheelAngle is110 degrees. Hand IK generic190-degree fallback is not the source setting.'},
         'tabletReference': {'rootScale': vec(e.go_transform(e.find('Tablet')).m_LocalScale),
-            'physicalDimensionsMeters': [0.24, 0.018, 0.28],
+            'runtimeRootScale': [.26, .052, .32],
+            'physicalDimensionsMeters': [.26, .052, .32],
             'routeTextureSize': 512, 'material': 'RW_TabletBezel, original URP Lit orange; no source diffuse image on bezel',
             'runtimeLayoutSource': '/assets/ui/TabletMinimap.json',
-            'note': 'Reuse the original tablet model, held anchor quaternion and runtime Screen layout. The route is generated native artwork, not an additional screen image.'},
+            'runtimeConstructionSource': '/assets/tablet-shell.json',
+            'note': 'rootScale records the serialized scene cube. TabletShell.Awake replaces it with runtimeRootScale and constructs 14 protective parts. Apply that runtime construction before positioning the native Screen and timer. Reuse native held anchors; route artwork is generated at runtime.'},
         'scope': 'Physical cluster only; does not enable the separate native fullscreen DriverSpeedometer component. Car GLB untouched; runtime visual parity requires verification.'}
     path = assets / 'cockpit.json'; path.write_text(json.dumps(rounded(report), indent=2) + '\n')
     return {'path': str(path), 'sha256': digest(path), 'textMeshes': len(text), 'fontGlyphs': len(typeface['glyphs']), 'fontBytes': font_path.stat().st_size, 'steeringWheelMaxDegrees': angle}

@@ -1,0 +1,84 @@
+{
+  "source": "Original level1 character skiny skin and NavigatorTabletHandIk component",
+  "model": {
+    "url": "/assets/navigator-rig.glb",
+    "sha256": "fca48e41ab3cf77216eef38b36e341b5c83c12259739c5e0f4c7213c3cb89919",
+    "skins": 4
+  },
+  "serialized": {
+    "tablet": {
+      "fileId": 0,
+      "pathId": 40350
+    },
+    "navigatorRoot": {
+      "fileId": 0,
+      "pathId": 18330
+    },
+    "navigatorObjectName": "character skiny",
+    "leftShoulder": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "leftUpperArm": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "leftLowerArm": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "leftWrist": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "rightShoulder": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "rightUpperArm": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "rightLowerArm": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "rightWrist": {
+      "fileId": 0,
+      "pathId": 0
+    },
+    "leftGrip": {
+      "fileId": 0,
+      "pathId": 18482
+    },
+    "rightGrip": {
+      "fileId": 0,
+      "pathId": 18549
+    },
+    "palmLocalOffset": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "palmLocalEulerLeft": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "palmLocalEulerRight": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "leftExtraRollDegrees": 0.0,
+    "rightExtraRollDegrees": 180.0,
+    "shoulderIkWeight": 0.55,
+    "maxShoulderDegrees": 32.0,
+    "gripTwistWeight": 1.0,
+    "forearmTwistShare": 0.0,
+    "maxForearmTwistDegrees": 40.0,
+    "elbowHintRestOutward": 0.06
+  },
+  "componentSha256": "bf03a445c07d618091815ae89feea76867ffd029f67ceea9852a9ab144b1494a",
+  "coordinates": "Native serialized settings; GLB reflected X as car.glb. Original BodyVisual local transform is included."
+}

@@ -1,8 +1,8 @@
 // Keep one authoritative room service when the frontend runs on Vercel.
 // Function instances cannot safely share an in-memory multiplayer room map.
-const origin='https://right-right-right-play.andustry-0633.chatgpt.site';
+const legacyOrigin='https://right-right-right-play.andustry-0633.chatgpt.site';
 const paths=new Set(['session','message','poll','health']);
-export function createProxy(fetcher=fetch){return async function proxy(req,res){
+export function createProxy(fetcher=fetch,{origin=process.env.GAME_SERVER_ORIGIN||legacyOrigin}={}){return async function proxy(req,res){
   const path=(req.url||'').split('?')[0].split('/').filter(Boolean).at(-1);
   res.setHeader('Cache-Control','no-store');
   if(path==='ws'){res.statusCode=426;res.setHeader('Content-Type','application/json');res.end(JSON.stringify({transport:'http'}));return;}

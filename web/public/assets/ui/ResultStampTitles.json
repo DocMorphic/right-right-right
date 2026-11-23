@@ -1,0 +1,59 @@
+{
+  "copyright": "Original game and artwork: Stellux Interactive. Used under developer permission stated by the project owner; excluded from the source-code MIT license.",
+  "source": "Native CrashWreckFX.BuildStamp RVA0x5350D0 and original Anton atlas",
+  "titles": {
+    "TREE'D": {
+      "url": "/assets/ui/TreeStampTitle.png",
+      "text": "TREE'D",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 78,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        232,
+        85
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "350dc0312cb2681bfccb074ca64acb73a37278629a4d1a74edfda258f2b0fbd6"
+    },
+    "FINISHED": {
+      "url": "/assets/ui/FinishStampTitle.png",
+      "text": "FINISHED",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "nativeTextFontSize": 78,
+      "nativeTextColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "size": [
+        306,
+        87
+      ],
+      "note": "White alpha title mask composed from original baked font glyph pixels and metrics; tint with nativeTextColor. Source has no embedded Anton TTF.",
+      "sha256": "627823d6f48612f19b9001d02df3e9004aee4c74444d1c8d915f95daf09dd46f"
+    }
+  },
+  "resultTime": {
+    "source": "StageBestTimes.Format RVA0x5294F0",
+    "negative": "\u2014",
+    "below60": "seconds.ToString(\"0.00\") + \"s\"",
+    "atLeast60": "floor(seconds/60) + \":\" + (seconds-minutes*60).ToString(\"00.00\")"
+  },
+  "note": "White alpha masks from original 96px glyph pixels; browser scales to the native 78px title setting."
+}

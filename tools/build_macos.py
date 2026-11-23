@@ -3,7 +3,7 @@
 This is a bundled compatibility build, not a native Unity export. Distribution
 requires a Developer ID signature and notarization; ad-hoc builds are for QA.
 """
-import argparse,hashlib,json,plistlib,shutil,subprocess,sys,zipfile
+import argparse,hashlib,json,plistlib,re,shutil,subprocess,sys,zipfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -52,8 +52,13 @@ def main():
         enginepath='SharedSupport/Runtime';winepath='bin/wine'
     subprocess.run(['/bin/cp','-c',str(a.package.resolve()),str(app/'Contents/Resources/Game.zip')],check=True)
     rosetta=(engine/'Contents/lib/wine/x86_64-unix').is_dir()
+    engine_version='qa'
+    if engine.suffix=='.app':
+        metadata=plistlib.loads((engine/'Contents/Info.plist').read_bytes())
+        engine_version=re.sub(r'[^A-Za-z0-9_.-]','_',str(metadata.get('CFBundleVersion','qa')))
+    flavor=('wine-x86_64-' if rosetta else 'wine-arm64-')+engine_version
     minimum='26.4' if engine.suffix=='.app' and not rosetta else '15.0'
-    info=dict(CFBundleIdentifier='games.docmorphic.rightrightright',CFBundleName='Right Right Right',CFBundleDisplayName='Right Right Right',CFBundleExecutable='RightRightRight',CFBundlePackageType='APPL',CFBundleShortVersionString='0.3.0',CFBundleVersion='5.1',LSMinimumSystemVersion=minimum,LSArchitecturePriority=['arm64'],NSHighResolutionCapable=True,LSApplicationCategoryType='public.app-category.racing-games',RRRContentVersion=version,RRRPayloadSHA256=sha(a.package),RRREnginePath=enginepath,RRRWinePath=winepath)
+    info=dict(CFBundleIdentifier='games.docmorphic.rightrightright',CFBundleName='Right Right Right',CFBundleDisplayName='Right Right Right',CFBundleExecutable='RightRightRight',CFBundlePackageType='APPL',CFBundleShortVersionString='0.3.0',CFBundleVersion='5.2',LSMinimumSystemVersion=minimum,LSArchitecturePriority=['arm64'],NSHighResolutionCapable=True,LSApplicationCategoryType='public.app-category.racing-games',RRRContentVersion=version,RRRPayloadSHA256=sha(a.package),RRREnginePath=enginepath,RRRWinePath=winepath,RRRRuntimeFlavor=flavor,RRRGraphicsBackend='dxvk' if rosetta else '',RRRDisableSamplerLodBias=rosetta)
     with (app/'Contents/Info.plist').open('wb') as f:plistlib.dump(info,f)
     subprocess.run(['/usr/bin/xcrun','swiftc','-O','-swift-version','5','-target','arm64-apple-macosx15.0','-framework','AppKit','-framework','CryptoKit',str(ROOT/'macos/Launcher.swift'),'-o',str(app/'Contents/MacOS/RightRightRight')],check=True)
     identity=a.sign_identity or '-'

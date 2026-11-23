@@ -16,6 +16,6 @@ export function validInput(input) {
   return ['throttle', 'steer', 'pitch', 'yaw'].every(k => Number.isFinite(input[k])) &&
     Math.abs(input.throttle) <= 1 && Math.abs(input.steer) <= 1 && Math.abs(input.pitch) <= 90 && Math.abs(input.yaw) <= 160 &&
     (!input.actions || Array.isArray(input.actions) && input.actions.length <= 4 && input.actions.every(action => action &&
-      Number.isSafeInteger(action.id) && action.id > 0 && action.id <= 0xffffffff && ['grab', 'door'].includes(action.kind)));
+      Number.isSafeInteger(action.id) && action.id > 0 && action.id <= 0xffffffff && ['grab', 'door', 'driverDoor', 'tabletMount'].includes(action.kind)));
 }
 export function newer(seq, previous) { return ((seq - previous) | 0) > 0; }

@@ -1,7 +1,7 @@
 import {DEFAULT_STAGE} from '../shared/course.js';
 
 export const RESTART_HINT='R  RESTART      ESC  MENU';
-export const NAVIGATOR_RESTART_HINT='WAITING FOR THE DRIVER...';
+export const NAVIGATOR_RESTART_HINT='WAITING FOR THE HOST...';
 
 export function createGameRequest(mode,{practice=false}={}){
   return {type:'create',mode,profile:DEFAULT_STAGE,name:'Player',...(practice?{practice:true}:{})};
@@ -34,4 +34,12 @@ export function readyRoleState(snapshot){
   const seats=snapshot?.stageReady||[];
   const drivers=seats.filter((_,index)=>index%2===0),navigators=seats.filter((_,index)=>index%2===1);
   return {driverReady:drivers.length>0&&drivers.every(Boolean),navigatorReady:navigators.length>0&&navigators.every(Boolean)};
+}
+
+export function raceResultLabel(snapshot,slot){
+ if(snapshot?.cars?.length!==2)return '';
+ const team=Math.floor(slot/2),own=snapshot.cars[team];if(!own||!own.dead&&own.finish<0)return '';
+ if(snapshot.phase==='paused')return 'PLAYER DISCONNECTED';
+ if(snapshot.phase==='ended')return Number.isInteger(snapshot.winner)?`CREW ${snapshot.winner===0?'A':'B'} WINS`:"BOTH CREWS TREE'D";
+ return `CREW ${team===0?'B':'A'} STILL RACING`;
 }

@@ -1,7 +1,9 @@
 /** Same room protocol over a local WebSocket or hosted HTTP session transport. */
 import {NetworkTiming} from './network-timing.js';
 export class Network extends EventTarget {
-  constructor({storage=typeof sessionStorage==='undefined'?null:sessionStorage,timing=new NetworkTiming()}={}) { super();this.storage=storage;this.timing=timing;this.socket=null;this.session=null;this.connected=false;this.connecting=null;this.closed=false;this.transport='';this.pending=[];this.lastPoll=0;this.epoch=0;this.roomCode=null;this.roomRevision=-1;this.httpTail=Promise.resolve(); }
+  constructor({storage=typeof sessionStorage==='undefined'?null:sessionStorage,timing=new NetworkTiming(),serverOrigin=import.meta.env?.VITE_GAME_SERVER,requestTimeoutMs=10000,wakeBeforeConnect=import.meta.env?.VITE_GAME_SERVER_WAKE==='true',wakeTimeoutMs=90000,wakeRetryMs=1000}={}) { super();this.requestTimeoutMs=requestTimeoutMs;this.wakeBeforeConnect=wakeBeforeConnect;this.wakeTimeoutMs=wakeTimeoutMs;this.wakeRetryMs=wakeRetryMs;this.storage=storage;this.timing=timing;this.serverOrigin=serverOrigin?new URL(serverOrigin).origin:null;this.socket=null;this.session=null;this.connected=false;this.connecting=null;this.closed=false;this.transport='';this.pending=[];this.lastPoll=0;this.epoch=0;this.roomCode=null;this.roomRevision=-1;this.httpTail=Promise.resolve(); }
+  endpoint(path){return this.serverOrigin?new URL(path,this.serverOrigin).href:path;}
+  fetchRequest(path,options={}){return fetch(this.endpoint(path),{...options,signal:AbortSignal.timeout(this.requestTimeoutMs)});}
   emit(type,detail) { this.dispatchEvent(new CustomEvent(type,{detail})); }
   async connect() {
     if(this.connected) return;
@@ -10,16 +12,34 @@ export class Network extends EventTarget {
     this.connecting=this.open().finally(()=>{this.connecting=null;});return this.connecting;
   }
   async open() {
+    if(this.wakeBeforeConnect)await this.wakeServer();
     const forced=new URL(location.href).searchParams.get('transport');
     if(forced!=='http') {
       try { await this.openSocket();return; } catch { this.socket?.close();this.socket=null; }
     }
     let saved=this.savedSession();
-    let response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(saved||{})});
-    if(response.status===401&&saved){this.saveSession(null);response=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});}
+    let response=await this.fetchRequest('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(saved||{})});
+    if(response.status===401&&saved){this.saveSession(null);response=await this.fetchRequest('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});}
     if(!response.ok) throw new Error('The rally server is unavailable. Please try again.');
     const data=await response.json();this.session={id:data.id,token:data.token};this.saveSession(this.session);this.transport='http';this.connected=true;
     this.deliver(data.messages||[data.welcome||{type:'welcome',id:data.id,version:1}]);this.emit('connected',{transport:this.transport});this.poll();
+  }
+  async wakeServer(){
+    this.emit('status',{message:'Waking the game server… first launch can take about a minute.'});
+    const deadline=performance.now()+this.wakeTimeoutMs;
+    while(!this.closed&&performance.now()<deadline){
+      try{
+        // The frontend proxies this to the configured authority. Cross-site
+        // health requests can be blocked independently of WebSocket gameplay.
+        const response=await fetch('/health',{cache:'no-store',signal:AbortSignal.timeout(Math.max(1,Math.ceil(Math.min(this.requestTimeoutMs,deadline-performance.now()))))});
+        if(response.ok){const health=await response.json();if(health.ok&&health.protocol===1&&health.transport==='websocket'){
+          if(this.closed)throw new Error('Connection was closed');
+          this.emit('status',{message:'Connecting to your crew...'});return;
+        }}
+      }catch(error){if(this.closed)throw new Error('Connection was closed');}
+      if(performance.now()<deadline)await new Promise(resolve=>setTimeout(resolve,Math.min(this.wakeRetryMs,deadline-performance.now())));
+    }
+    throw new Error(this.closed?'Connection was closed':'The game server is taking too long to wake. Please try again.');
   }
   savedSession() {
     try{const saved=JSON.parse(this.storage?.getItem('rrr-browser-session-v1')||'null');return typeof saved?.id==='string'&&typeof saved?.token==='string'?saved:null;}catch{return null;}
@@ -30,7 +50,7 @@ export class Network extends EventTarget {
   openSocket() {
     this.stopSocketTiming();
     return new Promise((resolve,reject)=>{
-      const base=import.meta.env?.VITE_GAME_SERVER||location.origin;const url=new URL('/ws',base);url.protocol=url.protocol==='https:'?'wss:':'ws:';
+      const url=new URL('/ws',this.serverOrigin||location.origin);url.protocol=url.protocol==='https:'?'wss:':'ws:';
       const ws=new WebSocket(url);this.socket=ws;const timer=setTimeout(()=>{ws.close();reject(new Error('Connection timed out'));},3500);let opened=false;
       ws.addEventListener('open',()=>{clearTimeout(timer);if(this.socket!==ws||this.closed){ws.close();reject(new Error('Connection was closed'));return;}opened=true;this.transport='ws';this.connected=true;this.startSocketTiming(ws);this.emit('connected',{transport:'ws'});resolve();});
       ws.addEventListener('message',event=>{if(this.socket!==ws)return;try{this.deliver([JSON.parse(event.data)]);}catch{this.emit('error',{message:'Invalid server message.'});}});
@@ -64,7 +84,7 @@ export class Network extends EventTarget {
       const payload=typeof extra==='function'?extra():extra;
       for(let attempt=0;;attempt++) {
         const sentAt=performance.now();
-        const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...this.session,epoch:this.epoch,...payload})});
+        const response=await this.fetchRequest(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...this.session,epoch:this.epoch,...payload})});
         const data=await response.json();const elapsed=performance.now()-sentAt;this.roundTripMs=this.roundTripMs===undefined?elapsed:this.roundTripMs*.8+elapsed*.2;
         if(response.status===409&&data.messages?.some(message=>message.code==='busy')&&attempt<4){await new Promise(resolve=>setTimeout(resolve,50*(attempt+1)));continue;}
         if(response.status===401)throw new Error('Your session expired. Rejoin the room.');

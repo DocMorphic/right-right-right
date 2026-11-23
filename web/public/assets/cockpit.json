@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "source": "Original compiled native physical dashboard and TextMesh references",
+  "copyright": "Original game/assets: Stellux Interactive. Authorized original content; excluded from source-code MIT license.",
+  "sourceHashes": {
+    "level1": "c7e6b5a67c3af64564dd79bb87795c1f4bc8dd5ecaa43cde71430b8e82acfef4",
+    "sharedassets1.assets": "8a71b3448d3f974af50b3bd3cc026b9560cb2b4220192f18ea56f121df62e82e",
+    "resources.assets": "ad1a1f2eb2294c54c18dc84209c256b09e90dd741d9f70c0069b208eec7967bb"
+  },
+  "clusterNode": "ClusterGauges",
+  "settings": {
+    "car": [
+      0,
+      40316
+    ],
+    "carAudio": [
+      0,
+      40326
+    ],
+    "netBridge": [
+      0,
+      0
+    ],
+    "bodyVisual": [
+      0,
+      18308
+    ],
+    "localPosition": [
+      -0.3682,
+      0.9544,
+      0.6031
+    ],
+    "localEuler": [
+      349.808014,
+      180.0,
+      0.0
+    ],
+    "startAngle": 120.0,
+    "endAngle": -120.0,
+    "maxSpeedKmh": 160.0,
+    "maxRpm": 9000.0,
+    "needleFollow": 14.0,
+    "housingColor": [
+      0.1,
+      0.09,
+      0.08,
+      1.0
+    ],
+    "faceColor": [
+      0.04,
+      0.04,
+      0.035,
+      1.0
+    ],
+    "rimColor": [
+      0.8,
+      0.42,
+      0.08,
+      1.0
+    ],
+    "tickColor": [
+      0.86,
+      0.72,
+      0.42,
+      1.0
+    ],
+    "needleColor": [
+      0.93,
+      0.52,
+      0.12,
+      1.0
+    ],
+    "redlineColor": [
+      0.72,
+      0.18,
+      0.08,
+      1.0
+    ]
+  },
+  "needles": {
+    "speed": {
+      "parent": "Speedo",
+      "node": "NeedlePivot"
+    },
+    "rpm": {
+      "parent": "Tach",
+      "node": "NeedlePivot"
+    }
+  },
+  "animation": {
+    "sourceLateUpdateRva": "0x50A490",
+    "sourceSetNeedleRva": "0x50AF40",
+    "speedSource": "Planar rigidbody velocity magnitude *3.6; includes lateral drift. Native active car first, then network motion/velocity fallback.",
+    "smoothing": "display += (target-display)*clamp(1-exp(-needleFollow*dt),0,1)",
+    "browserNeedleZDegrees": "lerp(startAngle,endAngle,clamp(display/max,0,1)); replaces local rotation, not an offset from the zero quaternion",
+    "readout": "RoundToInt(smoothedSpeedKmh).ToString()",
+    "limiterActivation": "CarAudio.OnLimiter RVA0x5335D0: _limiterVol >0.05",
+    "limiterDip": "While CarAudio limiter active: displayRpm - (250+850*clamp(abs(sin(time*21))*abs(sin(time*52)),0,1)); needle only."
+  },
+  "textMeshes": [
+    {
+      "name": "KmLabel",
+      "path": [
+        "ClusterGauges",
+        "KmLabel"
+      ],
+      "unityPathId": 9341,
+      "textMeshPathId": 36500,
+      "text": "km/h",
+      "fontSize": 40,
+      "characterSize": 0.0024,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          -0.0767,
+          -0.0306,
+          0.012
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.006912
+    },
+    {
+      "name": "Readout",
+      "path": [
+        "ClusterGauges",
+        "Readout"
+      ],
+      "unityPathId": 9247,
+      "textMeshPathId": 36502,
+      "text": "0",
+      "fontSize": 44,
+      "characterSize": 0.0032,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": true,
+      "localTransform": {
+        "position": [
+          -0.0767,
+          -0.0146,
+          0.013
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.010138
+    },
+    {
+      "name": "RpmLabel",
+      "path": [
+        "ClusterGauges",
+        "RpmLabel"
+      ],
+      "unityPathId": 9136,
+      "textMeshPathId": 36494,
+      "text": "x1000",
+      "fontSize": 36,
+      "characterSize": 0.003,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          0.0511,
+          -0.0316,
+          0.012
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.007776
+    },
+    {
+      "name": "N0",
+      "path": [
+        "ClusterGauges",
+        "Speedo",
+        "N0"
+      ],
+      "unityPathId": 9298,
+      "textMeshPathId": 36497,
+      "text": "0",
+      "fontSize": 40,
+      "characterSize": 0.0022,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          -0.027921,
+          -0.01612,
+          0.011
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.006336
+    },
+    {
+      "name": "N1",
+      "path": [
+        "ClusterGauges",
+        "Speedo",
+        "N1"
+      ],
+      "unityPathId": 9228,
+      "textMeshPathId": 36495,
+      "text": "40",
+      "fontSize": 40,
+      "characterSize": 0.0022,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          -0.027921,
+          0.01612,
+          0.011
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.006336
+    },
+    {
+      "name": "N2",
+      "path": [
+        "ClusterGauges",
+        "Speedo",
+        "N2"
+      ],
+      "unityPathId": 9194,
+      "textMeshPathId": 36501,
+      "text": "80",
+      "fontSize": 40,
+      "characterSize": 0.0022,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          0.0,
+          0.03224,
+          0.011
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.006336
+    },
+    {
+      "name": "N3",
+      "path": [
+        "ClusterGauges",
+        "Speedo",
+        "N3"
+      ],
+      "unityPathId": 9375,
+      "textMeshPathId": 36503,
+      "text": "120",
+      "fontSize": 40,
+      "characterSize": 0.0022,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          0.027921,
+          0.01612,
+          0.011
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.006336
+    },
+    {
+      "name": "N4",
+      "path": [
+        "ClusterGauges",
+        "Speedo",
+        "N4"
+      ],
+      "unityPathId": 9240,
+      "textMeshPathId": 36498,
+      "text": "160",
+      "fontSize": 40,
+      "characterSize": 0.0022,
+      "fontStyle": 0,
+      "anchor": 4,
+      "alignment": 1,
+      "color": [
+        0.858824,
+        0.721569,
+        0.419608,
+        1.0
+      ],
+      "font": "ShareTechMono-Regular",
+      "fontPathId": 87,
+      "dynamic": false,
+      "localTransform": {
+        "position": [
+          0.027921,
+          -0.01612,
+          0.011
+        ],
+        "rotation": [
+          0.0,
+          -0.0,
+          -0.0,
+          1.0
+        ],
+        "scale": [
+          -1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "threeTextSize": 0.006336
+    }
+  ],
+  "font": {
+    "url": "/assets/fonts/NativeCockpit.typeface.json",
+    "ttfUrl": "/assets/fonts/ShareTechMono-Regular.ttf",
+    "licenseUrl": "/assets/fonts/ShareTechMono-OFL.txt",
+    "sha256": "2c731b40044c8bacb0cb210d7568fc8c329dc0dfdfc234cdaa03b4179ccb1e0e",
+    "sourceTtfSha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
+    "glyphs": 267,
+    "sourceFile": "resources.assets",
+    "sourcePathId": 87
+  },
+  "textGeometry": {
+    "coordinates": "Attach to existing source TextMesh nodes; generated glyph geometry needs X reflection [-1,1,1] to match reflected native mesh convention.",
+    "colorDecode": "Native TextMesh packed Color32 byte order is reversed relative to UnityPy ColorRGBA channel presentation; exported color is corrected RGBA.",
+    "size": "fontSize*characterSize/10*72/100 for the supplied Three typeface conversion.",
+    "alignment": "Native anchor4=MiddleCenter, alignment1=Center; centre text geometry on its native anchor."
+  },
+  "steeringWheel": {
+    "node": "WheelRotationHelper",
+    "maxDegrees": 110.0,
+    "axis": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceComponentPathId": 40316,
+    "serializedReferenceOffset": 492,
+    "note": "Source maxSteeringWheelAngle is110 degrees. Hand IK generic190-degree fallback is not the source setting."
+  },
+  "tabletReference": {
+    "rootScale": [
+      0.24,
+      0.018,
+      0.28
+    ],
+    "runtimeRootScale": [
+      0.26,
+      0.052,
+      0.32
+    ],
+    "physicalDimensionsMeters": [
+      0.26,
+      0.052,
+      0.32
+    ],
+    "routeTextureSize": 512,
+    "material": "RW_TabletBezel, original URP Lit orange; no source diffuse image on bezel",
+    "runtimeLayoutSource": "/assets/ui/TabletMinimap.json",
+    "runtimeConstructionSource": "/assets/tablet-shell.json",
+    "note": "rootScale records the serialized scene cube. TabletShell.Awake replaces it with runtimeRootScale and constructs 14 protective parts. Apply that runtime construction before positioning the native Screen and timer. Reuse native held anchors; route artwork is generated at runtime."
+  },
+  "scope": "Physical cluster only; does not enable the separate native fullscreen DriverSpeedometer component. Car GLB untouched; runtime visual parity requires verification."
+}

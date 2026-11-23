@@ -1,0 +1,18 @@
+import {readFile,stat} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {extractFile,listPackage} from '@electron/asar';
+const desktop=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const report=JSON.parse(await readFile(path.join(desktop,'out/build-report.json'),'utf8')),app=process.argv[2]||report.appPath;
+const asar=path.join(app,'Contents/Resources/app.asar'),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const manifest=JSON.parse(extractFile(asar,'build-manifest.json'));
+for(const [file,hash]of Object.entries(manifest.clientFiles))if(sha(extractFile(asar,`client/${file}`))!==hash)throw new Error(`Changed client file: ${file}`);
+for(const [file,hash]of Object.entries(manifest.sourceFiles))if(sha(extractFile(asar,`game/${file}`))!==hash)throw new Error(`Changed server file: ${file}`);
+const listing=listPackage(asar);for(const required of ['/main.cjs','/runtime-entry.mjs','/node_modules/ws/package.json','/client/assets/car.glb','/client/assets/CREDITS.txt'])if(!listing.includes(required))throw new Error(`Missing ${required}`);
+const executable=path.join(app,'Contents/MacOS/Right Right Right');await stat(executable);
+const architecture=execFileSync('/usr/bin/lipo',['-archs',executable],{encoding:'utf8'}).trim();if(architecture!=='arm64')throw new Error(`Wrong architecture: ${architecture}`);
+execFileSync('/usr/bin/codesign',['--verify','--deep','--strict',app],{stdio:'inherit'});
+execFileSync('/usr/bin/hdiutil',['verify',report.dmg],{stdio:'inherit'});
+console.log(JSON.stringify({app,architecture,verifiedClientFiles:Object.keys(manifest.clientFiles).length,verifiedServerFiles:Object.keys(manifest.sourceFiles).length,developerIdSigned:false,notarized:false,gatekeeperReady:false},null,2));

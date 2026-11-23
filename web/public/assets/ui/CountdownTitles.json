@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "digits": [
+    {
+      "url": "/assets/ui/Countdown5.png",
+      "text": "5",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "size": [
+        46,
+        87
+      ],
+      "note": "White alpha digit mask composed from original Anton atlas glyph pixels and metrics. Screen layout, size and tint are browser presentation choices; no original screen-countdown canvas was recovered.",
+      "digit": 5,
+      "referenceFontSize": 96,
+      "sha256": "865bd1d227055bf2005683dcd46ed0c3343b9ea9f8d75a4db4e45e0ee7cd2604",
+      "referenceColor": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "url": "/assets/ui/Countdown4.png",
+      "text": "4",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "size": [
+        49,
+        86
+      ],
+      "note": "White alpha digit mask composed from original Anton atlas glyph pixels and metrics. Screen layout, size and tint are browser presentation choices; no original screen-countdown canvas was recovered.",
+      "digit": 4,
+      "referenceFontSize": 96,
+      "sha256": "c11a6305c410255acc11f6acaba88176e95c37684ffc1dff27b8bb8cc398948e",
+      "referenceColor": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "url": "/assets/ui/Countdown3.png",
+      "text": "3",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "size": [
+        47,
+        86
+      ],
+      "note": "White alpha digit mask composed from original Anton atlas glyph pixels and metrics. Screen layout, size and tint are browser presentation choices; no original screen-countdown canvas was recovered.",
+      "digit": 3,
+      "referenceFontSize": 96,
+      "sha256": "26d311d7f7307720e1c5d89866b0bbd31edc491ed9d6efac44f5d072d7c7e174",
+      "referenceColor": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "url": "/assets/ui/Countdown2.png",
+      "text": "2",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "size": [
+        47,
+        85
+      ],
+      "note": "White alpha digit mask composed from original Anton atlas glyph pixels and metrics. Screen layout, size and tint are browser presentation choices; no original screen-countdown canvas was recovered.",
+      "digit": 2,
+      "referenceFontSize": 96,
+      "sha256": "31b62046a729368ae9b92b0d84309f51a324a20da4ec7889fca5c1046b7441f8",
+      "referenceColor": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "url": "/assets/ui/Countdown1.png",
+      "text": "1",
+      "font": "Anton-Regular",
+      "sourceFontFile": "resources.assets",
+      "sourceFontPathId": 88,
+      "embeddedTtfBytes": 0,
+      "sourceAtlasPathId": 41,
+      "sourceFontSize": 96.0,
+      "size": [
+        30,
+        85
+      ],
+      "note": "White alpha digit mask composed from original Anton atlas glyph pixels and metrics. Screen layout, size and tint are browser presentation choices; no original screen-countdown canvas was recovered.",
+      "digit": 1,
+      "referenceFontSize": 96,
+      "sha256": "23a07acf0f0c7f6940b6066704bea0d6b8a65eed3ae5aaa436e8d05e7ed12ad3",
+      "referenceColor": [
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "source": "Original Anton-Regular SDF atlas; StageController.BeginCountdown RVA0x529B50 / Update0x52B140",
+  "timing": {
+    "digits": [
+      5,
+      4,
+      3,
+      2,
+      1
+    ],
+    "secondsPerDigit": 1,
+    "totalSeconds": 5,
+    "afterLastDigit": "Race begins, native RacingDigit=0; no GO text recovered."
+  },
+  "presentation": "Visible screen countdown requested by the user. Cached original runtime shows tablet digits; no native centered countdown Canvas, screen font size or screen position was found. Do not claim native layout recovery.",
+  "copyright": "Original glyph artwork: Stellux Interactive. Authorized original content; excluded from source-code MIT license."
+}

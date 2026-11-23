@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createHttpFixture} from './http-fixture.js';
 import {generateCourse,STAGES,direction,nearestPoint} from '../shared/course.js';
 import {carAnchor} from '../shared/physics.js';
+import {releaseTablet}from'../shared/tablet-physics.js';
 import {routeInput} from './route-driver.js';
 import {setTimeout as wait} from 'node:timers/promises';
 const find=(reply,type)=>reply.messages?.find(message=>message.type===type);
@@ -68,20 +69,21 @@ test('real HTTP four-client race covers doors, tablets, collisions, fatal trees,
   assert.equal(state.cars[0].door,true);assert.ok(state.cars[0].doorAngle>30);assert.ok(state.stats.doors>=1);
   state=find(await s.action(0,'door'),'snapshot');assert.equal(state.cars[0].door,false);assert.equal(state.cars[0].doorAngle,0);
   // Crew B drops its tablet inside a closed cabin. Crew A's driver cannot steal it.
-  s.place(room=>{for(const [i,car] of room.world.cars.entries()){park(car,i?-1.9:0,80);car.door=false;car.doorAngle=0;}for(const p of room.world.tablets){p.holder=p.id*2+1;p.carrier=p.id;p.inCabin=true;Object.assign(p,carAnchor(room.world.cars[p.carrier],p.holder));}});
+  s.place(room=>{for(const [i,car] of room.world.cars.entries()){park(car,i?3.4:0,80);car.door=false;car.doorAngle=0;}for(const p of room.world.tablets){p.holder=p.id*2+1;p.carrier=p.id;p.inCabin=true;Object.assign(p,carAnchor(room.world.cars[p.carrier],p.holder));}});
   state=find(await s.action(3,'grab'),'snapshot');assert.equal(state.tablets[1].holder,-1);
-  state=find(await s.action(0,'grab',{yaw:90}),'snapshot');assert.equal(state.tablets[1].holder,-1);assert.equal(state.tablets[1].inCabin,true);assert.equal(state.stats.steals,0);
+  state=find(await s.action(0,'grab',{yaw:-90}),'snapshot');assert.equal(state.tablets[1].holder,-1);assert.equal(state.tablets[1].inCabin,true);assert.equal(state.stats.steals,0);
+  state=find(await s.action(0,'driverDoor'),'snapshot');assert.equal(state.cars[0].driverDoor,true);
   // Trigger the rival's door from driving, then park crews together for a reachable grab.
   s.place(room=>Object.assign(room.world.cars[1],{speed:7,vz:7,nextDoor:0,turnHold:0}));
   for(let i=0;i<8;i++)state=await s.tick(.1,{2:{throttle:.8,steer:.9}});
   assert.equal(state.cars[1].door,true);assert.ok(state.cars[1].doorAngle>30);
-  s.place(room=>{park(room.world.cars[0],0,80);park(room.world.cars[1],-1.9,80);const p=room.world.tablets[1];Object.assign(p,{holder:-1,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
+  s.place(room=>{park(room.world.cars[0],0,80);park(room.world.cars[1],3.4,80);const p=room.world.tablets[1];p.carrier=1;releaseTablet(p,room.world.cars[1]);});
   for(let i=0;i<5;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,true,'loose tablet no longer drops out almost immediately');
-  for(let i=0;i<15;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,false);
+  for(let i=0;i<15;i++)state=await s.tick(.1,{2:{throttle:0,steer:0}});assert.equal(state.tablets[1].inCabin,true,'an open door does not eject a parked tablet');
   s.place(room=>{const p=room.world.tablets[1];Object.assign(p,{holder:3,carrier:1,inCabin:true},carAnchor(room.world.cars[1],3));});
-  state=find(await s.action(0,'grab',{yaw:90}),'snapshot');assert.equal(state.tablets[1].holder,3);assert.equal(state.stats.steals,0,'held tablets remain protected even through an open door');
+  state=find(await s.action(0,'grab',{yaw:-90}),'snapshot');assert.equal(state.tablets[1].holder,3);assert.equal(state.stats.steals,0,'held tablets remain protected even through an open door');
   state=find(await s.action(3,'grab'),'snapshot');assert.equal(state.tablets[1].holder,-1);
-  state=find(await s.action(0,'grab',{yaw:90}),'snapshot');assert.equal(state.tablets[1].holder,0);assert.equal(state.tablets[1].carrier,0);assert.equal(state.stats.steals,1);
+  state=find(await s.action(0,'grab',{yaw:-90}),'snapshot');assert.equal(state.tablets[1].holder,0);assert.equal(state.tablets[1].carrier,0);assert.equal(state.stats.steals,1);
   state=find(await s.action(0,'grab'),'snapshot');assert.equal(state.tablets[1].holder,-1);
   // Own navigator can retrieve a dropped tablet at close range.
   state=find(await s.action(1,'grab',{yaw:0,pitch:45}),'snapshot');assert.equal(state.tablets[0].holder,-1);

@@ -4,13 +4,13 @@ This is a browser adaptation using the authorized original game models, textures
 
 ## Deployment and scope
 
-Open the [deployed browser game](https://right-right-right-play.andustry-0633.chatgpt.site) and share that link with friends. Browser room codes belong to this service and cannot join the downloadable Windows game's rooms.
+Open the [deployed browser game](https://right-right-right.vercel.app) and share that link with friends. Its shared WebSocket authority runs on Render. Browser room codes cannot join the downloadable Windows game's rooms.
 
 The menu uses the original tablet palette, Share Tech Mono, title lettering and car artwork with clear host/join and Start Game controls. Normal driving uses the original in-world tablet route and clock, with contextual results/disconnect feedback. Help, retry and lobby controls live in the Esc menu. Driving, networking, procedural mud and dynamic tablet rendering run in browser/server JavaScript. Exact native rendering and physics parity remain subject to comparison with the compiled game.
 
 ## Run locally
 
-Requires Node.js 22.13 or later. Generated licensed assets are ignored by Git: export them from an authorized prepared native runtime into `web/public/assets/` before building. Follow the [asset export guide](../docs/WEB-ASSET-EXPORT.md); keep the generated credits and font notices with the assets.
+Requires Node.js 22.13 or later. The current authorized game assets and generated map/contact data are included in the repository, so a fresh clone can build without the original Unity runtime. Original assets retain their original ownership and are excluded from the source-code MIT license; keep their credits and font notices. The [asset export guide](../docs/WEB-ASSET-EXPORT.md) describes regenerating them from an authorized prepared runtime.
 
 ```sh
 npm ci

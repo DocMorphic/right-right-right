@@ -66,7 +66,7 @@ test('native speed-dependent steering preserves parking lock but limits high-spe
 test('invalid stored sensitivity is ignored and auto quality remains bounded',()=>{
   assert.deepEqual(readDrivingSettings({getItem:()=>'{"steering":1000,"mouse":-2}'}),{steering:1,mouse:.1});
   const budget=new RenderBudget();for(let i=0;i<1000;i++)budget.sample(.05);
-  assert.equal(budget.scale,.75);for(let i=0;i<5000;i++)budget.sample(1/60);
+  assert.equal(budget.scale,.5);for(let i=0;i<5000;i++)budget.sample(1/60);
   assert.equal(budget.scale,1.25);
 });
 

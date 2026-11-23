@@ -1,0 +1,19 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {makeWorld,applyActions,toggleTablet,carAnchor,stepWorld} from '../shared/physics.js';
+import {validInput} from '../shared/protocol.js';
+import {reachProgress} from '../shared/driver-door.js';
+const course={seed:1,width:10,points:Array.from({length:150},(_,i)=>({x:0,y:0,z:i*2})),trees:[],mud:[]};
+function fixture(){const w=makeWorld(course,'race',1);w.phase='running';w.elapsed=5;for(const [team,car]of w.cars.entries())Object.assign(car,{x:team*3.4,y:.68,z:30,yaw:0,driverDoor:true,driverDoorAngle:80,door:true,doorAngle:90});const p=w.tablets[1];p.holder=-1;Object.assign(p,carAnchor(w.cars[1],3));return{w,p};}
+const aim={pitch:10,yaw:-90};
+test('a driver steals through both facing open doorways; the event has one authoritative time',()=>{const{w,p}=fixture();assert.equal(toggleTablet(w,0,aim),true);assert.equal(p.holder,0);assert.equal(p.carrier,0);assert.equal(w.tablets[0].holder,1);assert.equal(w.stats.steals,1);assert.deepEqual(w.cars[0].reach,{at:5,slot:0,tablet:1});assert.ok(Math.abs(reachProgress(w.cars[0].reach,5.4)-.5)<1e-9);assert.equal(reachProgress(w.cars[0].reach,6),1);});
+test('closed own door, closed rival door, small opening, held tablet, passenger, wrong side and mis-aim all reject theft',()=>{
+ for(const scenario of['ownClosed','ownSmall','rivalClosed','rivalSmall','held','passenger','wrongSide','misAim']){const{w,p}=fixture();let slot=0,input=aim;if(scenario==='ownClosed')w.cars[0].driverDoor=false;if(scenario==='ownSmall')w.cars[0].driverDoorAngle=20;if(scenario==='rivalClosed')w.cars[1].door=false;if(scenario==='rivalSmall')w.cars[1].doorAngle=20;if(scenario==='held')p.holder=3;if(scenario==='passenger'){slot=1;w.tablets[0].holder=0;}if(scenario==='wrongSide'){w.cars[1].x=-3.4;Object.assign(p,carAnchor(w.cars[1],3));input={pitch:10,yaw:90};}if(scenario==='misAim')input={pitch:0,yaw:90};assert.equal(toggleTablet(w,slot,input),false,scenario);assert.equal(w.stats.steals,0,scenario);assert.equal(w.cars[0].reach,null,scenario);}
+});
+test('rival tablet on the ground needs own open door, but no longer needs the rival door',()=>{const{w,p}=fixture();w.cars[1].door=false;p.inCabin=false;Object.assign(p,{x:1.5,y:.6,z:30.28});assert.equal(toggleTablet(w,0,{yaw:-90,pitch:25}),true);});
+test('theft cannot pass through the dashboard, roof or a third metre of unreachable space',()=>{for(const change of[{z:33},{y:3},{x:6}]){const{w,p}=fixture();Object.assign(p,change);assert.equal(toggleTablet(w,0,aim),false);}});
+test('driver door is a race-only driver action, opens outward over time and does not alter driving input',()=>{
+ const{w}=fixture();const car=w.cars[0];car.driverDoor=false;car.driverDoorAngle=0;applyActions(w,1,{actions:[{id:1,kind:'driverDoor'}]});assert.equal(car.driverDoor,false);applyActions(w,0,{actions:[{id:2,kind:'driverDoor'}]});assert.equal(car.driverDoor,true);const input={throttle:1,steer:.2};for(let i=0;i<25;i++)stepWorld(w,[input,{},{}],.02,course);assert.equal(car.driverDoorAngle,80);assert.ok(car.speed>0);assert.ok(car.steer>0);assert.deepEqual(input,{throttle:1,steer:.2});applyActions(w,0,{actions:[{id:3,kind:'driverDoor'}]});for(let i=0;i<20;i++)stepWorld(w,[input,{},{}],.02,course);assert.equal(car.driverDoorAngle,0);const coop=makeWorld(course,'coop',1);applyActions(coop,0,{actions:[{id:1,kind:'driverDoor'}]});assert.equal(coop.cars[0].driverDoor,false);
+ assert.equal(validInput({seq:1,throttle:0,steer:0,yaw:0,pitch:0,actions:[{id:1,kind:'driverDoor'}]}),true);
+});
+test('own tablet recovery and passenger door closing still work while holding a tablet',()=>{const{w,p}=fixture();p.holder=3;assert.equal(toggleTablet(w,3,{}),true);assert.equal(toggleTablet(w,3,{pitch:45}),true);applyActions(w,3,{actions:[{id:1,kind:'door'}]});assert.equal(w.cars[1].door,false);assert.equal(p.holder,3);});

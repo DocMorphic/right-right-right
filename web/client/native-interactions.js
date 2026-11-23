@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Original level1 CabinGrabber fields and CabinDoor's serialized grab settings.
-export const NATIVE_INTERACTION = Object.freeze({reach:1.3,knobAimRadius:.15,doorReach:1.6,aimPadding:.04,lookGain:2,clickShutAngle:4,maxAngle:90,grabOvershoot:30,grabStiffness:18,grabErrorClamp:4,maxFlickSpeed:900,grabFollow:25,hingeDamping:1.2,sealAngle:5,sealStiffness:60,windGain:.15,grabbedForceScale:.25});
+export const NATIVE_INTERACTION = Object.freeze({reach:1.3,knobAimRadius:.25,doorReach:1.6,aimPadding:.04,lookGain:2,clickShutAngle:4,maxAngle:90,grabOvershoot:30,grabStiffness:18,grabErrorClamp:4,maxFlickSpeed:900,grabFollow:25,hingeDamping:1.2,sealAngle:5,sealStiffness:60,windGain:.15,grabbedForceScale:.25});
 const clamp=(value,low,high)=>Math.max(low,Math.min(high,value));
 const wrap=degrees=>Math.atan2(Math.sin(degrees*Math.PI/180),Math.cos(degrees*Math.PI/180))*180/Math.PI;
 export const hasTablet=(snapshot,slot)=>Boolean(snapshot?.tablets?.some(tablet=>tablet.holder===slot));
