@@ -205,6 +205,7 @@ export function stepWorld(world,inputs,dt,course){
     resolveTrees(world,car,course);
     const near=nearestPoint(course,car.x,car.z,car.nearest);car.nearest=near.index;car.progress=Math.max(car.progress,near.index);
     for(let i=0;i<(course.mud||[]).length;i++){const mud=course.mud[i];if(!car.mudHits.includes(i)&&Math.hypot(car.x-mud.x,car.z-mud.z)<(mud.radius||course.width*.5)){car.mudHits.push(i);car.mud=clamp(car.mud+(mud.amount||.55),0,1);world.stats.mud++;}}
+    if(course.liveRoad)continue;
     const finishIndex=course.finishIndex??course.points.length-9,p=course.finishPose?{x:course.finishPose.position[0],z:course.finishPose.position[2]}:course.points[finishIndex],f=direction(course.points,finishIndex);
     const before=(car.lastX-p.x)*f.x+(car.lastZ-p.z)*f.z,after=(car.x-p.x)*f.x+(car.z-p.z)*f.z;
     if(!car.dead&&world.elapsed>3&&car.progress>Math.max(course.startIndex??0,finishIndex-60)&&before<0&&after>=0&&Math.abs((car.x-p.x)*f.z-(car.z-p.z)*f.x)<(course.widths?.[finishIndex]??course.width)*.5){car.finish=world.elapsed;car.vx=car.vz=car.speed=0;}

@@ -1,0 +1,5 @@
+Vosk English US small model 0.15 — Alpha Cephei, Apache License 2.0.
+https://alphacephei.com/vosk/models
+Vosk-browser 0.0.8 — Ciaran O’Reilly, Apache License 2.0.
+https://www.npmjs.com/package/vosk-browser
+Original model files are unchanged; only archive packaging differs.

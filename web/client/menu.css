@@ -43,6 +43,8 @@
 #menu.game-menu .mode-row button.selected {background:var(--ink);border-color:var(--ink);color:var(--paper);box-shadow:none}
 #menu.game-menu .mode-row button.selected:after {content:' ✓';color:#f2d78c}
 #menu.game-menu .mode-row button.selected:disabled {opacity:.8}
+#menu.game-menu #mode-roadcall {grid-column:1/-1;min-height:36px;font-size:12px}
+#voice-mode-note {margin:10px 0 20px;color:var(--muted);font:14px ShareTechMono,monospace}
 .room-code-row {display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 16px;min-height:44px}
 #menu.game-menu #room-note {position:static;inset:auto;width:auto;height:auto;margin:0;font:32px/1.1 ShareTechMono,monospace;letter-spacing:.1em;color:var(--ink)}
 #menu.game-menu .room-code-row:has(#copy-invite:not(.hidden)) #room-note {font-size:32px;color:var(--ink)}

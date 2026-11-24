@@ -1,0 +1,9 @@
+{
+  "name": "Vosk small English US 0.15",
+  "source": "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip",
+  "sourceSha256": "30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498",
+  "sha256": "93b3c9c94491edf2440bc8c9f1f5e3daa7a540f861a0fc5714c49395ee1a761a",
+  "license": "Apache-2.0",
+  "packaging": "Original model bytes repackaged as a deterministic tar.gz for vosk-browser.",
+  "purpose": "Optional offline navigator voice commands; audio stays in the browser."
+}

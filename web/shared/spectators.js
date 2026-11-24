@@ -54,6 +54,7 @@ export function spectatorPocketPath(course,people){
  return sorted.map(p=>({x:p.x+Math.sin(p.yaw)*.15,y:p.y,z:p.z+Math.cos(p.yaw)*.15}));
 }
 export function generateSpectators(course){
+ if(course.liveRoad)return [];
  if(placements.has(course))return placements.get(course);
  const people=[],points=course.points;if(points.length<2){placements.set(course,people);return people;}
  const rand=random((course.seed||1)^Math.imul(course.profile||0,7919)^0x53504543),distances=geometry(course).distances,startIndex=course.startIndex??Math.min(8,points.length-1),finishIndex=course.finishIndex??Math.max(startIndex,points.length-9);

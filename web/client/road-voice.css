@@ -1,0 +1,6 @@
+#voice-roads {position:fixed;right:22px;bottom:22px;z-index:45;display:grid;gap:7px;width:280px;padding:12px;background:#24211ff0;color:#f3efdf;border:1px solid #8d854e;border-radius:5px;font:12px/1.35 ShareTechMono,monospace;box-shadow:0 3px 16px #0005}
+#voice-roads button {cursor:pointer;min-height:34px;padding:7px 10px;color:#f3efdf;background:#39372a;border:1px solid #8d854e;border-radius:3px;font:inherit}
+#voice-roads button:hover {background:#56513b}#voice-roads button:focus-visible {outline:2px solid #f4b144;outline-offset:3px}
+#voice-roads[data-mic="ready"] #road-mic {border-color:#91bd86;color:#b6dfac}#voice-roads[data-mic="loading"] #road-mic {color:#f4c776}
+#road-heard {color:#c2bda3;font-style:italic;min-height:16px}#road-accepted {color:#f4b144;min-height:16px;font-weight:400}
+.road-backup {display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}.road-backup button {font-size:11px}

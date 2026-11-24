@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-24",
+  "scope": "Local experimental browser mode; no deployment",
+  "automated": {
+    "passed": 313,
+    "failed": 0
+  },
+  "network": {
+    "voiceRoads": true,
+    "clients": 2,
+    "physicalMachines": 1,
+    "matchingSnapshots": 433,
+    "driverInputSamples": 455,
+    "largestRoadDeltaBytes": 255,
+    "position": {
+      "x": 13.845372234249265,
+      "z": 160.38724471626392
+    },
+    "passed": [
+      "host navigator",
+      "driver authorization",
+      "spoken curve",
+      "identical forest",
+      "bounded deltas",
+      "full resync",
+      "retry"
+    ]
+  },
+  "speech": {
+    "kind": "Prerecorded macOS synthesized speech, not live microphone",
+    "voices": [
+      "Samantha (US English)",
+      "Aman (Indian English)"
+    ],
+    "passed": 20,
+    "total": 20,
+    "maxFrameGapMs": 84,
+    "elapsedSeconds": 10,
+    "results": [
+      "PASS Samantha \u201cright\u201d \u2192 \u201cright\u201d \u2192 right",
+      "PASS Samantha \u201csharp right\u201d \u2192 \u201csharp right\u201d \u2192 sharpRight",
+      "PASS Samantha \u201cgentle left\u201d \u2192 \u201cgentle left\u201d \u2192 gentleLeft",
+      "PASS Samantha \u201cU turn right\u201d \u2192 \u201cu turn right\u201d \u2192 uRight",
+      "PASS Samantha \u201chairpin left\u201d \u2192 \u201chairpin left\u201d \u2192 uLeft",
+      "PASS Samantha \u201cstraight\u201d \u2192 \u201cstraight\u201d \u2192 straight",
+      "PASS Samantha \u201cthe door is open\u201d \u2192 \u201cthe door is open\u201d \u2192 null",
+      "PASS Samantha \u201cdon't turn right\u201d \u2192 \u201cdon't turn right\u201d \u2192 null",
+      "PASS Samantha \u201cnot left\u201d \u2192 \u201cnot left\u201d \u2192 null",
+      "PASS Samantha \u201cright door\u201d \u2192 \u201cright door\u201d \u2192 null",
+      "PASS Aman \u201cright\u201d \u2192 \u201cright\u201d \u2192 right",
+      "PASS Aman \u201csharp right\u201d \u2192 \u201csharp right\u201d \u2192 sharpRight",
+      "PASS Aman \u201cgentle left\u201d \u2192 \u201cgentle left\u201d \u2192 gentleLeft",
+      "PASS Aman \u201cU turn right\u201d \u2192 \u201cu turn right\u201d \u2192 uRight",
+      "PASS Aman \u201chairpin left\u201d \u2192 \u201chairpin left\u201d \u2192 uLeft",
+      "PASS Aman \u201cstraight\u201d \u2192 \u201cstraight\u201d \u2192 straight",
+      "PASS Aman \u201cthe door is open\u201d \u2192 \u201cthe door is open\u201d \u2192 null",
+      "PASS Aman \u201cdon't turn right\u201d \u2192 \u201cdon't turn right\u201d \u2192 null",
+      "PASS Aman \u201cnot left\u201d \u2192 \u201cnot left\u201d \u2192 null",
+      "PASS Aman \u201cright door\u201d \u2192 \u201cright door\u201d \u2192 null"
+    ],
+    "frameGapScope": "QA page also booted the game, with concurrent automated tests; this is not an isolated in-game performance measurement."
+  },
+  "visual": {
+    "browser": "Chromium in-app browser",
+    "viewport": [
+      1280,
+      720
+    ],
+    "menuFits": true,
+    "verticalOverflow": false,
+    "checks": [
+      "Host and join from two browser tabs",
+      "Host swaps into navigator seat",
+      "Ready overlay and countdown",
+      "Generated road, original cockpit and instanced forest visible",
+      "Navigator button and arrow-key commands acknowledged",
+      "Crash/retry works"
+    ]
+  },
+  "limits": [
+    "One physical computer",
+    "No human live-microphone or India-Germany playtest for this new mode",
+    "Flat procedural ground; no elevation or junction handling yet",
+    "No old integrated-GPU hardware measurement"
+  ]
+}

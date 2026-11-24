@@ -1,11 +1,14 @@
 import {generateCourse, STAGES} from '../shared/course.js';
 import {PROTOCOL_VERSION, MODES, validMode, playerCount, safeName, validSeed, validInput, newer, START_COUNTDOWN_SECONDS} from '../shared/protocol.js';
 import {makeWorld, stepWorld, stepCrashedTablets, applyActions} from '../shared/physics.js';
+import {resetLiveRoad,liveCourseFor,refreshLiveRoad,acceptRoadCall} from './live-road-session.js';
+import {roadPlanPublic} from '../shared/live-road.js';
 
 const courses = new Map();
 export const clockSeconds = () => Date.now()/1000;
 export function randomSeed(){return 1+Math.floor(Math.random()*2147483646);}
 export function courseFor(room){
+  if(room.mode==='roadcall')return liveCourseFor(room);
   const key=`${room.seed}/${room.mode}/${room.profile}`;
   if(!courses.has(key)){const stage=STAGES[room.profile]||STAGES[0];courses.set(key,generateCourse(room.seed,room.mode,stage.blocks,stage.seed));if(courses.size>4)courses.delete(courses.keys().next().value);}
   return courses.get(key);
@@ -25,7 +28,7 @@ export function newRoom(code,session,message,now=clockSeconds()){
 }
 export function lobbyMessage(room){
   return {type:'lobby',version:PROTOCOL_VERSION,revision:room.revision??0,code:room.code,hostId:room.hostId,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,status:room.status,epoch:room.epoch,
-    playersRequired:playerCount(room),seatSwaps:true,driverDoors:true,dashboardTabletMounts:true,seats:Array.from({length:room.practice?1:MODES[room.mode].players},(_,i)=>room.seats[i]?{id:room.seats[i].id,name:room.seats[i].name,ready:room.seats[i].ready}:null)};
+    playersRequired:playerCount(room),seatSwaps:true,driverDoors:true,dashboardTabletMounts:true,voiceRoads:true,seats:Array.from({length:room.practice?1:MODES[room.mode].players},(_,i)=>room.seats[i]?{id:room.seats[i].id,name:room.seats[i].name,ready:room.seats[i].ready}:null)};
 }
 export function snapshotMessage(room,now=clockSeconds()){
   const world=room.world;if(!world)return null;
@@ -34,10 +37,12 @@ export function snapshotMessage(room,now=clockSeconds()){
   return {type:'snapshot',...world,revision:room.revision??0,time:Number.isFinite(room.lastAt)?room.lastAt:now,serverTick:Math.round(world.elapsed*50),inputs:room.inputs.map(i=>i?{seq:i.seq,actionId:i.actionId,arrived:i.arrived,ttl:i.ttl??.5,pitch:i.pitch,yaw:i.yaw,throttle:i.throttle,steer:i.steer,handbrake:i.handbrake,wipe:i.wipe}:null)};
 }
 export function raceMessage(room,now=clockSeconds()){
-  return {type:'race',revision:room.revision??0,epoch:room.epoch,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,courseHash:courseHash(courseFor(room)),snapshot:snapshotMessage(room,now)};
+  return {type:'race',revision:room.revision??0,epoch:room.epoch,mode:room.mode,seed:room.seed,profile:room.profile,practice:room.practice,courseHash:courseHash(courseFor(room)),...(room.mode==='roadcall'?{roadPlan:roadPlanPublic(room.roadPlan)}:{}),snapshot:snapshotMessage(room,now)};
 }
 export function roomMessages(room,now=clockSeconds(),includeRace=false){
-  return [lobbyMessage(room),...(room.world?[includeRace?raceMessage(room,now):snapshotMessage(room,now)]:[])];
+  const snapshot=room.world?includeRace?raceMessage(room,now):snapshotMessage(room,now):null;
+  if(snapshot&&room.mode==='roadcall'&&!includeRace)snapshot.roadPlan=roadPlanPublic(room.roadPlan);
+  return [lobbyMessage(room),...(snapshot?[snapshot]:[])];
 }
 export function joinRoom(room,session,message,now=clockSeconds()){
   if(room.status!=='lobby')fail('started','This room has already started. Ask the host to return to the lobby.');
@@ -96,11 +101,13 @@ export function advanceRoom(room,now=clockSeconds(),{fixedStep=false,maxCatchup=
     }
   }
   world.seq++;
+  refreshLiveRoad(room);
 }
 function startRoom(room,now,{stageReady=room.stageReadyRequired}={}){
   if(room.seats.filter(Boolean).length!==playerCount(room)||room.seats.slice(0,playerCount(room)).some(s=>!s?.ready))fail('not_ready',`All ${playerCount(room)} players must occupy a seat and be ready.`);
   if(STAGES[room.profile]?.nativeScene&&room.seats.some(seat=>(seat?.catalog??6)<STAGES.length))fail('content','An older game page is connected. Everyone refresh the page to play all nine stages.');
   room.epoch=(room.epoch+1)>>>0||1;room.status='race';room.inputs=[];room.lastAt=now;
+  if(room.mode==='roadcall')resetLiveRoad(room);
   room.world=makeWorld(courseFor(room),room.mode,room.epoch);room.world.seed=room.seed;
   if(stageReady){room.world.phase='waiting';room.world.stageReady=Array(playerCount(room)).fill(false);}
   if(room.practice)room.world.tablets[0].holder=0;
@@ -115,6 +122,14 @@ export function commandRoom(room,session,message,now=clockSeconds(),{inputTtl=.5
   if(advance)advanceRoom(room,now);
   const host=room.hostId===session.id;
   switch(message.type){
+    case 'roadCommand':{
+      try{return {broadcast:false,roadAck:acceptRoadCall(room,slot,message,now)};}
+      catch(error){throw new ProtocolError(error.code||'road_call',error.message);}
+    }
+    case 'roadSync':{
+      if(room.mode!=='roadcall'||!room.world||message.epoch!==room.epoch)fail('epoch','This road belongs to another run.');
+      return {broadcast:false,roadSync:true};
+    }
     case 'poll':return {broadcast:false};
     case 'ready':
       if(room.status!=='lobby')fail('started','Ready can only change in the lobby.');

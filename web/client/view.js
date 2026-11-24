@@ -5,6 +5,7 @@ import {makeTabletCatch} from './tablet-catch.js';
 import {makeDashboardTabletMount,placeMountedTablet} from './tablet-mount.js';
 import {looseTabletLocal} from '../shared/tablet-catch.js';
 import {RoadContact} from './road-contact.js';
+import {LiveRoadView} from './live-road-view.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {Font} from 'three/addons/loaders/FontLoader.js';
@@ -119,6 +120,7 @@ export class RallyView {
     this.scene.fog.far=low?150:this.manifest.atmosphere?.fog.far||260;this.camera.far=low?300:1000;this.camera.updateProjectionMatrix();
   }
   disposeCourse() {
+    this.liveRoad?.dispose();this.liveRoad=null;
     this.spectators?.dispose();this.spectators=null;
     this.details?.dispose();this.details=null;
     const courseMaterials=new Set();
@@ -129,6 +131,11 @@ export class RallyView {
   }
   buildCourse(course) {
     this.frame?.reset();this.disposeCourse();this.course=course;this.roadContact=new RoadContact(course);
+    if(course.liveRoad){
+      this.liveRoad=new LiveRoadView(this.world,course,{roadMaterial:this.roadMaterial,groundMaterial:this.groundMaterial,assets:this.assets,manifest:this.manifest,onTrees:trees=>this.installLiveRoadCourse({...this.course,trees}),onError:message=>document.dispatchEvent(new CustomEvent('rallyerror',{detail:message}))});
+      const start=clone(this.assets.start),p=course.points[course.startIndex];start.position.set(p.x,p.y,p.z);start.scale.x=course.width/7;this.world.add(start);
+      this.makeCars(1);prepareCabinSurfaces(this.world,this.cabinReflectionTarget?.texture,.95,8,this.cabinSurfaces);this.shadows?.prepare(this.world);if(this.quality)this.applyQuality();return;
+    }
     if(course.roadMesh){
       const data=course.roadMesh,geometry=new THREE.BufferGeometry();
       geometry.setAttribute('position',new THREE.Float32BufferAttribute(data.positions,3));
@@ -172,6 +179,15 @@ export class RallyView {
     }
     const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();
     const mesh=new THREE.Mesh(geometry,material);mesh.receiveShadow=true;mesh.userData.disposable=true;this.world.add(mesh);
+  }
+  installLiveRoadCourse(course){
+    this.course=course;this.roadContact=new RoadContact(course);
+    for(const car of this.cars){car.wheelContact.surface=this.roadContact;if(car.presentation)car.presentation.course=course;}
+    this.lastMap=-Infinity;
+  }
+  updateLiveRoad(course){
+    if(!this.liveRoad)return;this.installLiveRoadCourse({...course,trees:this.course.trees});
+    this.liveRoad.request(course.roadPlan);
   }
   makeCars(count) {
     for(let team=0;team<count;team++) {
@@ -266,6 +282,7 @@ export class RallyView {
         }
         for(const mesh of this.world.children)if(mesh.isInstancedMesh||mesh.userData.terrainChunk){const sphere=mesh.boundingSphere||mesh.geometry?.boundingSphere,center=sphere?.center;if(center){const distance=(center.x-state.x)**2+(center.z-state.z)**2,radius=sphere.radius;mesh.visible=distance<(this.scene.fog.far+radius)**2;mesh.castShadow=mesh.isInstancedMesh&&mesh.userData.castShadowAllowed!==false&&distance<((this.cabinSurfaces?.shadows?.distance||65)+radius)**2;}}
         this.details?.update(state.x,state.z,now);
+        this.liveRoad?.update(state.x,state.z,this.scene.fog.far,this.reducedRendering);
         if(!this.shadows){const sunDirection=this.cabinSurfaces?.sunDirection||[-.4,.8,.2];this.sun.position.set(state.x+sunDirection[0]*100,state.y+sunDirection[1]*100,state.z+sunDirection[2]*100);this.sun.target.position.set(state.x,state.y,state.z);this.sun.target.updateMatrixWorld();}
       }
       if(now-this.lastMap>80){this.drawMap(snapshot);this.lastMap=now;}

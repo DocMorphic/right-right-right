@@ -17,10 +17,11 @@
   <section class="menu-art"><h1 class="original-title">Right! Right! RIGHT!</h1><img class="original-car" src="/assets/textures/ee.png" alt="The red rally car with its driver and navigator"></section>
   <section class="tablet-frame"><div class="tablet-lip"><div class="tablet-screen">
     <header class="tablet-heading"><h2 id="native-title">PLAY</h2></header>
-    <div class="mode-row"><button id="mode-coop" data-mode="coop">2 PLAYER CO-OP</button><button id="mode-race" data-mode="race">4 PLAYER RACE</button></div>
+    <div class="mode-row"><button id="mode-coop" data-mode="coop">2 PLAYER CO-OP</button><button id="mode-race" data-mode="race">4 PLAYER RACE</button><button id="mode-roadcall" data-mode="roadcall">VOICE ROADS · 2 PLAYER</button></div>
     <div id="room-section"><div id="connection-actions"><button id="create-room" class="menu-primary">HOST GAME</button><form id="join-form"><label for="room-code">ROOM CODE</label><div class="join-row"><input id="room-code" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters" spellcheck="false"><button id="join-room" type="submit" disabled>JOIN GAME</button></div></form></div><div class="room-code-row"><p id="room-note" aria-label="Room code"></p><button id="copy-invite" class="hidden">COPY CODE</button></div></div>
     <div class="crew-heading"><span>CREW</span><span id="crew-count">0 / 2</span></div><div id="crew-seats" class="crew-seats"></div>
     <div class="course-heading"><span>STAGE</span><span id="course-status"></span></div><div id="courses"></div>
+    <p id="voice-mode-note" class="hidden">The navigator speaks. The road takes shape.</p>
     <button id="start-game" class="menu-primary start-game" disabled>START GAME</button><p id="native-status" class="menu-status" role="status" aria-live="polite"></p>
     <div id="advanced-section" class="hidden"><p>WASD / arrows — drive<br>Mouse — look around<br>E — grab / drop tablet<br>G — door · hold C — wipe<br>Space — handbrake · R — ready / restart</p></div>
     <footer class="tablet-footer"><button id="advanced-toggle" aria-expanded="false">CONTROLS</button><button id="menu-audio">SETTINGS</button><button id="disconnect" class="hidden">LEAVE ROOM</button></footer>
@@ -30,6 +31,11 @@
 <div id="hud" class="hidden"><div id="race-status" class="native-box" role="status" aria-live="polite"><span id="result-title"></span><span id="result-time"></span><span id="result-subtitle"></span></div></div>
 <div id="stage-ready" class="hidden" aria-label="Controls and stage readiness"><section class="ready-card"><h1 id="ready-controls-title" class="ready-anton">CONTROLS</h1><h2 id="ready-driver-title" class="ready-anton">DRIVER</h2><p id="ready-driver-controls"></p><h2 id="ready-navigator-title" class="ready-anton">NAVIGATOR</h2><p id="ready-navigator-controls"></p><p id="ready-theft" class="hidden">DRIVERS: G — OPEN / CLOSE DOOR · E — GRAB / DROP</p><div id="ready-footer" class="ready-anton">PRESS R WHEN READY</div><div id="ready-crews" class="hidden" role="status" aria-live="polite"></div><div id="ready-status" class="ready-anton" data-ready="00" role="status" aria-live="polite">DRIVER  —      NAVIGATOR  —</div></section></div>
 <div id="tablet-mount-prompt" class="hidden" role="status"><kbd>E</kbd><span id="tablet-mount-label">ATTACH TABLET</span></div>
+<section id="voice-roads" class="hidden" aria-label="Navigator road building" data-mic="off">
+  <button id="road-mic">MIC OFF · V</button><span id="road-voice-status" role="status">Say a turn, or use the arrow keys.</span>
+  <span id="road-heard"></span><strong id="road-accepted" role="status"></strong>
+  <div class="road-backup"><button data-road-call="left" aria-label="Build left turn">← LEFT</button><button data-road-call="straight">STRAIGHT</button><button data-road-call="right" aria-label="Build right turn">RIGHT →</button></div>
+</section>
 <div id="race-hint" class="hidden"><div id="race-hint-text"></div></div>
 <div id="browser-menu" class="hidden" role="dialog" aria-modal="true" aria-label="Pause menu">
   <section class="pause-shell"><div class="pause-lip"></div><div class="pause-screen"></div><div class="pause-route-marker"></div><div class="pause-timer-rim"></div><div class="pause-timer">PAUSED</div>
