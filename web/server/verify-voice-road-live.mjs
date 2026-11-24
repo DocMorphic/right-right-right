@@ -1,0 +1,26 @@
+/** Real sockets/inputs against a deployed authority; no server-state fixtures. */
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+import {setTimeout as wait} from 'node:timers/promises';
+import {WebSocket} from 'ws';
+import {applyRoadDelta,materializeRoad} from '../shared/live-road.js';
+import {routeInput} from './route-driver.js';
+const base=new URL(process.argv[2]||'http://localhost:8790'),url=new URL('/ws',base);url.protocol=base.protocol==='https:'?'wss:':'ws:';
+const peers=[],until=async(fn,ms=15000)=>{const end=Date.now()+ms;while(Date.now()<end){const value=fn();if(value)return value;await wait(15);}throw Error('Voice Roads public acceptance timed out');};
+async function connect(){
+  const ws=new WebSocket(url,{origin:process.env.RRR_WEB_ORIGIN||'https://right-right-right.vercel.app'}),p={ws,messages:[],seq:0,plan:null,error:null,send(m){ws.send(JSON.stringify(m));},get latest(){return this.messages.findLast(m=>m.type==='snapshot');}};peers.push(p);
+  ws.on('error',error=>p.error=error);ws.on('message',raw=>{const m=JSON.parse(raw);p.messages.push(m);if(m.type==='race')p.plan=m.roadPlan;if(m.type==='roadUpdate')p.plan=m.roadPlan||applyRoadDelta(p.plan,m.delta);});await until(()=>{if(p.error)throw p.error;return p.messages.some(m=>m.type==='welcome');});p.id=p.messages.find(m=>m.type==='welcome').id;return p;
+}
+try{
+  const[navigator,driver]=await Promise.all([connect(),connect()]);navigator.send({type:'create',mode:'roadcall',profile:0,seed:23456});const code=(await until(()=>navigator.messages.find(m=>m.type==='joined'))).code;
+  assert.equal((await until(()=>navigator.messages.findLast(m=>m.type==='lobby'))).voiceRoads,true,'authority must support the new mode');driver.send({type:'join',code});await until(()=>driver.messages.some(m=>m.type==='joined'));
+  navigator.send({type:'seat',slot:1,swap:true});await until(()=>peers.every(p=>p.messages.findLast(m=>m.type==='lobby')?.seats[1]?.id===navigator.id));for(const p of peers)p.send({type:'ready',ready:true,catalog:9});await until(()=>navigator.messages.findLast(m=>m.type==='lobby').seats.every(s=>s?.ready));
+  navigator.send({type:'start',stageReady:true});const race=await until(()=>navigator.messages.find(m=>m.type==='race'));await until(()=>driver.plan);for(const p of peers)p.send({type:'stageReady',epoch:race.epoch,ready:true});await until(()=>peers.every(p=>p.latest?.phase==='running'));
+  driver.send({type:'roadCommand',epoch:race.epoch,id:1,call:'left'});await until(()=>driver.messages.some(m=>m.type==='error'&&m.code==='role'));navigator.send({type:'roadCommand',epoch:race.epoch,id:1,call:'right'});await until(()=>navigator.messages.some(m=>m.type==='roadAck'&&m.id===1));await until(()=>driver.plan?.lastCall?.id===1);assert.deepEqual(navigator.plan,driver.plan);
+  const deadline=Date.now()+45000;let samples=0;while(Date.now()<deadline&&(driver.latest?.roadDistance??0)<165){assert.equal(driver.ws.readyState,WebSocket.OPEN);assert.equal(navigator.ws.readyState,WebSocket.OPEN);const snapshot=driver.latest;assert.equal(snapshot.cars[0].dead,false);driver.send({type:'input',epoch:race.epoch,seq:++driver.seq,...routeInput(materializeRoad(driver.plan),snapshot,0,{maxSpeed:8.5,responseSeconds:.18})});samples++;await wait(40);}
+  driver.send({type:'input',epoch:race.epoch,seq:++driver.seq,throttle:-1,steer:0});const position={x:driver.latest.cars[0].x,z:driver.latest.cars[0].z};assert.ok(position.x>5&&position.z>145,'ordinary driver inputs must actually reach the generated right bend');assert.equal(driver.latest.cars[0].dead,false);
+  await until(()=>navigator.plan.revision===driver.plan.revision);assert.deepEqual(materializeRoad(navigator.plan).points,materializeRoad(driver.plan).points);assert.deepEqual(materializeRoad(navigator.plan).trees,materializeRoad(driver.plan).trees);
+  const frames=new Map(navigator.messages.filter(m=>m.type==='snapshot').map(m=>[m.seq,m]));let matching=0;for(const m of driver.messages.filter(m=>m.type==='snapshot'))if(frames.has(m.seq)){assert.deepEqual(frames.get(m.seq).cars,m.cars);assert.equal(frames.get(m.seq).roadRevision,m.roadRevision);matching++;}assert.ok(matching>200);
+  driver.plan=null;driver.send({type:'roadSync',epoch:race.epoch});await until(()=>driver.plan);assert.deepEqual(driver.plan,navigator.plan);navigator.send({type:'retry'});await until(()=>peers.every(p=>p.messages.findLast(m=>m.type==='race')?.epoch>race.epoch));assert.equal(driver.plan.lastCall,null);assert.equal(driver.messages.findLast(m=>m.type==='race').snapshot.phase,'countdown');
+  const deltas=driver.messages.filter(m=>m.type==='roadUpdate'&&m.delta),report={ok:true,url:base.origin,checkedAt:new Date().toISOString(),clients:2,physicalMachines:1,statePlacements:0,driverInputSamples:samples,matchingSnapshots:matching,largestRoadDeltaBytes:Math.max(...deltas.map(m=>Buffer.byteLength(JSON.stringify(m)))),position,checks:['host navigator','driver ownership rejected','generated right bend driven','identical road and forest','identical car snapshots','route resync','retry'],limitations:['No live microphone input in this network test','Both clients run on one Mac']};if(process.argv[3])await writeFile(process.argv[3],JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));
+}finally{for(const p of peers)p.ws.terminate();}

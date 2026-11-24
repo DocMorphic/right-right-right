@@ -16,7 +16,7 @@ The browser supports two-player co-op and four-player racing, with shared course
 
 See the [browser setup and controls](web/README.md), [server/deployment details](web/server/README.md), and [asset export/provenance guide](docs/WEB-ASSET-EXPORT.md). The authorized browser assets and map/contact data are included in Git, so a source checkout can build the browser game directly. Generated builds and the compiled native runtime stay outside Git. The Windows installer above remains a separate downloadable release.
 
-An experimental [Voice Roads mode](docs/VOICE-ROADS.md) lets the navigator speak turns to build the road ahead of the driver. It is a local two-player prototype and has not been deployed to the public game.
+An experimental [Voice Roads mode](docs/VOICE-ROADS.md) lets the navigator speak turns to build the road ahead of the driver. It is an experimental two-player mode. The browser project builds from GitHub’s `standalone/portable-steam` branch; see the mode guide for controls and test limits.
 
 ## Play with friends
 

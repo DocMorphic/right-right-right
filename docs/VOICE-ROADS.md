@@ -1,7 +1,15 @@
 # Voice Roads prototype
 
-Local experimental two-player mode. Not deployed. The nine authored stages and
+Experimental two-player browser mode. The nine authored stages and
 four-player race remain separate and retain their assets and handling.
+
+## Play
+
+Choose **VOICE ROADS · 2 PLAYER** on the browser menu. The GitHub-connected
+production project builds the `web` directory from `standalone/portable-steam`.
+The multiplayer authority runs the same branch directly on Render, rather than
+downloading an older pinned server bundle. Browser checks run in GitHub Actions.
+The initial implementation was validated locally before this deployment pass.
 
 ## Play locally
 

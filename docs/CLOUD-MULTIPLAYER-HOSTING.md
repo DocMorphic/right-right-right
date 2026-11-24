@@ -37,22 +37,27 @@ None of these options guarantees uninterrupted, unlimited, permanently free
 gaming. A cloud server removes the dependency on this laptop and home network;
 India–Germany transit latency and players' own networks still affect play.
 
-## Prepared deployment
+## GitHub source deployment (24 November 2026)
 
-`node web/scripts/build-multiplayer-server.mjs` packages the local authority
-and the original generated course catalog into a versioned ESM bundle plus a
-small package manifest. The course catalog is deliberately absent from Git,
-so a plain checkout followed by `npm start` would fail without this step.
-Only `ws` is required at runtime; browser models, audio and textures stay on
-Vercel. The generated package and checksum are under ignored
-`local/cloud-server/`.
+Vercel is connected to `DocMorphic/right-right-right`, production branch
+`standalone/portable-steam`, root directory `web`, Vite build
+`npm run build:client`, output `dist`. Previously this project had no Git link
+and received manually uploaded builds, so pushing a commit could not update it.
 
-`local/cloud-server/render-service-settings.json` contains the concrete Free
-Frankfurt service settings, including a checksum-verified runtime download.
-It uses the existing public repository for dependency installation and disables
-automatic deploys. This avoids pushing the unrelated local game/Mac work.
-The runtime bundle must be published at its specified Vercel asset URL before
-creating the service; prepared settings alone are not a live deployment.
+The existing Render service uses that same repository/branch with root directory
+`web`, build command `npm ci --omit=dev`, and start command
+`node server/index.js`. The generated native course and contact catalogs are now
+tracked in Git. A clean production-only install passed both the two-client Voice
+Roads driving check and the existing four-player network acceptance.
+
+The previous build command downloaded a fixed server bundle from Vercel. That
+command has been replaced, so source changes no longer require manually packaging
+and uploading a new backend artifact. `web/scripts/build-multiplayer-server.mjs`
+remains available for an explicitly bundled deployment, but is not required by
+this source-based service.
+
+The `Browser game checks` GitHub Actions workflow installs dependencies, runs the
+full browser/gameplay/network test suite and builds the browser from the checkout.
 
 Set the cloud service's `HOST=0.0.0.0` and
 `ALLOWED_ORIGIN=https://right-right-right.vercel.app`. Let Render assign `PORT`.
